@@ -77,7 +77,17 @@ export function DataTable<T>({ columns, data, loading, emptyMessage = 'Không c�
               <tr
                 key={rowKey ? rowKey(row) : rowIdx}
                 onClick={() => onRowClick?.(row)}
-                className={clsx(onRowClick && 'hover:bg-ink-50 cursor-pointer focus-visible:outline-none focus-visible:bg-ink-50')}
+                onKeyDown={(e) => {
+                  if (!onRowClick) return;
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onRowClick(row);
+                  }
+                }}
+                tabIndex={onRowClick ? 0 : undefined}
+                role={onRowClick ? 'button' : undefined}
+                aria-label={onRowClick ? `Mở chi tiết ${(row as Record<string, unknown>)[columns[0]?.key as string] ?? `hàng ${rowIdx + 1}`}` : undefined}
+                className={clsx(onRowClick && 'hover:bg-ink-50 cursor-pointer focus-visible:outline-none focus-visible:bg-ink-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-500')}
               >
                 {columns.map((col, colIdx) => (
                   <td

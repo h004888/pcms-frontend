@@ -54,11 +54,14 @@ export default function LoginPage() {
   const [authError, setAuthError] = useState<string | null>(null);
 
   // Nếu đã đăng nhập, chuyển về dashboard
+  // Chờ `hydrated` trước khi redirect để tránh flash / redirect sai
+  // trong initial render.
   useEffect(() => {
+    if (!state.hydrated) return;
     if (state.isAuthenticated) {
       router.push('/home');
     }
-  }, [state.isAuthenticated, router]);
+  }, [state.hydrated, state.isAuthenticated, router]);
 
   const {
     register,

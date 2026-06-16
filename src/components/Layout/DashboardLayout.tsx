@@ -18,13 +18,24 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   // Auth guard: redirect to /login if not authenticated
+  // Chờ `hydrated` trước khi check `isAuthenticated` để tránh redirect sai
+  // trong initial render (trước khi AuthContext hydrate từ localStorage).
   useEffect(() => {
-    // Wait for hydration before checking (avoid SSR mismatch)
     if (typeof window === 'undefined') return;
+    if (!state.hydrated) return;
     if (!state.isAuthenticated) {
       router.push('/login');
     }
-  }, [state.isAuthenticated, router]);
+  }, [state.hydrated, state.isAuthenticated, router]);
+
+  // Trong khi chờ hydrate, hiển thị loading spinner để tránh flash / redirect nhầm
+  if (!state.hydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-ink-50">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
   if (!state.isAuthenticated) {
     return (

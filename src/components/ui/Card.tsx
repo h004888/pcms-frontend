@@ -11,13 +11,34 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   subtitle?: string;
   actions?: ReactNode;
   bodyClassName?: string;
+  /**
+   * Heading level cho Card title. Mặc định 'h3'.
+   * - 'h1' khi Card là container chính của page (hiếm; thường page đã có h1 riêng)
+   * - 'h2' khi Card là section chính trong page (vd: home dashboard panels)
+   * - 'h3' (mặc định) khi Card là sub-section trong một page đã có h1
+   * - 'h4' khi Card lồng trong một section đã có h2
+   */
+  titleAs?: 'h1' | 'h2' | 'h3' | 'h4';
 }
 
-export function Card({ title, subtitle, actions, bodyClassName, className, children, id, ...props }: CardProps) {
+export function Card({ title, subtitle, actions, bodyClassName, className, children, id, titleAs = 'h3', ...props }: CardProps) {
   // Stable id for aria-labelledby when title is provided
   const generatedId = useId();
   const titleId = id ?? `card-title-${generatedId}`;
   const isRegion = Boolean(title);
+
+  // Render heading theo titleAs prop để giữ heading hierarchy đúng
+  const renderTitle = () => {
+    if (!title) return null;
+    const className = 'text-base font-semibold text-ink-900';
+    switch (titleAs) {
+      case 'h1': return <h1 id={titleId} className={clsx(className, 'text-2xl tracking-tight')}>{title}</h1>;
+      case 'h2': return <h2 id={titleId} className={clsx(className, 'text-xl tracking-tight')}>{title}</h2>;
+      case 'h4': return <h4 id={titleId} className={className}>{title}</h4>;
+      case 'h3':
+      default:   return <h3 id={titleId} className={className}>{title}</h3>;
+    }
+  };
 
   return (
     <div
@@ -29,7 +50,7 @@ export function Card({ title, subtitle, actions, bodyClassName, className, child
       {(title || actions) && (
         <div className="flex items-center justify-between px-5 py-4 border-b border-ink-200">
           <div>
-            {title && <h3 id={titleId} className="text-base font-semibold text-ink-900">{title}</h3>}
+            {renderTitle()}
             {subtitle && <p className="text-sm text-ink-500 mt-0.5">{subtitle}</p>}
           </div>
           {actions && <div className="flex items-center gap-2">{actions}</div>}

@@ -33,4 +33,10 @@ export interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
+  /**
+   * True sau khi AuthContext đã hydrate từ localStorage.
+   * Components cần check `hydrated` trước `isAuthenticated` để tránh
+   * redirect sai trong initial render (trước khi localStorage được đọc).
+   */
+  hydrated: boolean;
 }

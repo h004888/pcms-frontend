@@ -22,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     accessToken: null,
     refreshToken: null,
     isAuthenticated: false,
+    hydrated: false,
   });
 
   // Hydrate from localStorage on mount
@@ -32,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       accessToken: typeof window !== 'undefined' ? localStorage.getItem('pcms_access_token') : null,
       refreshToken: typeof window !== 'undefined' ? localStorage.getItem('pcms_refresh_token') : null,
       isAuthenticated: user !== null,
+      hydrated: true,
     });
   }, []);
 
@@ -42,16 +44,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       accessToken: response.accessToken,
       refreshToken: response.refreshToken,
       isAuthenticated: true,
+      hydrated: true,
     });
   };
 
   const logout = () => {
     authLogout();
-    setState({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false });
+    setState({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false, hydrated: true });
   };
 
   const setUser = (user: AuthUser | null) => {
-    setState((s) => ({ ...s, user, isAuthenticated: user !== null }));
+    setState((s) => ({ ...s, user, isAuthenticated: user !== null, hydrated: true }));
   };
 
   return (

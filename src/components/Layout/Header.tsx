@@ -35,10 +35,13 @@ export function Header() {
           onClick={() => setIsMenuOpen((o) => !o)}
           aria-haspopup="menu"
           aria-expanded={isMenuOpen}
-          aria-label="Mở menu tài khoản"
-          className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-ink-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-1"
+          aria-label={`Tài khoản: ${state.user?.fullName || 'Guest'}`}
+          className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-ink-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-2"
         >
-          <div className="w-8 h-8 rounded-full bg-accent-100 flex items-center justify-center text-accent-800 font-semibold text-sm">
+          <div
+            className="w-8 h-8 rounded-full bg-accent-100 flex items-center justify-center text-accent-800 font-semibold text-sm"
+            aria-hidden="true"
+          >
             {state.user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
           </div>
           <div className="text-left hidden sm:block">
