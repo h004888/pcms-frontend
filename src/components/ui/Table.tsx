@@ -30,33 +30,38 @@ interface DataTableProps<T> {
 export function DataTable<T>({ columns, data, loading, emptyMessage = 'Không có dữ liệu', onRowClick, rowKey }: DataTableProps<T>) {
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow border border-gray-200 p-8 text-center">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary-500 border-t-transparent"></div>
-        <p className="mt-2 text-sm text-gray-500">Đang tải...</p>
+      <div
+        className="bg-white rounded-lg border border-ink-200 p-8 text-center"
+        role="status"
+        aria-live="polite"
+      >
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-accent-500 border-t-transparent" aria-hidden="true"></div>
+        <p className="mt-2 text-sm text-ink-500">Đang tải…</p>
       </div>
     );
   }
 
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow border border-gray-200 p-8 text-center">
-        <p className="text-gray-500">{emptyMessage}</p>
+      <div className="bg-white rounded-lg border border-ink-200 p-8 text-center">
+        <p className="text-ink-500">{emptyMessage}</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-lg border border-ink-200 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-ink-200">
+          <thead className="bg-ink-50">
             <tr>
               {columns.map((col, i) => (
                 <th
                   key={i}
+                  scope="col"
                   style={col.width ? { width: col.width } : undefined}
                   className={clsx(
-                    'px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider',
+                    'px-4 py-3 text-xs font-semibold text-ink-600',
                     col.align === 'right' && 'text-right',
                     col.align === 'center' && 'text-center',
                     (!col.align || col.align === 'left') && 'text-left'
@@ -67,18 +72,18 @@ export function DataTable<T>({ columns, data, loading, emptyMessage = 'Không c�
               ))}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-ink-200">
             {data.map((row, rowIdx) => (
               <tr
                 key={rowKey ? rowKey(row) : rowIdx}
                 onClick={() => onRowClick?.(row)}
-                className={clsx(onRowClick && 'hover:bg-gray-50 cursor-pointer')}
+                className={clsx(onRowClick && 'hover:bg-ink-50 cursor-pointer focus-visible:outline-none focus-visible:bg-ink-50')}
               >
                 {columns.map((col, colIdx) => (
                   <td
                     key={colIdx}
                     className={clsx(
-                      'px-4 py-3 text-sm text-gray-900',
+                      'px-4 py-3 text-sm text-ink-900',
                       col.align === 'right' && 'text-right',
                       col.align === 'center' && 'text-center'
                     )}
@@ -107,8 +112,8 @@ interface PaginationProps {
 
 export function Pagination({ page, size, total, totalPages, onPageChange, onSizeChange }: PaginationProps) {
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 rounded-b-lg">
-      <div className="flex items-center gap-2 text-sm text-gray-700">
+    <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-ink-200 rounded-b-lg">
+      <div className="flex items-center gap-2 text-sm text-ink-700">
         <span>
           Tổng <strong>{total}</strong> bản ghi
         </span>
@@ -116,7 +121,8 @@ export function Pagination({ page, size, total, totalPages, onPageChange, onSize
           <select
             value={size}
             onChange={(e) => onSizeChange(parseInt(e.target.value))}
-            className="ml-2 border border-gray-300 rounded px-2 py-1 text-sm"
+            aria-label="Số bản ghi mỗi trang"
+            className="ml-2 border border-ink-300 rounded px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500"
           >
             <option value={10}>10 / trang</option>
             <option value={20}>20 / trang</option>
@@ -131,11 +137,11 @@ export function Pagination({ page, size, total, totalPages, onPageChange, onSize
           size="sm"
           disabled={page === 0}
           onClick={() => onPageChange(page - 1)}
-          leftIcon={<ChevronLeft size={16} />}
+          leftIcon={<ChevronLeft size={16} aria-hidden="true" />}
         >
           Trước
         </Button>
-        <span className="px-3 text-sm text-gray-700">
+        <span className="px-3 text-sm text-ink-700">
           Trang <strong>{page + 1}</strong> / {Math.max(totalPages, 1)}
         </span>
         <Button
@@ -143,7 +149,7 @@ export function Pagination({ page, size, total, totalPages, onPageChange, onSize
           size="sm"
           disabled={page >= totalPages - 1}
           onClick={() => onPageChange(page + 1)}
-          rightIcon={<ChevronRight size={16} />}
+          rightIcon={<ChevronRight size={16} aria-hidden="true" />}
         >
           Sau
         </Button>

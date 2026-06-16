@@ -5,7 +5,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import apiClient, { getErrorMessage } from '@/lib/api';
+import { apiClient, getErrorMessage } from '@/lib/api';
 import { PageResponse } from '@/types';
 
 interface UseApiListResult<T> {

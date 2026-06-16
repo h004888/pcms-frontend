@@ -7,7 +7,7 @@
 
 import { ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/auth';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { LoadingSpinner } from '@/components/ui/Feedback';
@@ -28,14 +28,14 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
 
   if (!state.isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-ink-50">
         <LoadingSpinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-[--pcms-bg] flex">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <Header />

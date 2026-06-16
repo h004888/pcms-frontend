@@ -4,24 +4,31 @@
 
 @layer base {
   :root {
-    --pcms-bg: #f9fafb;
+    --pcms-bg: #f8f9fc;
+    --pcms-surface: #ffffff;
+    --pcms-border: #e5e7eb;
+    --pcms-ink: #0f1d3d;
   }
 
   body {
-    @apply bg-[--pcms-bg] text-gray-900 antialiased;
+    @apply bg-[--pcms-bg] text-ink-900 antialiased;
     font-feature-settings: 'rlig' 1, 'calt' 1;
   }
 
   /* Vietnamese-friendly font */
   html {
-    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
+    font-family: var(--font-sans), 'Inter', system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
+  }
+
+  code, kbd, samp, pre {
+    font-family: var(--font-mono), 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   }
 }
 
 @layer components {
   /* Form input focus ring */
   .input-focus {
-    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
+    @apply focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500;
   }
 
   /* Page header */
@@ -29,10 +36,10 @@
     @apply flex items-center justify-between mb-6;
   }
   .page-title {
-    @apply text-2xl font-bold text-gray-900;
+    @apply text-2xl font-bold text-ink-900;
   }
   .page-subtitle {
-    @apply text-sm text-gray-500 mt-1;
+    @apply text-sm text-ink-500 mt-1;
   }
 
   /* Action bar */
@@ -51,6 +58,16 @@
     height: 6px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded;
+    @apply bg-ink-200 rounded;
+  }
+}
+
+/* A11y: respect reduced motion per WCAG 2.3.3 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

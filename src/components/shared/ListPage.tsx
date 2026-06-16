@@ -46,8 +46,8 @@ export function ListPage<T>({
 }: ListPageProps<T>) {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [page, setPage] = useState(0);
-  const [size, setSize] = useState(20);
+  const [page, setPageState] = useState(0);
+  const [size, setSizeState] = useState(20);
   const [formOpen, setFormOpen] = useState(false);
   const [editItem, setEditItem] = useState<T | null>(null);
 
@@ -55,7 +55,7 @@ export function ListPage<T>({
   useEffect(() => {
     const t = setTimeout(() => {
       setDebouncedSearch(search);
-      setPage(0);
+      setPageState(0);
     }, 300);
     return () => clearTimeout(t);
   }, [search]);
@@ -63,12 +63,15 @@ export function ListPage<T>({
   const params: Record<string, unknown> = { ...filterParams };
   if (debouncedSearch) params[searchParam] = debouncedSearch;
 
-  const { data, loading, error, total, totalPages, refetch, setPage, setSize } = useApiList<T>(
+  const { data, loading, error, total, totalPages, refetch } = useApiList<T>(
     endpoint,
     page,
     size,
     params
   );
+
+  const setPage = setPageState;
+  const setSize = setSizeState;
 
   // Inject action column (Edit/Delete) if renderForm is provided OR customActions
   const allColumns: Column<T>[] = [...columns];
@@ -135,7 +138,7 @@ export function ListPage<T>({
       {loading ? (
         <LoadingSpinner size="lg" />
       ) : data.length === 0 ? (
-        <div className="bg-white rounded-lg shadow border border-gray-200">
+        <div className="bg-white rounded-lg border border-ink-200">
           <EmptyState title={emptyMessage} />
         </div>
       ) : (

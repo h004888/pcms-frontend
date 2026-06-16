@@ -50,19 +50,21 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', footer }:
           sizeClasses[size]
         )}
         role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
       >
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <div className="flex items-center justify-between px-5 py-3 border-b border-ink-200">
+          <h3 id="modal-title" className="text-lg font-semibold text-ink-900">{title}</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 p-1 rounded"
+            className="text-ink-400 hover:text-ink-700 -m-2 p-2 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-1"
             aria-label="Đóng"
           >
-            <X size={20} />
+            <X size={20} aria-hidden="true" />
           </button>
         </div>
         <div className="px-5 py-4 overflow-y-auto flex-1">{children}</div>
-        {footer && <div className="px-5 py-3 border-t border-gray-200 flex justify-end gap-2">{footer}</div>}
+        {footer && <div className="px-5 py-3 border-t border-ink-200 flex justify-end gap-2">{footer}</div>}
       </div>
     </div>
   );

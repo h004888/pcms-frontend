@@ -23,14 +23,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor={inputId} className="block text-sm font-medium text-ink-700 mb-1">
             {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
+            {required && <span className="text-red-500 ml-1" aria-hidden="true">*</span>}
           </label>
         )}
         <div className="relative">
           {leftIcon && (
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-ink-400">
               {leftIcon}
             </div>
           )}
@@ -38,26 +38,28 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={clsx(
-              'block w-full rounded-md border bg-white py-2 text-sm',
+              'block w-full rounded-md border bg-white py-2 text-sm text-ink-900 placeholder:text-ink-400',
               'focus:outline-none focus:ring-2 focus:ring-offset-0',
-              'disabled:bg-gray-50 disabled:text-gray-500',
+              'disabled:bg-ink-50 disabled:text-ink-500',
               error
                 ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                : 'border-gray-300 focus:border-primary-500 focus:ring-primary-200',
+                : 'border-ink-300 focus:border-accent-500 focus:ring-accent-200',
               leftIcon ? 'pl-10' : 'pl-3',
               rightIcon ? 'pr-10' : 'pr-3',
               className
             )}
+            aria-invalid={error ? 'true' : undefined}
+            aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
             {...props}
           />
           {rightIcon && (
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400">
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-ink-400">
               {rightIcon}
             </div>
           )}
         </div>
-        {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
-        {!error && hint && <p className="mt-1 text-xs text-gray-500">{hint}</p>}
+        {error && <p id={`${inputId}-error`} className="mt-1 text-xs text-red-600">{error}</p>}
+        {!error && hint && <p id={`${inputId}-hint`} className="mt-1 text-xs text-ink-500">{hint}</p>}
       </div>
     );
   }
