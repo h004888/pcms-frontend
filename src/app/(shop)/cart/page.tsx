@@ -14,12 +14,11 @@ import { EmptyState } from '@/components/ui/Feedback';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { formatVND } from '@/lib/shop/format';
 import { ShoppingCart, ArrowRight, Tag, Truck } from 'lucide-react';
-
 const FREE_SHIPPING_THRESHOLD = 200000;
 const SHIPPING_FEE = 30000;
 
 export default function ShopCartPage() {
-  const { items, subtotal, updateItem, removeItem, hydrated } = useCart();
+  const { items, subtotal, hydrated } = useCart();
   const router = useRouter();
 
   if (!hydrated) {
@@ -75,12 +74,7 @@ export default function ShopCartPage() {
           {/* Cart items */}
           <div className="space-y-3">
             {items.map((item) => (
-              <CartItemRow
-                key={item.productId}
-                item={item}
-                onUpdate={(qty) => updateItem(item.productId, qty)}
-                onRemove={() => removeItem(item.productId)}
-              />
+              <CartItemRow key={item.productId} item={item} />
             ))}
           </div>
 
