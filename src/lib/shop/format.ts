@@ -55,13 +55,19 @@ export function getPrescriptionLabel(required: boolean): {
  * Build URL PDP theo main plan structure.
  * Nếu product có categorySlug = subcategorySlug (trùng L1), bỏ segment L2.
  * Nếu product thuộc L2, giữ nguyên /{L1}/{L2}/{slug}.
+ * Accept subset of ProductSummary (CartItem cũng dùng được).
  */
-export function getProductHref(product: ProductSummary): string {
-  const l1 = product.categorySlug;
-  const l2 = product.subcategorySlug;
-  if (!l1) return `/${product.slug}`;
-  if (l2 && l2 !== l1) return `/${l1}/${l2}/${product.slug}`;
-  return `/${l1}/${product.slug}`;
+export function getProductHref(product: {
+  slug: string;
+  categorySlug?: string;
+  subcategorySlug?: string;
+}): string {
+  const { slug, categorySlug, subcategorySlug } = product;
+  if (!categorySlug) return `/${slug}`;
+  if (subcategorySlug && subcategorySlug !== categorySlug) {
+    return `/${categorySlug}/${subcategorySlug}/${slug}`;
+  }
+  return `/${categorySlug}/${slug}`;
 }
 
 /** Build URL CAT-1 (L1). */

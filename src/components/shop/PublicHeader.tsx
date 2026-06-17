@@ -26,9 +26,7 @@ import {
   X,
 } from 'lucide-react';
 import clsx from 'clsx';
-// CartContext sẽ được thêm ở Task 1 (Cart infrastructure).
-// Trước đó, cart badge trong header hiển thị local state.
-// Sau Task 1, refactor thành useCart() từ context.
+import { useCart } from '@/lib/shop/cart-context';
 
 const CATEGORIES = [
   { label: 'Thuốc', href: '/thuoc', icon: Pill },
@@ -51,6 +49,7 @@ export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const headerRef = useRef<HTMLElement>(null);
+  const { itemCount, hydrated } = useCart();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -188,16 +187,18 @@ export function PublicHeader() {
             {/* Cart */}
             <Link
               href="/cart"
-              aria-label="Giỏ hàng (0 sản phẩm)"
+              aria-label={hydrated ? `Giỏ hàng (${itemCount} sản phẩm)` : 'Giỏ hàng'}
               className="relative p-2 text-ink-700 hover:text-ink-900 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
             >
               <ShoppingCart className="w-5 h-5" aria-hidden="true" />
-              <span
-                aria-hidden="true"
-                className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 bg-danger-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center"
-              >
-                0
-              </span>
+              {hydrated && itemCount > 0 && (
+                <span
+                  aria-hidden="true"
+                  className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 bg-danger-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center font-mono"
+                >
+                  {itemCount > 99 ? '99+' : itemCount}
+                </span>
+              )}
             </Link>
 
             {/* Account */}
