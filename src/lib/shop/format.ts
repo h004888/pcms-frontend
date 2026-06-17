@@ -45,11 +45,16 @@ export function getPrescriptionLabel(required: boolean): {
 
 // =====================================================
 // URL helpers — build route theo main plan:
-// /{L1}               — SHOP-CAT-1
-// /{L1}/{L2}          — SHOP-CAT-2
-// /{L1}/{L2}/{slug}   — SHOP-PDP (có L2)
-// /{L1}/{slug}        — SHOP-PDP (không có L2, product trực thuộc L1)
+// /customer/{L1}                    — SHOP-CAT-1
+// /customer/{L1}/{L2}               — SHOP-CAT-2
+// /customer/{L1}/{L2}/{slug}        — SHOP-PDP (có L2)
+// /customer/{L1}/{slug}             — SHOP-PDP (không có L2)
+// B2C e-commerce nằm trong folder thật `customer/`
+// (không dùng route group `(shop)` vì conflict với
+//  `(dashboard)` routes trùng path /orders, /search, /prescriptions).
 // =====================================================
+
+const BASE = '/customer';
 
 /**
  * Build URL PDP theo main plan structure.
@@ -63,19 +68,19 @@ export function getProductHref(product: {
   subcategorySlug?: string;
 }): string {
   const { slug, categorySlug, subcategorySlug } = product;
-  if (!categorySlug) return `/${slug}`;
+  if (!categorySlug) return `${BASE}/${slug}`;
   if (subcategorySlug && subcategorySlug !== categorySlug) {
-    return `/${categorySlug}/${subcategorySlug}/${slug}`;
+    return `${BASE}/${categorySlug}/${subcategorySlug}/${slug}`;
   }
-  return `/${categorySlug}/${slug}`;
+  return `${BASE}/${categorySlug}/${slug}`;
 }
 
 /** Build URL CAT-1 (L1). */
 export function getCategoryL1Href(slug: string): string {
-  return `/${slug}`;
+  return `${BASE}/${slug}`;
 }
 
 /** Build URL CAT-2 (L1/L2). */
 export function getCategoryL2Href(l1Slug: string, l2Slug: string): string {
-  return `/${l1Slug}/${l2Slug}`;
+  return `${BASE}/${l1Slug}/${l2Slug}`;
 }

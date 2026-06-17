@@ -39,7 +39,7 @@ export function ShopHomeCategories() {
           return (
             <Link
               key={cat.id}
-              href={`/${cat.slug}`}
+              href={`/customer/${cat.slug}`}
               className="group flex flex-col items-center gap-3 p-5 bg-white border border-ink-200 rounded-md hover:border-accent-500 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
             >
               <div className="w-14 h-14 bg-accent-50 rounded-full flex items-center justify-center group-hover:bg-accent-100 transition-colors">

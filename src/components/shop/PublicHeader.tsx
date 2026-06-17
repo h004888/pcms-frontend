@@ -74,7 +74,7 @@ export function PublicHeader() {
     e.preventDefault();
     const q = searchValue.trim();
     if (q) {
-      window.location.href = `/search?q=${encodeURIComponent(q)}`;
+      window.location.href = `/customer/search?q=${encodeURIComponent(q)}`;
     }
   };
 
@@ -177,7 +177,7 @@ export function PublicHeader() {
           <div className="flex items-center gap-1 ml-auto">
             {/* Mobile search trigger */}
             <Link
-              href="/search"
+              href="/customer/search"
               aria-label="Tìm kiếm"
               className="md:hidden p-2 text-ink-700 hover:text-ink-900 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
             >
@@ -186,7 +186,7 @@ export function PublicHeader() {
 
             {/* Cart */}
             <Link
-              href="/cart"
+              href="/customer/cart"
               aria-label={hydrated ? `Giỏ hàng (${itemCount} sản phẩm)` : 'Giỏ hàng'}
               className="relative p-2 text-ink-700 hover:text-ink-900 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
             >
