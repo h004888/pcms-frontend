@@ -6,6 +6,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import { AuthProvider } from '@/lib/auth';
 import { PWAProvider } from '@/components/shop/PWAProvider';
+import { CartProvider } from '@/lib/shop/cart-context';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'], display: 'swap', variable: '--font-sans' });
@@ -120,7 +121,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="font-sans antialiased">
         <AuthProvider>
-          <PWAProvider>{children}</PWAProvider>
+          <PWAProvider>
+            <CartProvider>{children}</CartProvider>
+          </PWAProvider>
         </AuthProvider>
       </body>
     </html>

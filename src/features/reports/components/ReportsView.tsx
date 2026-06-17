@@ -4,13 +4,15 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/Layout';
 import { Card, Button, Select, Input, Alert, StatCard } from '@/components/ui';
 import { BarChart3, FileSpreadsheet, FileText, TrendingUp, ShoppingCart } from 'lucide-react';
 import { toInputDate, formatVND, formatNumber } from '@/lib/utils';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { ReportExportDialog } from './ReportExportDialog';
+import type { ReportPayload } from '../utils/exporters';
 
 export function ReportsView() {
   const [reportType, setReportType] = useState<'revenue' | 'inventory'>('revenue');
@@ -19,6 +21,7 @@ export function ReportsView() {
   const [groupBy, setGroupBy] = useState('day');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const generate = async () => {
     setLoading(true);
@@ -36,6 +39,49 @@ export function ReportsView() {
       setLoading(false);
     }
   };
+
+  // Xây payload cho ReportExportDialog
+  const exportPayload: ReportPayload | null = useMemo(() => {
+    if (!data) return null;
+
+    if (reportType === 'revenue') {
+      const rows = data.rows || [];
+      const totalGross = rows.reduce((s: number, r: any) => s + (r.gross || 0), 0);
+      const totalDiscount = rows.reduce((s: number, r: any) => s + (r.discount || 0), 0);
+      const totalNet = rows.reduce((s: number, r: any) => s + (r.net || 0), 0);
+      return {
+        title: 'Báo cáo doanh thu',
+        subtitle: `${from} → ${to} · Nhóm theo ${groupBy === 'day' ? 'ngày' : groupBy === 'week' ? 'tuần' : 'tháng'}`,
+        rows,
+        columns: [
+          { key: 'date', header: 'Thời gian' },
+          { key: 'orders', header: 'Số đơn', format: (v) => formatNumber(v as number) },
+          { key: 'gross', header: 'Tổng bán', format: (v) => formatVND(v as number) },
+          { key: 'discount', header: 'Giảm giá', format: (v) => formatVND(v as number) },
+          { key: 'net', header: 'Thực thu', format: (v) => formatVND(v as number) },
+        ],
+        summary: [
+          { label: 'Tổng số đơn', value: formatNumber(data.totalOrders || 0) },
+          { label: 'Tổng bán', value: formatVND(totalGross) },
+          { label: 'Tổng giảm', value: formatVND(totalDiscount) },
+          { label: 'Thực thu', value: formatVND(totalNet) },
+        ],
+      };
+    }
+
+    return {
+      title: 'Báo cáo tồn kho',
+      subtitle: 'Tổng quan tồn kho toàn hệ thống',
+      rows: [
+        { metric: 'Tổng số lô', value: data.totalBatches || 0 },
+        { metric: 'Lô dưới mức tối thiểu', value: data.lowStockCount || 0 },
+      ],
+      columns: [
+        { key: 'metric', header: 'Chỉ số' },
+        { key: 'value', header: 'Giá trị', format: (v) => formatNumber(v as number) },
+      ],
+    };
+  }, [data, reportType, from, to, groupBy]);
 
   return (
     <DashboardLayout>
@@ -82,8 +128,8 @@ export function ReportsView() {
           </Button>
           {data && (
             <>
-              <Button variant="outline" leftIcon={<FileSpreadsheet className="w-4 h-4" />} onClick={() => toast.success('Xuất Excel - chưa implement (FR9.3)')}>Xuất Excel</Button>
-              <Button variant="outline" leftIcon={<FileText className="w-4 h-4" />} onClick={() => toast.success('Xuất PDF - chưa implement (FR9.4)')}>Xuất PDF</Button>
+              <Button variant="outline" leftIcon={<FileSpreadsheet className="w-4 h-4" />} onClick={() => setExportOpen(true)}>Xuất Excel</Button>
+              <Button variant="outline" leftIcon={<FileText className="w-4 h-4" />} onClick={() => setExportOpen(true)}>Xuất PDF</Button>
             </>
           )}
         </div>
@@ -141,6 +187,12 @@ export function ReportsView() {
           Chọn loại báo cáo và bấm &ldquo;Tạo báo cáo&rdquo; để xem dữ liệu
         </Alert>
       )}
+
+      <ReportExportDialog
+        isOpen={exportOpen}
+        onClose={() => setExportOpen(false)}
+        payload={exportPayload}
+      />
     </DashboardLayout>
   );
 }

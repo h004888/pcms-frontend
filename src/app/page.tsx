@@ -1,10 +1,10 @@
 // =====================================================
-// PCMS - Root page: redirect to /home (or /login if not authed)
+// / (root) — SHOP-HOME
+// Brand: PCMS portal nội bộ (dược sĩ, kê đơn, tồn kho)
 // =====================================================
 
-import { redirect } from 'next/navigation';
+import { ShopHomeContent } from '@/components/shop/ShopHomeContent';
 
-export default function HomePage() {
-  // Server-side: just redirect to home. Client-side will handle auth check.
-  redirect('/home');
+export default function RootHomePage() {
+  return <ShopHomeContent />;
 }

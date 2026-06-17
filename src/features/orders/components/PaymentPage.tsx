@@ -11,7 +11,7 @@ import { Order, PaymentMethod, Payment } from '@/types';
 import { formatVND, PAYMENT_METHOD_LABELS } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
 import { apiClient, getErrorMessage } from '@/lib/api';
-import { ArrowLeft, CreditCard, Printer } from 'lucide-react';
+import { ArrowLeft, CreditCard, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { DashboardLayout } from '@/components/Layout';
 
@@ -109,7 +109,7 @@ export default function PaymentPage() {
               )}
             </div>
             <div className="flex gap-2 justify-center mt-4">
-              <Button variant="outline" leftIcon={<Printer className="w-4 h-4" />} onClick={() => window.print()}>In hóa đơn</Button>
+              <Button variant="outline" leftIcon={<FileText className="w-4 h-4" />} onClick={() => router.push(`/invoices/${order.id}`)}>Xem hóa đơn</Button>
               <Button onClick={() => router.push('/orders')}>Về danh sách</Button>
             </div>
           </div>

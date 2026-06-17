@@ -9,7 +9,7 @@ import { Search, FileText, Pill, MessageCircle, MapPin, Calendar, Stethoscope } 
 
 const QUICK_ACTIONS = [
   { label: 'Tra cứu thuốc', href: '/tra-cuu-thuoc', icon: Search, accent: 'from-info-500 to-info-600' },
-  { label: 'Đặt thuốc theo toa', href: '/prescriptions/upload', icon: FileText, accent: 'from-warning-500 to-warning-600' },
+  { label: 'Đặt thuốc theo toa', href: '/upload-toa', icon: FileText, accent: 'from-warning-500 to-warning-600' },
   { label: 'Tư vấn dược sĩ', href: '/ai/chat', icon: MessageCircle, accent: 'from-accent-500 to-accent-600' },
   { label: 'Hệ thống nhà thuốc', href: '/he-thong-cua-hang', icon: MapPin, accent: 'from-success-500 to-success-600' },
   { label: 'Tiêm chủng', href: '/tiem-chung', icon: Calendar, accent: 'from-danger-500 to-danger-600' },
@@ -48,7 +48,7 @@ export function ShopHomeHero() {
             POS tiện lợi — đồng bộ toàn chuỗi nhà thuốc.
           </p>
           <form
-            action="/search"
+            action="/tim-kiem"
             method="get"
             className="mt-8 max-w-2xl mx-auto"
             role="search"

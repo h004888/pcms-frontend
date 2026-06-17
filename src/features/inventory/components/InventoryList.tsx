@@ -9,7 +9,7 @@ import { ListPage } from '@/components/shared/ListPage';
 import { Column, Alert } from '@/components/ui';
 import { InventoryBatch } from '@/types';
 import { formatDate } from '@/lib/utils';
-import { Upload } from 'lucide-react';
+import { Upload, Download, Truck } from 'lucide-react';
 import Link from 'next/link';
 import { useApiDetail } from '@/hooks/useApi';
 
@@ -23,13 +23,29 @@ export function InventoryList() {
           <h1 className="page-title">Quản lý tồn kho</h1>
           <p className="page-subtitle">UC05 - Theo dõi tồn kho theo lô · BR02: cảnh báo dưới min · BR03: cảnh báo hết hạn</p>
         </div>
-        <Link
-          href="/inventory/import"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-ink-900 text-white rounded-md text-sm font-medium hover:bg-ink-800"
-        >
-          <Upload className="w-4 h-4" />
-          Nhập kho
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/inventory/import"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-ink-900 text-white rounded-md text-sm font-medium hover:bg-ink-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-1"
+          >
+            <Upload className="w-4 h-4" />
+            Nhập kho
+          </Link>
+          <Link
+            href="/inventory/export"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white text-ink-700 border border-ink-300 rounded-md text-sm font-medium hover:bg-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-1"
+          >
+            <Download className="w-4 h-4" />
+            Xuất kho
+          </Link>
+          <Link
+            href="/inventory/transfer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white text-ink-700 border border-ink-300 rounded-md text-sm font-medium hover:bg-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-1"
+          >
+            <Truck className="w-4 h-4" />
+            Chuyển kho
+          </Link>
+        </div>
       </div>
 
       {lowStock.data && lowStock.data.length > 0 && (

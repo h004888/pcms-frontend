@@ -21,13 +21,13 @@ interface TabItem {
 }
 
 const TABS: TabItem[] = [
-  { label: 'Tra cứu thuốc', href: '/customer/tra-cuu-thuoc', icon: Pill, matchSegment: 'tra-cuu-thuoc' },
-  { label: 'Hoạt chất', href: '/customer/tra-cuu-duoc-chat', icon: Beaker, matchSegment: 'tra-cuu-duoc-chat' },
-  { label: 'Dược liệu', href: '/customer/tra-cuu-duoc-lieu', icon: Leaf, matchSegment: 'tra-cuu-duoc-lieu' },
-  { label: 'Chính hãng', href: '/customer/tra-thuoc-chinh-hang', icon: ShieldCheck, matchSegment: 'tra-thuoc-chinh-hang' },
-  { label: 'Bài viết', href: '/customer/bai-viet', icon: FileText, matchSegment: 'bai-viet' },
-  { label: 'Bệnh', href: '/customer/benh-thuong-gap', icon: Activity, matchSegment: 'benh-thuong-gap' },
-  { label: 'Video', href: '/customer/video', icon: Video, matchSegment: 'video' },
+  { label: 'Tra cứu thuốc', href: '/tra-cuu-thuoc', icon: Pill, matchSegment: 'tra-cuu-thuoc' },
+  { label: 'Hoạt chất', href: '/tra-cuu-duoc-chat', icon: Beaker, matchSegment: 'tra-cuu-duoc-chat' },
+  { label: 'Dược liệu', href: '/tra-cuu-duoc-lieu', icon: Leaf, matchSegment: 'tra-cuu-duoc-lieu' },
+  { label: 'Chính hãng', href: '/tra-thuoc-chinh-hang', icon: ShieldCheck, matchSegment: 'tra-thuoc-chinh-hang' },
+  { label: 'Bài viết', href: '/bai-viet', icon: FileText, matchSegment: 'bai-viet' },
+  { label: 'Bệnh', href: '/benh-thuong-gap', icon: Activity, matchSegment: 'benh-thuong-gap' },
+  { label: 'Video', href: '/video', icon: Video, matchSegment: 'video' },
 ];
 
 interface LookupNavProps {
