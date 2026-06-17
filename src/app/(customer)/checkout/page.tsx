@@ -1,17 +1,16 @@
 // =====================================================
-// /checkout — SHOP-CHECKOUT: 4-step flow
-// 0. Address → 1. Shipping → 2. Payment → 3. Confirm
-// Dùng useCart() context, clear cart khi đặt hàng
+// /checkout — SHOP-CHECKOUT (polished)
+// Full validation cho 4 steps + persist state localStorage
 // =====================================================
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/shop/cart-context';
 import { CheckoutStepper } from '@/components/shop/CheckoutStepper';
 import { formatVND } from '@/lib/shop/format';
-import { MapPin, Truck, CreditCard, Check, ChevronRight } from 'lucide-react';
+import { MapPin, Truck, CreditCard, Check, ChevronRight, ChevronLeft, Wallet, Smartphone, Banknote, CreditCard as CardIcon, QrCode } from 'lucide-react';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 import Link from 'next/link';
@@ -19,39 +18,72 @@ import Link from 'next/link';
 const STEPS = ['Địa chỉ', 'Vận chuyển', 'Thanh toán', 'Xác nhận'];
 
 const SHIPPING_METHODS = [
-  { id: 'standard', label: 'Tiêu chuẩn', desc: '2–3 ngày', fee: 30000 },
-  { id: 'express', label: 'Nhanh', desc: 'Trong ngày (HCM/HN)', fee: 60000 },
-  { id: 'pickup', label: 'Nhận tại nhà thuốc', desc: 'Miễn phí', fee: 0 },
+  { id: 'standard', label: 'Tiêu chuẩn', desc: '2–3 ngày', fee: 30000, icon: Truck },
+  { id: 'express', label: 'Nhanh', desc: 'Trong ngày (HCM/HN)', fee: 60000, icon: Truck },
+  { id: 'pickup', label: 'Nhận tại nhà thuốc', desc: 'Miễn phí', fee: 0, icon: MapPin },
 ];
 
-const PAYMENT_METHODS: Record<string, string> = {
-  cod: 'Tiền mặt (COD)',
-  card: 'Thẻ tín dụng/ghi nợ',
-  qr: 'QR Pay (VietQR, MoMo)',
-  wallet: 'Ví điện tử',
-};
+const PAYMENT_METHODS = [
+  { id: 'cod', label: 'Tiền mặt (COD)', icon: Banknote },
+  { id: 'card', label: 'Thẻ tín dụng/ghi nợ', icon: CardIcon },
+  { id: 'qr', label: 'QR Pay (VietQR, MoMo)', icon: QrCode },
+  { id: 'wallet', label: 'Ví điện tử', icon: Wallet },
+  { id: 'installment', label: 'Trả góp 0%', icon: CreditCard },
+];
 
-const PAYMENT_ICONS: Record<string, string> = {
-  cod: '💵',
-  card: '💳',
-  qr: '📱',
-  wallet: '👛',
+const STORAGE_KEY = 'pcms-checkout-draft';
+
+interface CheckoutDraft {
+  address: { name: string; phone: string; line: string; province: string };
+  shipping: string;
+  payment: string;
+}
+
+const EMPTY_DRAFT: CheckoutDraft = {
+  address: { name: '', phone: '', line: '', province: '' },
+  shipping: 'standard',
+  payment: 'cod',
 };
 
 export default function ShopCheckoutPage() {
   const router = useRouter();
   const { items, subtotal, clear, hydrated } = useCart();
   const [step, setStep] = useState(0);
-  const [shipping, setShipping] = useState('standard');
-  const [payment, setPayment] = useState('cod');
-  const [address, setAddress] = useState({
-    name: '',
-    phone: '',
-    line: '',
-    province: '',
-  });
+  const [draft, setDraft] = useState<CheckoutDraft>(EMPTY_DRAFT);
+  const [errors, setErrors] = useState<{ name?: string; phone?: string; line?: string; province?: string }>({});
 
-  // Pre-hydration: render skeleton
+  // Restore draft
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw) as CheckoutDraft;
+        setDraft(saved);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Persist draft
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+    } catch {
+      // ignore
+    }
+  }, [draft, hydrated]);
+
+  // Cleanup after successful order
+  const cleanup = () => {
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+  };
+
   if (!hydrated) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12">
@@ -60,7 +92,6 @@ export default function ShopCheckoutPage() {
     );
   }
 
-  // Empty cart: trỏ về giỏ
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">
@@ -75,23 +106,51 @@ export default function ShopCheckoutPage() {
     );
   }
 
-  const shipFee = SHIPPING_METHODS.find((m) => m.id === shipping)!.fee;
+  const shipFee = SHIPPING_METHODS.find((m) => m.id === draft.shipping)!.fee;
   const total = subtotal + shipFee;
 
-  const handleNext = () => {
-    if (step === 0) {
-      if (!address.name || !address.phone || !address.line || !address.province) {
-        toast.error('Vui lòng điền đầy đủ thông tin giao hàng');
-        return;
-      }
+  const validateAddress = (): boolean => {
+    const e: typeof errors = {};
+    if (!draft.address.name.trim()) e.name = 'Vui lòng nhập họ tên';
+    else if (draft.address.name.trim().length < 2) e.name = 'Họ tên quá ngắn';
+
+    if (!draft.address.phone.trim()) e.phone = 'Vui lòng nhập SĐT';
+    else if (!/^(0|\+84)[0-9]{9,10}$/.test(draft.address.phone.replace(/\s/g, '')))
+      e.phone = 'SĐT không hợp lệ (VD: 0901234567)';
+
+    if (!draft.address.line.trim()) e.line = 'Vui lòng nhập địa chỉ';
+    if (!draft.address.province.trim()) e.province = 'Vui lòng nhập tỉnh/TP';
+
+    setErrors(e);
+    if (Object.keys(e).length > 0) {
+      toast.error('Vui lòng điền đầy đủ thông tin');
+      return false;
     }
+    return true;
+  };
+
+  const next = () => {
+    if (step === 0 && !validateAddress()) return;
     if (step < 3) setStep(step + 1);
     else {
       // Place order
       toast.success('Đặt hàng thành công!');
       clear();
+      cleanup();
       router.push('/don-hang');
     }
+  };
+
+  const prev = () => {
+    if (step > 0) setStep(step - 1);
+  };
+
+  const updateAddress = <K extends keyof CheckoutDraft['address']>(
+    key: K,
+    value: string
+  ) => {
+    setDraft((d) => ({ ...d, address: { ...d.address, [key]: value } }));
+    if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
   };
 
   return (
@@ -113,48 +172,45 @@ export default function ShopCheckoutPage() {
                 <MapPin className="w-4 h-4" aria-hidden="true" /> Địa chỉ giao hàng
               </h2>
               <div className="grid sm:grid-cols-2 gap-3">
-                {[
-                  { key: 'name', label: 'Họ tên *', placeholder: 'Nguyễn Văn A' },
-                  { key: 'phone', label: 'Số điện thoại *', placeholder: '0901234567' },
-                ].map((f) => (
-                  <div key={f.key}>
-                    <label htmlFor={f.key} className="text-sm font-medium text-ink-900">
-                      {f.label}
-                    </label>
-                    <input
-                      id={f.key}
-                      value={(address as Record<string, string>)[f.key]}
-                      onChange={(e) =>
-                        setAddress({ ...address, [f.key]: e.target.value })
-                      }
-                      placeholder={f.placeholder}
-                      className="mt-1 w-full h-10 px-3 text-sm border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
-                    />
-                  </div>
-                ))}
-                <div className="sm:col-span-2">
-                  <label htmlFor="line" className="text-sm font-medium text-ink-900">
-                    Địa chỉ *
-                  </label>
+                <Field label="Họ tên *" error={errors.name}>
                   <input
-                    id="line"
-                    value={address.line}
-                    onChange={(e) => setAddress({ ...address, line: e.target.value })}
-                    placeholder="Số nhà, đường, phường/xã"
-                    className="mt-1 w-full h-10 px-3 text-sm border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
+                    type="text"
+                    value={draft.address.name}
+                    onChange={(e) => updateAddress('name', e.target.value)}
+                    className={inputClass(!!errors.name)}
+                    placeholder="Nguyễn Văn A"
                   />
+                </Field>
+                <Field label="Số điện thoại *" error={errors.phone}>
+                  <input
+                    type="tel"
+                    value={draft.address.phone}
+                    onChange={(e) => updateAddress('phone', e.target.value)}
+                    className={inputClass(!!errors.phone)}
+                    placeholder="0901234567"
+                  />
+                </Field>
+                <div className="sm:col-span-2">
+                  <Field label="Địa chỉ *" error={errors.line}>
+                    <input
+                      type="text"
+                      value={draft.address.line}
+                      onChange={(e) => updateAddress('line', e.target.value)}
+                      className={inputClass(!!errors.line)}
+                      placeholder="Số nhà, đường, phường/xã"
+                    />
+                  </Field>
                 </div>
                 <div className="sm:col-span-2">
-                  <label htmlFor="province" className="text-sm font-medium text-ink-900">
-                    Tỉnh/Thành phố *
-                  </label>
-                  <input
-                    id="province"
-                    value={address.province}
-                    onChange={(e) => setAddress({ ...address, province: e.target.value })}
-                    placeholder="TP. Hồ Chí Minh"
-                    className="mt-1 w-full h-10 px-3 text-sm border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
-                  />
+                  <Field label="Tỉnh/Thành phố *" error={errors.province}>
+                    <input
+                      type="text"
+                      value={draft.address.province}
+                      onChange={(e) => updateAddress('province', e.target.value)}
+                      className={inputClass(!!errors.province)}
+                      placeholder="TP. Hồ Chí Minh"
+                    />
+                  </Field>
                 </div>
               </div>
             </div>
@@ -166,36 +222,39 @@ export default function ShopCheckoutPage() {
                 <Truck className="w-4 h-4" aria-hidden="true" /> Phương thức vận chuyển
               </h2>
               <div className="space-y-2">
-                {SHIPPING_METHODS.map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => setShipping(m.id)}
-                    aria-pressed={shipping === m.id}
-                    className={clsx(
-                      'w-full flex items-center gap-3 p-3 border rounded-md text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500',
-                      shipping === m.id
-                        ? 'border-accent-600 bg-accent-50'
-                        : 'border-ink-200 hover:border-ink-300'
-                    )}
-                  >
-                    <div
+                {SHIPPING_METHODS.map((m) => {
+                  const Icon = m.icon;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setDraft((d) => ({ ...d, shipping: m.id }))}
+                      aria-pressed={draft.shipping === m.id}
                       className={clsx(
-                        'w-4 h-4 rounded-full border-2 flex-shrink-0',
-                        shipping === m.id
-                          ? 'border-accent-600 bg-accent-600'
-                          : 'border-ink-300'
+                        'w-full flex items-center gap-3 p-3 border rounded-md text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500',
+                        draft.shipping === m.id
+                          ? 'border-accent-600 bg-accent-50'
+                          : 'border-ink-200 hover:border-ink-300'
                       )}
-                    />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-ink-900">{m.label}</p>
-                      <p className="text-xs text-ink-500">{m.desc}</p>
-                    </div>
-                    <span className="text-sm font-semibold text-ink-900 font-mono">
-                      {m.fee === 0 ? 'Miễn phí' : formatVND(m.fee)}
-                    </span>
-                  </button>
-                ))}
+                    >
+                      <div
+                        className={clsx(
+                          'w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0',
+                          draft.shipping === m.id ? 'bg-accent-600 text-white' : 'bg-ink-100 text-ink-700'
+                        )}
+                      >
+                        <Icon className="w-5 h-5" aria-hidden="true" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-ink-900">{m.label}</p>
+                        <p className="text-xs text-ink-500">{m.desc}</p>
+                      </div>
+                      <span className="text-sm font-semibold text-ink-900 font-mono">
+                        {m.fee === 0 ? 'Miễn phí' : formatVND(m.fee)}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -206,67 +265,95 @@ export default function ShopCheckoutPage() {
                 <CreditCard className="w-4 h-4" aria-hidden="true" /> Phương thức thanh toán
               </h2>
               <div className="space-y-2">
-                {Object.entries(PAYMENT_METHODS).map(([id, label]) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setPayment(id)}
-                    aria-pressed={payment === id}
-                    className={clsx(
-                      'w-full flex items-center gap-3 p-3 border rounded-md text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500',
-                      payment === id
-                        ? 'border-accent-600 bg-accent-50'
-                        : 'border-ink-200 hover:border-ink-300'
-                    )}
-                  >
-                    <span className="text-2xl" aria-hidden="true">
-                      {PAYMENT_ICONS[id]}
-                    </span>
-                    <span className="flex-1 text-sm font-medium text-ink-900">
-                      {label}
-                    </span>
-                    <div
+                {PAYMENT_METHODS.map((m) => {
+                  const Icon = m.icon;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setDraft((d) => ({ ...d, payment: m.id }))}
+                      aria-pressed={draft.payment === m.id}
                       className={clsx(
-                        'w-4 h-4 rounded-full border-2 flex-shrink-0',
-                        payment === id
-                          ? 'border-accent-600 bg-accent-600'
-                          : 'border-ink-300'
+                        'w-full flex items-center gap-3 p-3 border rounded-md text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500',
+                        draft.payment === m.id
+                          ? 'border-accent-600 bg-accent-50'
+                          : 'border-ink-200 hover:border-ink-300'
                       )}
-                    />
-                  </button>
-                ))}
+                    >
+                      <div
+                        className={clsx(
+                          'w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0',
+                          draft.payment === m.id ? 'bg-accent-600 text-white' : 'bg-ink-100 text-ink-700'
+                        )}
+                      >
+                        <Icon className="w-5 h-5" aria-hidden="true" />
+                      </div>
+                      <span className="flex-1 text-sm font-medium text-ink-900">{m.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
           {step === 3 && (
-            <div className="text-center py-6">
-              <div className="w-16 h-16 mx-auto bg-success-50 rounded-full flex items-center justify-center mb-3">
-                <Check className="w-8 h-8 text-success-600" aria-hidden="true" />
+            <div className="space-y-4">
+              <div className="text-center py-2">
+                <div className="w-16 h-16 mx-auto bg-success-50 rounded-full flex items-center justify-center mb-2">
+                  <Check className="w-8 h-8 text-success-600" aria-hidden="true" />
+                </div>
+                <h2 className="text-lg font-semibold text-ink-900">Xác nhận đơn hàng</h2>
+                <p className="mt-1 text-sm text-ink-600 text-pretty">
+                  Vui lòng kiểm tra thông tin trước khi đặt hàng.
+                </p>
               </div>
-              <h2 className="text-lg font-semibold text-ink-900">Xác nhận đơn hàng</h2>
-              <p className="mt-2 text-sm text-ink-600 text-pretty">
-                Đơn hàng của bạn đã sẵn sàng. Nhấn &quot;Đặt hàng&quot; để hoàn tất.
-              </p>
-              <div className="mt-4 p-3 bg-ink-50 rounded-md text-left text-sm space-y-1">
-                <p>
-                  <strong>Giao đến:</strong> {address.name} · {address.phone}
-                </p>
-                <p>
-                  <strong>Địa chỉ:</strong> {address.line}, {address.province}
-                </p>
-                <p>
-                  <strong>Vận chuyển:</strong>{' '}
-                  {SHIPPING_METHODS.find((m) => m.id === shipping)!.label}
-                </p>
-                <p>
-                  <strong>Thanh toán:</strong> {PAYMENT_METHODS[payment]}
-                </p>
-                <p>
-                  <strong>Sản phẩm:</strong>{' '}
-                  <span className="font-mono">{items.length}</span> món,{' '}
-                  <span className="font-mono">{items.reduce((s, i) => s + i.qty, 0)}</span> đơn vị
-                </p>
+
+              <div className="space-y-3">
+                <ConfirmBlock icon={MapPin} title="Giao đến">
+                  <p className="font-medium">{draft.address.name} · {draft.address.phone}</p>
+                  <p className="text-ink-600">{draft.address.line}, {draft.address.province}</p>
+                </ConfirmBlock>
+
+                <ConfirmBlock icon={Truck} title="Vận chuyển">
+                  <p className="font-medium">
+                    {SHIPPING_METHODS.find((m) => m.id === draft.shipping)?.label}
+                  </p>
+                  <p className="text-ink-600">
+                    {SHIPPING_METHODS.find((m) => m.id === draft.shipping)?.desc} ·{' '}
+                    <span className="font-mono">
+                      {SHIPPING_METHODS.find((m) => m.id === draft.shipping)?.fee === 0
+                        ? 'Miễn phí'
+                        : formatVND(SHIPPING_METHODS.find((m) => m.id === draft.shipping)?.fee ?? 0)}
+                    </span>
+                  </p>
+                </ConfirmBlock>
+
+                <ConfirmBlock icon={CreditCard} title="Thanh toán">
+                  <p className="font-medium">
+                    {PAYMENT_METHODS.find((m) => m.id === draft.payment)?.label}
+                  </p>
+                </ConfirmBlock>
+
+                <ConfirmBlock icon={Wallet} title="Sản phẩm">
+                  <p className="font-mono font-medium">
+                    {items.length} món · {items.reduce((s, i) => s + i.qty, 0)} đơn vị
+                  </p>
+                  <ul className="text-sm text-ink-600 mt-1 space-y-0.5">
+                    {items.slice(0, 3).map((it) => (
+                      <li key={it.productId} className="flex justify-between">
+                        <span className="truncate">
+                          {it.name} × {it.qty}
+                        </span>
+                        <span className="font-mono text-xs">{formatVND(it.price * it.qty)}</span>
+                      </li>
+                    ))}
+                    {items.length > 3 && (
+                      <li className="text-xs italic text-ink-500">
+                        + {items.length - 3} sản phẩm khác
+                      </li>
+                    )}
+                  </ul>
+                </ConfirmBlock>
               </div>
             </div>
           )}
@@ -274,22 +361,21 @@ export default function ShopCheckoutPage() {
           <div className="mt-6 pt-4 border-t border-ink-200 flex items-center justify-between gap-3">
             <button
               type="button"
-              onClick={() => setStep(Math.max(0, step - 1))}
+              onClick={prev}
               disabled={step === 0}
-              className="px-4 h-10 text-sm font-medium text-ink-700 hover:bg-ink-50 rounded-md disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+              className="inline-flex items-center gap-1 px-4 h-10 text-sm font-medium text-ink-700 hover:bg-ink-50 rounded-md disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
             >
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" />
               Quay lại
             </button>
             <div className="text-right">
               <p className="text-xs text-ink-500">Tổng cộng</p>
-              <p className="text-lg font-bold text-accent-700 font-mono">
-                {formatVND(total)}
-              </p>
+              <p className="text-lg font-bold text-accent-700 font-mono">{formatVND(total)}</p>
             </div>
             <button
               type="button"
-              onClick={handleNext}
-              className="px-5 h-10 bg-accent-600 text-white text-sm font-semibold rounded-md hover:bg-accent-700 transition-colors inline-flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+              onClick={next}
+              className="inline-flex items-center gap-1 px-5 h-10 bg-accent-600 text-white text-sm font-semibold rounded-md hover:bg-accent-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
             >
               {step === 3 ? 'Đặt hàng' : 'Tiếp tục'}
               {step < 3 && <ChevronRight className="w-4 h-4" aria-hidden="true" />}
@@ -299,4 +385,57 @@ export default function ShopCheckoutPage() {
       </div>
     </div>
   );
+}
+
+function Field({
+  label,
+  error,
+  children,
+}: {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="text-sm font-medium text-ink-900 block mb-1">{label}</label>
+      {children}
+      {error && (
+        <p className="mt-1 text-xs text-danger-600 flex items-center gap-1">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function ConfirmBlock({
+  icon: Icon,
+  title,
+  children,
+}: {
+  icon: typeof MapPin;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="p-3 bg-ink-50 rounded-md flex items-start gap-3">
+      <div className="w-8 h-8 bg-white rounded-md flex items-center justify-center flex-shrink-0">
+        <Icon className="w-4 h-4 text-ink-700" aria-hidden="true" />
+      </div>
+      <div className="text-sm flex-1 min-w-0">
+        <p className="text-xs font-semibold text-ink-500 uppercase tracking-wider">{title}</p>
+        <div className="mt-1">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function inputClass(hasError: boolean): string {
+  return [
+    'w-full h-10 px-3 text-sm border rounded-md focus:outline-none focus:ring-2 font-mono',
+    hasError
+      ? 'border-danger-300 focus:border-danger-500 focus:ring-danger-200'
+      : 'border-ink-200 focus:border-accent-500 focus:ring-accent-200',
+  ].join(' ');
 }
