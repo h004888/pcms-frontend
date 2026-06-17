@@ -1,13 +1,16 @@
 // =====================================================
-// /ai/chat — CHAT-AI
-// Chat với dược sĩ AI
+// /ai/chat — CHAT-AI (polished)
+// Smart pattern matching với AI_INTENTS database
+// + follow-up suggestions
+// + conversation history
 // =====================================================
 
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { Send, Bot, User as UserIcon } from 'lucide-react';
+import { Send, Bot, User as UserIcon, Sparkles } from 'lucide-react';
+import { getAIResponse } from '@/data/ai-responses';
 
 interface Message {
   id: string;
@@ -18,22 +21,19 @@ interface Message {
 
 const SUGGESTIONS = [
   'Paracetamol có dùng được cho bà bầu không?',
+  'Liều Paracetamol cho trẻ 5 tuổi?',
   'Tôi bị đau đầu, nên dùng thuốc gì?',
-  'Tương tác giữa Amoxicillin và rượu?',
-  'Liều Vitamin C cho trẻ 5 tuổi?',
+  'Tương tác giữa Ibuprofen và Aspirin?',
+  'Vitamin D3 uống bao nhiêu mỗi ngày?',
 ];
-
-const AI_RESPONSES: Record<string, string> = {
-  default:
-    'Cảm ơn bạn đã hỏi. Đây là thông tin tham khảo, không thay thế tư vấn y khoa. Bạn có thể mô tả chi tiết hơn về triệu chứng để tôi hỗ trợ tốt hơn?',
-};
 
 export default function AIChatPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '0',
       role: 'ai',
-      content: 'Xin chào! Tôi là trợ lý dược sĩ AI. Bạn cứ hỏi về thuốc, liều dùng, tương tác — tôi sẽ hỗ trợ trong khả năng tốt nhất.',
+      content:
+        'Xin chào! Tôi là trợ lý dược sĩ AI của PCMS.\n\nTôi có thể giúp bạn về:\n• Tra cứu thuốc, liều dùng\n• Tương tác thuốc\n• Triệu chứng thường gặp\n• Vitamin & TPCN\n\nBạn đang cần tư vấn về vấn đề gì?',
       timestamp: Date.now(),
     },
   ]);
@@ -46,30 +46,45 @@ export default function AIChatPage() {
   }, [messages]);
 
   const send = (text: string) => {
-    if (!text.trim() || sending) return;
+    const cleanText = text.trim();
+    if (!cleanText || sending) return;
     const userMsg: Message = {
       id: String(Date.now()),
       role: 'user',
-      content: text,
+      content: cleanText,
       timestamp: Date.now(),
     };
     setMessages((m) => [...m, userMsg]);
     setInput('');
     setSending(true);
 
-    // Mock AI response sau 1.2s
+    // Smart mock với delay
+    const delay = 800 + Math.random() * 600;
     setTimeout(() => {
+      const { response, followUp } = getAIResponse(cleanText);
       const aiMsg: Message = {
         id: String(Date.now() + 1),
         role: 'ai',
-        content:
-          AI_RESPONSES[text] ??
-          `${AI_RESPONSES.default}\n\nBạn vừa hỏi: "${text}"`,
-        timestamp: Date.now() + 1,
+        content: response,
+        timestamp: Date.now(),
+        // @ts-ignore - store followUp for rendering
+        followUp,
       };
       setMessages((m) => [...m, aiMsg]);
       setSending(false);
-    }, 1200);
+    }, delay);
+  };
+
+  const clearChat = () => {
+    if (!window.confirm('Xoá toàn bộ cuộc trò chuyện?')) return;
+    setMessages([
+      {
+        id: '0',
+        role: 'ai',
+        content: 'Đã xoá cuộc trò chuyện. Bạn cứ hỏi bất kỳ điều gì nhé!',
+        timestamp: Date.now(),
+      },
+    ]);
   };
 
   return (
@@ -77,75 +92,42 @@ export default function AIChatPage() {
       <div className="bg-white border-b border-ink-200">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-4">
           <Breadcrumb items={[{ label: 'AI' }, { label: 'Chat dược sĩ' }]} />
-          <div className="mt-3 flex items-center gap-2">
-            <div className="w-10 h-10 bg-accent-100 rounded-full flex items-center justify-center">
-              <Bot className="w-5 h-5 text-accent-700" aria-hidden="true" />
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-accent-100 rounded-full flex items-center justify-center">
+                <Bot className="w-5 h-5 text-accent-700" aria-hidden="true" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-ink-900">Trợ lý dược sĩ AI</h1>
+                <p className="text-xs text-ink-500">Hỏi đáp 24/7 · Phản hồi tức thì</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-ink-900">Trợ lý dược sĩ AI</h1>
-              <p className="text-xs text-ink-500">Hỏi đáp 24/7 · Phản hồi tức thì</p>
-            </div>
+            <button
+              type="button"
+              onClick={clearChat}
+              className="text-xs text-ink-500 hover:text-danger-600 transition-colors"
+            >
+              Xoá cuộc trò chuyện
+            </button>
           </div>
         </div>
       </div>
 
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-4">
         <div className="bg-white border border-ink-200 rounded-md flex flex-col h-[60vh]">
-          {/* Messages */}
-          <div
-            ref={scrollRef}
-            className="flex-1 overflow-y-auto p-4 space-y-3"
-          >
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.map((m) => (
-              <div
-                key={m.id}
-                className={`flex items-start gap-2 ${
-                  m.role === 'user' ? 'flex-row-reverse' : ''
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    m.role === 'ai' ? 'bg-accent-100' : 'bg-ink-100'
-                  }`}
-                  aria-hidden="true"
-                >
-                  {m.role === 'ai' ? (
-                    <Bot className="w-4 h-4 text-accent-700" />
-                  ) : (
-                    <UserIcon className="w-4 h-4 text-ink-600" />
-                  )}
-                </div>
-                <div
-                  className={`max-w-[80%] p-3 rounded-md text-sm whitespace-pre-line ${
-                    m.role === 'user'
-                      ? 'bg-accent-600 text-white'
-                      : 'bg-ink-50 text-ink-900'
-                  }`}
-                >
-                  {m.content}
-                </div>
-              </div>
+              <MessageBubble key={m.id} msg={m} onSuggest={send} />
             ))}
-            {sending && (
-              <div className="flex items-start gap-2">
-                <div className="w-8 h-8 bg-accent-100 rounded-full flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-accent-700" />
-                </div>
-                <div className="bg-ink-50 px-3 py-2 rounded-md text-sm text-ink-500">
-                  <span className="inline-flex gap-1">
-                    <span className="w-1.5 h-1.5 bg-ink-400 rounded-full animate-pulse" />
-                    <span className="w-1.5 h-1.5 bg-ink-400 rounded-full animate-pulse [animation-delay:0.2s]" />
-                    <span className="w-1.5 h-1.5 bg-ink-400 rounded-full animate-pulse [animation-delay:0.4s]" />
-                  </span>
-                </div>
-              </div>
-            )}
+            {sending && <TypingIndicator />}
           </div>
 
-          {/* Suggestions */}
-          {messages.length === 1 && (
+          {messages.length <= 1 && (
             <div className="px-4 pb-2 border-t border-ink-100 pt-2">
-              <p className="text-xs text-ink-500 mb-2">Gợi ý câu hỏi:</p>
+              <p className="text-xs text-ink-500 mb-2 flex items-center gap-1">
+                <Sparkles className="w-3 h-3" aria-hidden="true" />
+                Gợi ý câu hỏi:
+              </p>
               <div className="flex flex-wrap gap-2">
                 {SUGGESTIONS.map((s) => (
                   <button
@@ -161,7 +143,6 @@ export default function AIChatPage() {
             </div>
           )}
 
-          {/* Input */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -194,5 +175,72 @@ export default function AIChatPage() {
         </p>
       </div>
     </>
+  );
+}
+
+function MessageBubble({
+  msg,
+  onSuggest,
+}: {
+  msg: Message & { followUp?: string[] };
+  onSuggest: (s: string) => void;
+}) {
+  return (
+    <div className={`flex items-start gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+      <div
+        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+          msg.role === 'ai' ? 'bg-accent-100' : 'bg-ink-100'
+        }`}
+        aria-hidden="true"
+      >
+        {msg.role === 'ai' ? (
+          <Bot className="w-4 h-4 text-accent-700" />
+        ) : (
+          <UserIcon className="w-4 h-4 text-ink-600" />
+        )}
+      </div>
+      <div className={`max-w-[80%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+        <div
+          className={`p-3 rounded-md text-sm whitespace-pre-line ${
+            msg.role === 'user'
+              ? 'bg-accent-600 text-white rounded-br-sm'
+              : 'bg-ink-50 text-ink-900 rounded-bl-sm'
+          }`}
+        >
+          {msg.content}
+        </div>
+        {msg.role === 'ai' && msg.followUp && msg.followUp.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {msg.followUp.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => onSuggest(s)}
+                className="px-2.5 h-6 text-[10px] font-medium bg-white border border-accent-300 text-accent-700 rounded-full hover:bg-accent-50 transition-colors"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TypingIndicator() {
+  return (
+    <div className="flex items-start gap-2">
+      <div className="w-8 h-8 bg-accent-100 rounded-full flex items-center justify-center">
+        <Bot className="w-4 h-4 text-accent-700" />
+      </div>
+      <div className="bg-ink-50 px-3 py-2 rounded-md text-sm text-ink-500">
+        <span className="inline-flex gap-1">
+          <span className="w-1.5 h-1.5 bg-ink-400 rounded-full animate-pulse" />
+          <span className="w-1.5 h-1.5 bg-ink-400 rounded-full animate-pulse [animation-delay:0.2s]" />
+          <span className="w-1.5 h-1.5 bg-ink-400 rounded-full animate-pulse [animation-delay:0.4s]" />
+        </span>
+      </div>
+    </div>
   );
 }
