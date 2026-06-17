@@ -1,28 +1,32 @@
 // =====================================================
-// /flash-sale/[id] — SHOP-FLASH-SALE detail
-// Chi tiết flash sale
+// /flash-sale/[id] — SHOP-FLASH-SALE detail (polished)
+// Big countdown + product grid
 // =====================================================
 
 import { notFound } from 'next/navigation';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { Zap, Clock, ArrowRight, Tag } from 'lucide-react';
+import { Zap, Tag, Clock } from 'lucide-react';
 import { PRODUCTS } from '@/data/shop/catalog';
 import { ProductCard } from '@/components/shop/ProductCard';
+import { FlashSaleCountdown } from '@/components/shop/FlashSaleCountdown';
 import type { Metadata } from 'next';
+
+const NOW = Date.now();
+const hour = 3600 * 1000;
 
 const FLASH_SALES = [
   {
     id: 'fs-1',
     title: 'Vitamin & TPCN giảm đến 50%',
-    startTime: '2026-06-20 09:00',
-    endTime: '2026-06-20 12:00',
+    startTime: new Date(NOW + 24 * hour).toISOString(),
+    endTime: new Date(NOW + 27 * hour).toISOString(),
     productSlugs: ['vitamin-c-1000-mg-30', 'omega-3-1000-mg-60', 'cal-d3-600-mg-60'],
   },
   {
     id: 'fs-2',
     title: 'Thuốc cảm cúm — Flash 3 giờ',
-    startTime: '2026-06-18 14:00',
-    endTime: '2026-06-18 17:00',
+    startTime: new Date(NOW - 30 * 60 * 1000).toISOString(),
+    endTime: new Date(NOW + 2.5 * hour).toISOString(),
     productSlugs: ['paracetamol-500-mg-20', 'ibuprofen-400mg', 'cetirizine-10mg'],
   },
 ];
@@ -56,10 +60,34 @@ export default function FlashSaleDetailPage({ params }: PageProps) {
             FLASH SALE
           </div>
           <h1 className="mt-3 text-2xl md:text-3xl font-bold text-balance">{fs.title}</h1>
-          <div className="mt-3 flex items-center gap-3 text-sm text-white/90 flex-wrap">
+
+          {/* Big countdown */}
+          <div className="mt-4">
+            <FlashSaleCountdown
+              startTime={fs.startTime}
+              endTime={fs.endTime}
+              variant="block"
+            />
+          </div>
+
+          <div className="mt-4 flex items-center gap-3 text-sm text-white/90 flex-wrap">
             <span className="flex items-center gap-1 font-mono">
               <Clock className="w-4 h-4" aria-hidden="true" />
-              {new Date(fs.startTime).toLocaleString('vi-VN')} → {new Date(fs.endTime).toLocaleString('vi-VN')}
+              {new Date(fs.startTime).toLocaleString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+              })}
+              {' → '}
+              {new Date(fs.endTime).toLocaleString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+              })}
             </span>
             <span className="flex items-center gap-1">
               <Tag className="w-4 h-4" aria-hidden="true" />
