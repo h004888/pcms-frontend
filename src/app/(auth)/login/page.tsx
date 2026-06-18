@@ -101,14 +101,32 @@ export default function LoginPage() {
           className="absolute top-0 left-0 right-0 h-px bg-accent-500"
           aria-hidden="true"
         />
+        {/* Ambient glows for depth without shadow */}
+        <div aria-hidden="true" className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-accent-500/20" />
+        <div aria-hidden="true" className="absolute -bottom-40 -left-40 w-[28rem] h-[28rem] rounded-full bg-info-500/10" />
+        {/* Subtle dot pattern */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 opacity-[0.06]"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 20% 30%, white 1px, transparent 1px)',
+            backgroundSize: '24px 24px',
+          }}
+        />
 
         {/* Logo block */}
-        <div className="flex items-center gap-3">
-          <div
-            className="inline-flex items-center justify-center w-11 h-11 rounded-lg bg-ink-800 ring-1 ring-ink-700"
-            aria-hidden="true"
-          >
-            <Pill className="w-6 h-6 text-accent-400" strokeWidth={2.25} />
+        <div className="relative flex items-center gap-3">
+          <div className="relative">
+            <div
+              className="inline-flex items-center justify-center w-11 h-11 rounded-lg bg-gradient-to-br from-ink-800 to-ink-900 ring-1 ring-ink-700 shadow-lg"
+              aria-hidden="true"
+            >
+              <Pill className="w-6 h-6 text-accent-400" strokeWidth={2.25} />
+            </div>
+            <div
+              aria-hidden="true"
+              className="absolute -bottom-1 -right-1 w-3 h-3 bg-success-500 rounded-full ring-2 ring-ink-900"
+            />
           </div>
           <div className="leading-none">
             <p className="text-xs font-mono uppercase tracking-[0.18em] text-accent-400">PCMS</p>
@@ -117,8 +135,12 @@ export default function LoginPage() {
         </div>
 
         {/* Brand headline — lg+ only */}
-        <div className="mt-auto pt-12 lg:pt-0 lg:mt-0 lg:flex-1 lg:flex lg:flex-col lg:justify-center">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white text-balance">
+        <div className="relative mt-auto pt-12 lg:pt-0 lg:mt-0 lg:flex-1 lg:flex lg:flex-col lg:justify-center">
+          <div className="inline-flex items-center gap-1.5 px-2.5 h-7 bg-accent-500/20 backdrop-blur border border-accent-400/30 rounded-full text-xs font-semibold mb-5 w-fit">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent-400 animate-pulse" aria-hidden="true" />
+            Hệ thống đang hoạt động
+          </div>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white text-balance leading-[1.1]">
             Bàn điều khiển
             <br />
             <span className="text-accent-400">của dược sĩ.</span>
@@ -128,11 +150,25 @@ export default function LoginPage() {
             Phục vụ dược sĩ, quản lý, CEO, và khách hàng trên cùng một nền tảng.
           </p>
 
+          {/* Stats strip */}
+          <div className="mt-8 grid grid-cols-3 gap-3 max-w-md">
+            {[
+              { value: '2.678', label: 'Nhà thuốc' },
+              { value: '12.4M', label: 'Khách / năm' },
+              { value: '20+', label: 'Năm uy tín' },
+            ].map((s) => (
+              <div key={s.label} className="p-3 bg-white/5 backdrop-blur border border-white/10 rounded-lg">
+                <p className="text-2xl font-bold text-accent-300 font-mono tabular-nums">{s.value}</p>
+                <p className="text-xs text-ink-300 mt-0.5">{s.label}</p>
+              </div>
+            ))}
+          </div>
+
           {/* Value props — 3, không phải 4, không phải "icon+heading+text" lặp lại */}
-          <ul className="mt-10 space-y-5 max-w-md">
+          <ul className="mt-8 space-y-5 max-w-md">
             {VALUE_PROPS.map((prop) => (
               <li key={prop.title} className="flex gap-4">
-                <div className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-md bg-ink-800 ring-1 ring-ink-700">
+                <div className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-md bg-gradient-to-br from-ink-800 to-ink-900 ring-1 ring-ink-700 shadow-sm">
                   <prop.icon className="w-4 h-4 text-accent-400" strokeWidth={2} aria-hidden="true" />
                 </div>
                 <div>
@@ -145,9 +181,10 @@ export default function LoginPage() {
         </div>
 
         {/* Brand footer */}
-        <p className="hidden lg:block mt-12 text-xs text-ink-400 font-mono">
-          © 2026 PCMS · Phiên bản 1.0.0
-        </p>
+        <div className="relative hidden lg:flex items-center justify-between mt-12 pt-6 border-t border-white/10 text-xs text-ink-400 font-mono">
+          <p>© 2026 PCMS</p>
+          <p>v1.0.0</p>
+        </div>
       </aside>
 
       {/* === FORM PANEL (right on desktop, bottom on mobile) === */}

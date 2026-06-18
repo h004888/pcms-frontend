@@ -10,7 +10,7 @@ import { Card, Button, LoadingSpinner, EmptyState, Badge } from '@/components/ui
 import { Order, Customer } from '@/types';
 import { formatDateTime, formatVND, ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from '@/lib/utils';
 import { apiClient, getErrorMessage } from '@/lib/api';
-import { ArrowLeft, CreditCard, Ban, CheckCircle } from 'lucide-react';
+import { ArrowLeft, CreditCard, Ban, CheckCircle, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/lib/auth';
 import { DashboardLayout } from '@/components/Layout';
@@ -75,7 +75,10 @@ export function OrderDetailView() {
             </>
           )}
           {order.status === 'PAID' && (
-            <Badge variant="success"><CheckCircle className="w-3 h-3 inline mr-1" />Đã thanh toán</Badge>
+            <>
+              <Button variant="outline" leftIcon={<FileText className="w-4 h-4" />} onClick={() => router.push(`/invoices/${order.id}`)}>Xem hóa đơn</Button>
+              <Badge variant="success"><CheckCircle className="w-3 h-3 inline mr-1" />Đã thanh toán</Badge>
+            </>
           )}
         </div>
       </div>

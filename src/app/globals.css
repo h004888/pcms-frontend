@@ -62,6 +62,26 @@
   }
 }
 
+/* === PWA: hide mobile bottom nav on desktop === */
+.mobile-bottom-nav {
+  display: none;
+}
+@media (min-width: 768px) {
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+}
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: block;
+  }
+}
+
+/* Safe area for notched phones (iPhone X+) */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
 /* A11y: respect reduced motion per WCAG 2.3.3 */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

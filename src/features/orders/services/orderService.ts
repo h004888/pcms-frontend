@@ -41,3 +41,16 @@ export async function createPayment(data: CreatePaymentRequest) {
   const res = await apiClient.post<Payment>(API_ENDPOINTS.PAYMENTS, data);
   return res.data;
 }
+
+/**
+ * Lấy payment theo orderId (dùng cho trang hoá đơn SCR-INVOICE).
+ * Mỗi order PAID có đúng 1 payment tương ứng.
+ */
+export async function fetchPaymentByOrderId(orderId: string) {
+  const res = await apiClient.get<Payment>(`${API_ENDPOINTS.PAYMENTS}?orderId=${orderId}&size=1`);
+  const data = res.data as unknown as PageResponse<Payment> | Payment;
+  if (data && typeof data === 'object' && 'data' in data && Array.isArray((data as PageResponse<Payment>).data)) {
+    return ((data as PageResponse<Payment>).data[0]) || null;
+  }
+  return (data as Payment) || null;
+}

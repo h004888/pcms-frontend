@@ -5,9 +5,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { DashboardLayout } from '@/components/Layout';
-import { Card, Button, EmptyState, Badge, Input } from '@/components/ui';
-import { Notification, NotificationStatus } from '@/types';
+import { Card, EmptyState, Badge } from '@/components/ui';
+import { Notification } from '@/types';
 import { getStatusColor, formatDateTime } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
 import { apiClient, getErrorMessage } from '@/lib/api';
@@ -17,16 +18,16 @@ import toast from 'react-hot-toast';
 export function NotificationsView() {
   const { state } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [composeMode, setComposeMode] = useState(false);
-  const [form, setForm] = useState({ title: '', body: '', channel: 'IN_APP' as 'IN_APP' | 'EMAIL' | 'SMS' });
-  const [sending, setSending] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const fetch = async () => {
     if (!state.user) return;
+    setLoading(true);
     try {
       const res = await apiClient.get(`/notifications?recipientId=${state.user.id}&size=50`);
       setNotifications(res.data.data || []);
     } catch (err) { console.error(getErrorMessage(err)); }
+    finally { setLoading(false); }
   };
 
   useEffect(() => { fetch(); }, [state.user?.id]);
@@ -36,29 +37,6 @@ export function NotificationsView() {
       await apiClient.put(`/notifications/${n.id}/read`);
       fetch();
     } catch (err) { toast.error(getErrorMessage(err)); }
-  };
-
-  const sendBroadcast = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.title || !form.body) {
-      toast.error('Vui lòng điền tiêu đề và nội dung');
-      return;
-    }
-    setSending(true);
-    try {
-      await apiClient.post('/notifications', {
-        recipientId: state.user?.id,
-        channel: form.channel,
-        title: form.title,
-        body: form.body,
-        template: 'NTPL-ADMIN-BROADCAST',
-      });
-      toast.success('Đã gửi thông báo');
-      setForm({ title: '', body: '', channel: 'IN_APP' });
-      setComposeMode(false);
-      fetch();
-    } catch (err) { toast.error(getErrorMessage(err)); }
-    finally { setSending(false); }
   };
 
   const unreadCount = notifications.filter((n) => n.status !== 'READ').length;
@@ -75,36 +53,15 @@ export function NotificationsView() {
           <p className="page-subtitle">UC13 - In-app/Email/SMS · NSF-09 retry 3x</p>
         </div>
         {(state.user?.role === 'ADMIN' || state.user?.role === 'CEO') && (
-          <Button onClick={() => setComposeMode((c) => !c)} leftIcon={<Send className="w-4 h-4" />}>
+          <Link
+            href="/notifications/compose"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-ink-900 text-white rounded-md text-sm font-medium hover:bg-ink-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-1"
+          >
+            <Send className="w-4 h-4" />
             Soạn thông báo
-          </Button>
+          </Link>
         )}
       </div>
-
-      {composeMode && (
-        <Card className="mb-4">
-          <h3 className="text-base font-semibold mb-3">Soạn thông báo mới</h3>
-          <form onSubmit={sendBroadcast} className="space-y-3">
-            <Input label="Tiêu đề" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="VD: Cập nhật giờ làm việc" />
-            <div>
-              <label className="block text-sm font-medium text-ink-700 mb-1">Nội dung</label>
-              <textarea value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} rows={3} className="w-full px-3 py-2 text-sm border border-ink-300 rounded-md" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-ink-700 mb-1">Kênh gửi</label>
-              <select value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value as any })} className="w-full px-3 py-2 text-sm border border-ink-300 rounded-md">
-                <option value="IN_APP">In-App</option>
-                <option value="EMAIL">Email</option>
-                <option value="SMS">SMS</option>
-              </select>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setComposeMode(false)}>Hủy</Button>
-              <Button type="submit" loading={sending}>Gửi ngay</Button>
-            </div>
-          </form>
-        </Card>
-      )}
 
       {notifications.length === 0 ? (
         <EmptyState title="Chưa có thông báo" description="Các thông báo về tồn kho, đơn hàng, đơn thuốc sẽ hiện ở đây" />
