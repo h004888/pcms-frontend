@@ -1,12 +1,15 @@
 // =====================================================
 // AuthLayout — wrapper cho customer account routes
-// AuthGuard mock: nếu chưa login, hiển thị placeholder yêu cầu đăng nhập
-// Trong production: check AuthProvider.session
+// AuthGuard: nếu chưa login, hiển thị placeholder yêu cầu đăng nhập
+// Exception: /login page KHÔNG qua guard (để user thấy form đăng nhập)
 // =====================================================
 
+'use client';
+
 import Link from 'next/link';
-import { User, Heart, MapPin, Wallet, FileText, Star, Bell, Users } from 'lucide-react';
-import { LogIn } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { User, Heart, MapPin, Wallet, FileText, Star, Bell, Users, LogIn } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
 
 const ACCOUNT_NAV = [
   { href: '/profile', label: 'Hồ sơ', icon: User },
@@ -20,10 +23,22 @@ const ACCOUNT_NAV = [
 ];
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
-  // Mock AuthGuard — trong prod sẽ check session
-  const isLoggedIn = false;
+  const pathname = usePathname();
+  const { state } = useAuth();
 
-  if (!isLoggedIn) {
+  // /login KHÔNG qua auth guard — user cần thấy form đăng nhập
+  if (pathname === '/login') {
+    return <>{children}</>;
+  }
+
+  // Trong khi chưa hydrate, return null để tránh flash placeholder rồi mới
+  // show content khi user thật sự đã login.
+  if (!state.hydrated) {
+    return null;
+  }
+
+  // Chưa login → placeholder yêu cầu đăng nhập
+  if (!state.isAuthenticated) {
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center">
         <div className="w-16 h-16 mx-auto bg-accent-50 rounded-full flex items-center justify-center">
@@ -35,7 +50,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </p>
         <Link
           href="/login"
-          className="mt-6 inline-flex items-center justify-center gap-2 px-5 h-11 bg-accent-600 text-white text-sm font-semibold rounded-md hover:bg-accent-700 transition-colors"
+          className="mt-6 inline-flex items-center justify-center gap-2 px-5 h-11 bg-accent-600 text-white text-sm font-semibold rounded-md hover:bg-accent-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
         >
           <LogIn className="w-4 h-4" aria-hidden="true" />
           Đăng nhập / Đăng ký

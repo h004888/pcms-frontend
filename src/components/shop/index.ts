@@ -2,6 +2,11 @@
 // Shop components barrel export
 // =====================================================
 
+// Shop home sections (vivid edition)
+export { ShopTrustStrip } from './ShopTrustStrip';
+export { ShopFlashSaleBanner } from './ShopFlashSaleBanner';
+
+
 // PWA infrastructure
 export { PWAProvider } from './PWAProvider';
 export { OfflineBanner } from './OfflineBanner';
@@ -30,9 +35,3 @@ export type {
   ActiveFilters,
   FilterSidebarProps,
 } from './FilterSidebar';
-export {
-  ProductSortDropdown,
-  ProductBreadcrumb,
-  ProductGallery,
-} from './CatalogMolecules';
-export type { ProductBreadcrumbProps } from './CatalogMolecules';

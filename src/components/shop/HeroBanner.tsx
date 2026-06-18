@@ -5,7 +5,7 @@
 // =====================================================
 
 import Link from 'next/link';
-import { Search, FileText, Pill, Sparkles } from 'lucide-react';
+import { Search, FileText, Pill, Truck, Clock, RotateCcw } from 'lucide-react';
 
 export interface HeroBannerProps {
   title?: string;
@@ -35,14 +35,15 @@ export function HeroBanner({
       className="relative overflow-hidden bg-gradient-to-br from-ink-900 via-ink-800 to-accent-800 text-white"
       aria-label="Hero"
     >
-      {/* Decorative blobs */}
+      {/* Subtle dot pattern — texture without glassmorphism */}
       <div
         aria-hidden="true"
-        className="absolute top-0 right-0 w-96 h-96 bg-accent-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute bottom-0 left-0 w-72 h-72 bg-accent-700/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"
+        className="absolute inset-0 opacity-[0.08]"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
       />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-24 text-center">
@@ -83,15 +84,15 @@ export function HeroBanner({
         {variant === 'home' && (
           <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-accent-200">
             <span className="inline-flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3" aria-hidden="true" />
+              <Truck className="w-3 h-3" aria-hidden="true" />
               Miễn phí vận chuyển từ 300K
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3" aria-hidden="true" />
+              <Clock className="w-3 h-3" aria-hidden="true" />
               Tư vấn dược sĩ 24/7
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3" aria-hidden="true" />
+              <RotateCcw className="w-3 h-3" aria-hidden="true" />
               Đổi trả trong 30 ngày
             </span>
           </div>

@@ -66,7 +66,7 @@ export function PolicyPage({ title, description, lastUpdated, sections }: Policy
             aria-label="Mục lục"
             className="sticky top-24 p-4 bg-ink-50 border border-ink-200 rounded-md"
           >
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-3">
+            <h2 className="text-xs font-semibold text-ink-500 mb-3">
               Mục lục
             </h2>
             <ol className="space-y-2">

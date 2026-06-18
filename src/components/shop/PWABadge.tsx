@@ -17,7 +17,7 @@ export function PWABadge() {
     <div
       role="status"
       aria-live="polite"
-      className="fixed top-4 right-4 z-50 max-w-sm bg-white rounded-lg border border-ink-200 shadow-lg p-3 animate-in slide-in-from-right-4 duration-300"
+      className="fixed top-4 right-4 z-50 max-w-sm bg-white rounded-lg border border-ink-200 p-3 animate-in slide-in-from-right-4 duration-300"
       style={{ boxShadow: '0 4px 12px rgba(15, 29, 61, 0.12)' }}
     >
       {needRefresh && (

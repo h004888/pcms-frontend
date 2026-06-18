@@ -1,6 +1,12 @@
 // =====================================================
 // Mock catalog data for Phase 2 development
 // 30 sample products across 5 categories
+//
+// NOTE: tất cả thumbnail/images dùng generic placeholder
+// `/placeholder-products/product.svg` cho đến khi có ảnh thật.
+// Trước đây dùng `/placeholder-products/{slug}.svg` per-product nhưng
+// gây 404 vì các file đó chưa được generate.
+// Helper `placeholderImage()` ở dưới đảm bảo fallback nhất quán.
 // Replace with real B2B API when backend is ready
 // =====================================================
 
@@ -12,6 +18,13 @@ import type {
   SearchResponse,
 } from '@/types/shop/catalog';
 
+/**
+ * Fallback placeholder cho product images.
+ * Mọi product đều dùng generic `product.svg` cho đến khi có ảnh thật per-product.
+ */
+const PLACEHOLDER_IMAGE = '/placeholder-products/product.svg';
+const placeholderImage = (_slug?: string): string => PLACEHOLDER_IMAGE;
+
 export const CATEGORIES: Category[] = [
   {
     id: 'thuoc',
@@ -19,6 +32,7 @@ export const CATEGORIES: Category[] = [
     name: 'Thuốc',
     icon: 'Pill',
     productCount: 1240,
+    theme: 'accent',
     children: [
       { id: 'thuoc-khang-sinh', slug: 'thuoc-khang-sinh', name: 'Kháng sinh, kháng nấm', productCount: 180 },
       { id: 'thuoc-giam-dau', slug: 'thuoc-giam-dau', name: 'Giảm đau, hạ sốt', productCount: 220 },
@@ -34,6 +48,7 @@ export const CATEGORIES: Category[] = [
     name: 'Thực phẩm chức năng',
     icon: 'Heart',
     productCount: 850,
+    theme: 'info',
     children: [
       { id: 'vitamin', slug: 'vitamin-khoang-chat', name: 'Vitamin & Khoáng chất', productCount: 220 },
       { id: 'mien-dich', slug: 'mien-dich-de-khang', name: 'Miễn dịch - Đề kháng', productCount: 145 },
@@ -49,6 +64,7 @@ export const CATEGORIES: Category[] = [
     name: 'Dược mỹ phẩm',
     icon: 'Stethoscope',
     productCount: 620,
+    theme: 'success',
   },
   {
     id: 'cham-soc-ca-nhan',
@@ -56,6 +72,7 @@ export const CATEGORIES: Category[] = [
     name: 'Chăm sóc cá nhân',
     icon: 'Baby',
     productCount: 480,
+    theme: 'warning',
   },
   {
     id: 'thiet-bi-y-te',
@@ -63,6 +80,7 @@ export const CATEGORIES: Category[] = [
     name: 'Thiết bị y tế',
     icon: 'FlaskConical',
     productCount: 320,
+    theme: 'danger',
   },
 ];
 
@@ -87,7 +105,7 @@ const PRODUCTS_DATA: Array<Omit<ProductDetail, 'id' | 'slug'>> = [
     originalPrice: 25000,
     discountPercent: 28,
     unit: 'Hộp',
-    thumbnail: '/placeholder-products/paracetamol.svg',
+    thumbnail: PLACEHOLDER_IMAGE,
     country: 'Pháp',
     brand: 'Sanofi',
     prescriptionRequired: false,
@@ -108,7 +126,7 @@ const PRODUCTS_DATA: Array<Omit<ProductDetail, 'id' | 'slug'>> = [
     storage: 'Bảo quản nơi khô ráo, tránh ánh sáng, dưới 30°C. Để xa tầm tay trẻ em.',
     expiryMonths: 36,
     manufacturer: 'Sanofi-Aventis Việt Nam',
-    images: ['/placeholder-products/paracetamol-1.svg', '/placeholder-products/paracetamol-2.svg'],
+    images: [PLACEHOLDER_IMAGE],
   },
   // === 2. Amoxicillin ===
   {
@@ -116,7 +134,7 @@ const PRODUCTS_DATA: Array<Omit<ProductDetail, 'id' | 'slug'>> = [
     name: 'Amoxicillin 500mg (hộp 12 viên)',
     price: 65000,
     unit: 'Hộp',
-    thumbnail: '/placeholder-products/amoxicillin.svg',
+    thumbnail: PLACEHOLDER_IMAGE,
     country: 'Anh',
     brand: 'GSK',
     prescriptionRequired: true,
@@ -136,7 +154,7 @@ const PRODUCTS_DATA: Array<Omit<ProductDetail, 'id' | 'slug'>> = [
     storage: 'Bảo quản dưới 25°C, tránh ẩm.',
     expiryMonths: 24,
     manufacturer: 'GlaxoSmithKline',
-    images: ['/placeholder-products/amoxicillin-1.svg'],
+    images: [PLACEHOLDER_IMAGE],
   },
   // === 3. Vitamin C ===
   {
@@ -146,7 +164,7 @@ const PRODUCTS_DATA: Array<Omit<ProductDetail, 'id' | 'slug'>> = [
     originalPrice: 110000,
     discountPercent: 23,
     unit: 'Hộp',
-    thumbnail: '/placeholder-products/vitamin-c.svg',
+    thumbnail: PLACEHOLDER_IMAGE,
     country: 'Mỹ',
     brand: 'Pfizer',
     prescriptionRequired: false,
@@ -165,7 +183,7 @@ const PRODUCTS_DATA: Array<Omit<ProductDetail, 'id' | 'slug'>> = [
     storage: 'Nơi khô ráo, tránh ánh sáng trực tiếp, dưới 30°C.',
     expiryMonths: 24,
     manufacturer: 'Pfizer',
-    images: ['/placeholder-products/vitaminc-1.svg'],
+    images: [PLACEHOLDER_IMAGE],
   },
   // === 4. Omega-3 ===
   {
@@ -175,7 +193,7 @@ const PRODUCTS_DATA: Array<Omit<ProductDetail, 'id' | 'slug'>> = [
     originalPrice: 420000,
     discountPercent: 24,
     unit: 'Hộp',
-    thumbnail: '/placeholder-products/omega3.svg',
+    thumbnail: PLACEHOLDER_IMAGE,
     country: 'Na Uy',
     brand: 'AstraZeneca',
     prescriptionRequired: false,
@@ -194,7 +212,7 @@ const PRODUCTS_DATA: Array<Omit<ProductDetail, 'id' | 'slug'>> = [
     storage: 'Nơi khô ráo, tránh ánh sáng, nhiệt độ phòng. Sau khi mở, bảo quản trong tủ lạnh.',
     expiryMonths: 24,
     manufacturer: 'AstraZeneca',
-    images: ['/placeholder-products/omega3-1.svg'],
+    images: [PLACEHOLDER_IMAGE],
   },
   // === 5. Calcium + D3 ===
   {
@@ -202,7 +220,7 @@ const PRODUCTS_DATA: Array<Omit<ProductDetail, 'id' | 'slug'>> = [
     name: 'Canxi + Vitamin D3 600mg (hộp 60 viên)',
     price: 180000,
     unit: 'Hộp',
-    thumbnail: '/placeholder-products/calcium.svg',
+    thumbnail: PLACEHOLDER_IMAGE,
     country: 'Việt Nam',
     brand: 'Traphaco',
     prescriptionRequired: false,
@@ -220,7 +238,7 @@ const PRODUCTS_DATA: Array<Omit<ProductDetail, 'id' | 'slug'>> = [
     storage: 'Nơi khô ráo, dưới 30°C.',
     expiryMonths: 36,
     manufacturer: 'Traphaco',
-    images: ['/placeholder-products/calcium-1.svg'],
+    images: [PLACEHOLDER_IMAGE],
   },
   // === 6-15: Add more variations ===
   ...generateMoreProducts(),
@@ -252,7 +270,7 @@ function generateMoreProducts(): Array<Omit<ProductDetail, 'id' | 'slug'>> {
       originalPrice: t.original,
       discountPercent: t.original ? Math.round(((t.original - t.price) / t.original) * 100) : undefined,
       unit: t.unit,
-      thumbnail: `/placeholder-products/${t.name.toLowerCase().replace(/\s+/g, '-')}.svg`,
+      thumbnail: PLACEHOLDER_IMAGE,
       country: pharma.country,
       brand: pharma.name,
       prescriptionRequired: i % 3 === 1, // ~33% require prescription
@@ -270,7 +288,7 @@ function generateMoreProducts(): Array<Omit<ProductDetail, 'id' | 'slug'>> {
       storage: 'Bảo quản nơi khô ráo, tránh ánh sáng, dưới 30°C.',
       expiryMonths: 24 + (i % 3) * 12,
       manufacturer: pharma.name,
-      images: [`/placeholder-products/${t.name.toLowerCase().replace(/\s+/g, '-')}-1.svg`],
+      images: [PLACEHOLDER_IMAGE],
     });
   }
   return result;
@@ -351,7 +369,7 @@ export function getBestsellers(limit = 8): ProductSummary[] {
     .map(stripToSummary);
 }
 
-function stripToSummary(p: ProductDetail): ProductSummary {
+export function stripToSummary(p: ProductDetail): ProductSummary {
   // Resolve categorySlug (L1) và subcategorySlug (L2 nếu có)
   // Product.category.slug có thể là slug L1 hoặc L2
   const directCat = CATEGORIES.find((c) => c.id === p.category.id || c.slug === p.category.slug);

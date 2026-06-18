@@ -87,7 +87,7 @@ export default function ShopCheckoutPage() {
   if (!hydrated) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12">
-        <div className="h-8 w-32 bg-ink-200 rounded animate-pulse" />
+        <div className="h-8 w-32 bg-ink-200 rounded animate-pulse" aria-label="Đang tải thanh toán" />
       </div>
     );
   }
@@ -95,6 +95,7 @@ export default function ShopCheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold text-ink-900 mb-3">Thanh toán</h1>
         <p className="text-ink-600 mb-4">Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi thanh toán.</p>
         <Link
           href="/"
@@ -424,7 +425,7 @@ function ConfirmBlock({
         <Icon className="w-4 h-4 text-ink-700" aria-hidden="true" />
       </div>
       <div className="text-sm flex-1 min-w-0">
-        <p className="text-xs font-semibold text-ink-500 uppercase tracking-wider">{title}</p>
+        <p className="text-xs font-semibold text-ink-500">{title}</p>
         <div className="mt-1">{children}</div>
       </div>
     </div>

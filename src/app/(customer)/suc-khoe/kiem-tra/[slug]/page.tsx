@@ -225,7 +225,7 @@ function QuizResult({
             <Icon className={`w-6 h-6 ${cfg.iconClass}`} aria-hidden="true" />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider opacity-80">Kết quả</p>
+            <p className="text-xs font-semibold opacity-80">Kết quả</p>
             <h2 className="text-xl font-bold">{cfg.label}</h2>
           </div>
         </div>

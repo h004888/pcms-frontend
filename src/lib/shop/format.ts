@@ -44,20 +44,15 @@ export function getPrescriptionLabel(required: boolean): {
 }
 
 // =====================================================
-// URL helpers — build route theo main plan:
-// /customer/{L1}                    — SHOP-CAT-1
-// /customer/{L1}/{L2}               — SHOP-CAT-2
-// /customer/{L1}/{L2}/{slug}        — SHOP-PDP (có L2)
-// /customer/{L1}/{slug}             — SHOP-PDP (không có L2)
-// B2C e-commerce nằm trong folder thật `customer/`
-// (không dùng route group `(shop)` vì conflict với
-//  `(dashboard)` routes trùng path /orders, /search, /prescriptions).
+// URL helpers — build PDP + category URLs theo B2C routing.
+// Route group `(customer)` không tạo URL segment; trang PDP nằm ở
+// /{L1}/{L2}/{slug} hoặc /{L1}/{slug} khi không có L2.
 // =====================================================
 
-const BASE = '/customer';
+const BASE = '';
 
 /**
- * Build URL PDP theo main plan structure.
+ * Build URL PDP.
  * Nếu product có categorySlug = subcategorySlug (trùng L1), bỏ segment L2.
  * Nếu product thuộc L2, giữ nguyên /{L1}/{L2}/{slug}.
  * Accept subset of ProductSummary (CartItem cũng dùng được).

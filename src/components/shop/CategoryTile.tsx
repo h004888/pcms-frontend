@@ -56,7 +56,7 @@ export function CategoryTile({ category, variant = 'home' }: CategoryTileProps) 
       className="group flex flex-col items-center p-5 md:p-6 bg-white border border-ink-200 rounded-md hover:border-accent-500 hover:bg-accent-50 transition-colors"
       aria-label={`Xem danh mục ${category.name}, ${category.productCount} sản phẩm`}
     >
-      <div className="w-12 h-12 md:w-14 md:h-14 bg-accent-50 rounded-full flex items-center justify-center group-hover:bg-accent-100 group-hover:scale-110 transition-all mb-3">
+      <div className="w-12 h-12 md:w-14 md:h-14 bg-accent-50 rounded-full flex items-center justify-center group-hover:bg-accent-100 group-hover:scale-110 transition-[transform,background-color] duration-150 mb-3">
         <Icon className="w-6 h-6 md:w-7 md:h-7 text-accent-700" aria-hidden="true" />
       </div>
       <p className="text-sm md:text-base font-semibold text-ink-900 text-center leading-tight">

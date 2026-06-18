@@ -76,7 +76,7 @@ export default function VideoPage({
               <Link
                 key={s}
                 href={`/video?src=${encodeURIComponent(s)}`}
-                className={`px-3 h-7 inline-flex items-center text-[10px] font-medium rounded uppercase tracking-wider transition-colors ${
+                className={`px-3 h-7 inline-flex items-center text-xs font-medium rounded transition-colors ${
                   searchParams.src === s
                     ? 'bg-info-600 text-white'
                     : 'bg-info-50 text-info-700 hover:bg-info-100'
@@ -100,17 +100,17 @@ export default function VideoPage({
               <Link
                 key={v.id}
                 href={v.url}
-                className="group block bg-white border border-ink-200 rounded-md overflow-hidden hover:border-accent-500 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+                className="group block bg-white border border-ink-200 rounded-md overflow-hidden hover:border-accent-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
               >
                 <div className="relative aspect-video bg-ink-100">
                   <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-ink-700 to-ink-900">
-                    <Play className="w-10 h-10 text-white opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" aria-hidden="true" />
+                    <Play className="w-10 h-10 text-white opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-transform duration-150" aria-hidden="true" />
                   </div>
                   <div className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 h-5 bg-black/70 text-white text-[10px] font-medium rounded font-mono">
                     <Clock className="w-2.5 h-2.5" aria-hidden="true" />
                     {v.duration}
                   </div>
-                  <div className="absolute top-2 left-2 px-2 h-5 bg-white/90 text-ink-900 text-[10px] font-bold uppercase rounded">
+                  <div className="absolute top-2 left-2 px-2 h-5 bg-white/90 text-ink-900 text-xs font-bold rounded">
                     {v.source}
                   </div>
                 </div>

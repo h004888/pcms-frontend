@@ -12,6 +12,12 @@ export interface Category {
   icon?: string; // lucide-react icon name
   productCount: number;
   children?: Category[]; // For subcategories
+  /**
+   * Theme màu chủ đạo dùng cho card hiển thị.
+   * Mỗi category có 1 theme riêng → phân biệt trực quan, không dùng cùng 1 màu.
+   * Values: 'accent' | 'info' | 'success' | 'warning' | 'danger' | 'ink'
+   */
+  theme?: 'accent' | 'info' | 'success' | 'warning' | 'danger' | 'ink';
 }
 
 export interface ProductSummary {

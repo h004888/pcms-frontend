@@ -1,33 +1,40 @@
 // =====================================================
-// ProductCard — Product card for grid + carousel
+// ProductCard — Product card for grid + carousel (vivid edition)
 // Variants: default (with all info) | compact (smaller, for carousels)
+// Upgrades:
+//   - Image-forward: bigger image, subtle gradient background
+//   - Hover: lift effect (transform + shadow on card)
+//   - Discount badge: vivid gradient red ribbon (vẫn tuân thủ palette)
+//   - Featured variant (rank #1) dùng accent border + ribbon
 // =====================================================
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Star, AlertTriangle, Heart, ShoppingCart } from 'lucide-react';
+import { Star, AlertTriangle, Heart, ShoppingCart, Zap } from 'lucide-react';
 import { formatVND, getStockLabel, getProductHref } from '@/lib/shop/format';
 import type { ProductSummary } from '@/types/shop/catalog';
 
 export interface ProductCardProps {
   product: ProductSummary;
-  variant?: 'default' | 'compact';
+  variant?: 'default' | 'compact' | 'featured';
   showCTA?: boolean;
+  rank?: number;
 }
 
-export function ProductCard({ product, variant = 'default', showCTA = true }: ProductCardProps) {
+export function ProductCard({ product, variant = 'default', showCTA = true, rank }: ProductCardProps) {
   const stock = getStockLabel(product.stockStatus);
   const compact = variant === 'compact';
+  const featured = variant === 'featured';
   const href = getProductHref(product);
 
   return (
     <article
-      className="group relative flex flex-col bg-white border border-ink-200 rounded-md overflow-hidden hover:border-accent-500 transition-colors"
+      className={`group relative flex flex-col bg-white border ${featured ? 'border-accent-400 ring-2 ring-accent-200' : 'border-ink-200'} rounded-lg overflow-hidden hover:border-accent-500 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-ink-900/10 transition-all duration-200`}
     >
       {/* Thumbnail */}
       <Link
         href={href}
-        className="block aspect-square bg-ink-50 relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+        className="block aspect-square bg-gradient-to-br from-ink-50 to-accent-50/40 relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
         aria-label={`Xem chi tiết ${product.name}`}
       >
         <Image
@@ -35,20 +42,35 @@ export function ProductCard({ product, variant = 'default', showCTA = true }: Pr
           alt={product.name}
           width={400}
           height={400}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
         />
+        {/* Featured ribbon */}
+        {featured && (
+          <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 px-2.5 h-7 bg-accent-600 text-white text-xs font-bold rounded-md shadow-sm">
+            <Zap className="w-3 h-3 fill-current" aria-hidden="true" />
+            HOT
+          </div>
+        )}
+        {/* Rank badge (cho bestseller grid) */}
+        {!featured && rank && rank <= 5 && (
+          <div className="absolute top-2 left-2 z-10">
+            <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 bg-ink-900 text-white text-xs font-bold rounded-md font-mono shadow-sm">
+              #{rank}
+            </span>
+          </div>
+        )}
         {/* Tags overlay */}
-        {product.tags && product.tags.length > 0 && (
+        {product.tags && product.tags.length > 0 && !rank && !featured && (
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             {product.tags.slice(0, 2).map((tag) => (
               <span
                 key={tag}
                 className={
                   tag === 'Bán chạy'
-                    ? 'px-2 h-5 bg-accent-600 text-white text-[10px] font-bold uppercase tracking-wider rounded flex items-center'
+                    ? 'px-2 h-6 bg-accent-600 text-white text-xs font-semibold rounded flex items-center'
                     : tag === 'Mới'
-                      ? 'px-2 h-5 bg-info-600 text-white text-[10px] font-bold uppercase tracking-wider rounded flex items-center'
-                      : 'px-2 h-5 bg-warning-500 text-white text-[10px] font-bold uppercase tracking-wider rounded flex items-center'
+                      ? 'px-2 h-6 bg-info-600 text-white text-xs font-semibold rounded flex items-center'
+                      : 'px-2 h-6 bg-warning-500 text-white text-xs font-semibold rounded flex items-center'
                 }
               >
                 {tag}
@@ -56,29 +78,29 @@ export function ProductCard({ product, variant = 'default', showCTA = true }: Pr
             ))}
           </div>
         )}
-        {/* Discount badge */}
+        {/* Discount badge — vivid gradient ribbon */}
         {product.discountPercent && product.discountPercent > 0 && (
-          <div className="absolute top-2 right-2">
-            <span className="px-2 h-6 bg-danger-600 text-white text-xs font-bold rounded flex items-center">
+          <div className="absolute top-2 right-2 z-10">
+            <span className="px-2.5 h-7 bg-gradient-to-br from-danger-500 to-danger-700 text-white text-xs font-bold rounded-md flex items-center shadow-sm">
               -{product.discountPercent}%
             </span>
           </div>
         )}
         {/* Prescription overlay (warning) */}
         {product.prescriptionRequired && (
-          <div className="absolute bottom-2 left-2 right-2">
-            <div className="flex items-center gap-1 px-2 py-1 bg-warning-50 border border-warning-200 rounded text-[10px] font-medium text-warning-800">
+          <div className="absolute bottom-2 left-2 right-2 z-10">
+            <div className="flex items-center gap-1 px-2 py-1 bg-warning-50 border border-warning-300 rounded text-xs font-medium text-warning-800">
               <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
               <span>Thuốc kê đơn — cần đơn từ BS</span>
             </div>
           </div>
         )}
-        {/* Quick action buttons (always visible on hover) */}
-        <div className="absolute bottom-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Quick action button (wishlist) */}
+        <div className="absolute bottom-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             type="button"
             aria-label="Yêu thích"
-            className="w-8 h-8 bg-white border border-ink-200 rounded-full flex items-center justify-center text-ink-600 hover:text-accent-600 hover:border-accent-500 transition-colors"
+            className="w-8 h-8 bg-white border border-ink-200 rounded-full flex items-center justify-center text-ink-600 hover:text-danger-600 hover:border-danger-500 transition-colors shadow-sm"
           >
             <Heart className="w-4 h-4" aria-hidden="true" />
           </button>
@@ -89,11 +111,11 @@ export function ProductCard({ product, variant = 'default', showCTA = true }: Pr
       <div className="flex flex-col flex-1 p-3">
         {/* Brand + country */}
         <div className="flex items-center gap-1.5 mb-1">
-          <span className="text-[10px] text-ink-500 uppercase tracking-wider font-semibold truncate">
+          <span className="text-xs text-ink-500 font-medium truncate">
             {product.brand}
           </span>
-          <span className="text-[10px] text-ink-400">·</span>
-          <span className="text-[10px] text-ink-500">{product.country}</span>
+          <span className="text-xs text-ink-400">·</span>
+          <span className="text-xs text-ink-500">{product.country}</span>
         </div>
 
         {/* Name */}
@@ -129,11 +151,11 @@ export function ProductCard({ product, variant = 'default', showCTA = true }: Pr
               </span>
             )}
           </div>
-          <div className="text-[10px] text-ink-500 mt-0.5">/ {product.unit}</div>
+          <div className="text-xs text-ink-500 mt-0.5">/ {product.unit}</div>
         </div>
 
         {/* Stock */}
-        <div className="mt-2 flex items-center gap-1 text-[11px]">
+        <div className="mt-2 flex items-center gap-1 text-xs">
           <span
             className={
               stock.color === 'accent'

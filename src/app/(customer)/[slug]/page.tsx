@@ -9,7 +9,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { CATEGORIES, PRODUCTS } from '@/data/shop/catalog';
+import { CATEGORIES, PRODUCTS, stripToSummary } from '@/data/shop/catalog';
 import { ProductCard } from '@/components/shop/ProductCard';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { getCategoryL2Href, getCategoryL1Href } from '@/lib/shop/format';
@@ -35,8 +35,13 @@ export default function ShopCategoryL1Page({ params }: PageProps) {
   const category = CATEGORIES.find((c) => c.slug === params.slug);
   if (!category) notFound();
 
-  // L1 category ID — match với product.category.id (Product.category.id là L1 cho L1 trực tiếp)
-  const products = PRODUCTS.filter((p) => p.category.id === category.id).slice(0, 24);
+  // Filter products: khớp với chính L1 hoặc bất kỳ L2 con nào
+  // (products lưu L2 ID làm category.id, không phải L1 ID)
+  const childIds = new Set(category.children?.map((c) => c.id) ?? []);
+  const validIds = new Set([category.id, ...childIds]);
+  const products = PRODUCTS.filter((p) => validIds.has(p.category.id))
+    .slice(0, 24)
+    .map(stripToSummary);
   const hasSubcategories = category.children && category.children.length > 0;
 
   return (

@@ -185,7 +185,7 @@ export default function SemanticSearchPage() {
         <div className="space-y-3">
           {SYMPTOM_DB.map((group) => (
             <div key={group.category}>
-              <p className="text-xs font-semibold text-ink-500 uppercase tracking-wider mb-2">
+              <p className="text-xs font-semibold text-ink-500 mb-2">
                 {group.category}
               </p>
               <div className="flex flex-wrap gap-2">
@@ -219,7 +219,7 @@ export default function SemanticSearchPage() {
           <div className="p-5 bg-white border border-ink-200 rounded-md space-y-4">
             <div className="flex items-start justify-between gap-2 flex-wrap">
               <div>
-                <p className="text-xs text-ink-500 uppercase tracking-wider font-semibold">
+                <p className="text-xs text-ink-500 font-semibold">
                   Kết quả cho
                 </p>
                 <h2 className="mt-1 text-lg font-semibold text-ink-900">{result.symptom || submittedQuery}</h2>

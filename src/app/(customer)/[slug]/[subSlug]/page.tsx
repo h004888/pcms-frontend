@@ -4,7 +4,7 @@
 // =====================================================
 
 import { notFound } from 'next/navigation';
-import { CATEGORIES, PRODUCTS } from '@/data/shop/catalog';
+import { CATEGORIES, PRODUCTS, stripToSummary } from '@/data/shop/catalog';
 import { ProductCard } from '@/components/shop/ProductCard';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { getCategoryL1Href } from '@/lib/shop/format';
@@ -38,7 +38,9 @@ export default function ShopCategoryL2Page({ params }: PageProps) {
   const sub = parent?.children?.find((s) => s.slug === params.subSlug);
   if (!parent || !sub) notFound();
 
-  const products = PRODUCTS.filter((p) => p.category.id === sub.id).slice(0, 24);
+  const products = PRODUCTS.filter((p) => p.category.id === sub.id)
+    .slice(0, 24)
+    .map(stripToSummary);
 
   return (
     <div className="bg-white">

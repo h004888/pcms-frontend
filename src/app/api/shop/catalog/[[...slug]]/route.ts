@@ -4,105 +4,143 @@
 // Returns: categories tree, product list, product detail
 // =====================================================
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 import {
-  CATEGORIES,
-  PRODUCTS,
-  getProductBySlug,
-  getProductsByCategory,
-  searchProducts,
-  getBestsellers,
-  type ProductListResponse,
-} from '@/data/shop/catalog';
+	CATEGORIES,
+	getProductBySlug,
+	getProductsByCategory,
+	searchProducts,
+	getBestsellers,
+} from "@/data/shop/catalog";
+import type { ProductListResponse } from "@/types/shop/catalog";
 
 const DEFAULT_PAGE_SIZE = 24;
 const MAX_PAGE_SIZE = 60;
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { slug?: string[] } }
-) {
-  const segments = params.slug ?? [];
-  const searchParams = request.nextUrl.searchParams;
-  const q = searchParams.get('q');
-  const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10));
-  const pageSize = Math.min(
-    MAX_PAGE_SIZE,
-    Math.max(1, parseInt(searchParams.get('pageSize') ?? String(DEFAULT_PAGE_SIZE), 10))
-  );
-  const sort = searchParams.get('sort') ?? undefined;
+type RouteParams = { params: { slug?: string[] } };
+type SearchParams = {
+	q: string | null;
+	page: number;
+	pageSize: number;
+	sort?: string;
+};
 
-  // === Route: /api/shop/catalog (no segments) ===
-  if (segments.length === 0) {
-    // Search
-    if (q) {
-      const result = searchProducts(q, { page, pageSize });
-      return NextResponse.json({
-        ...result,
-        page,
-        pageSize,
-      });
-    }
-    // Top categories + bestsellers (for SHOP-HOME)
-    return NextResponse.json({
-      categories: CATEGORIES,
-      bestsellers: getBestsellers(8),
-    });
-  }
+function parseSearchParams(request: NextRequest): SearchParams {
+	const sp = request.nextUrl.searchParams;
+	return {
+		q: sp.get("q"),
+		page: Math.max(1, parseInt(sp.get("page") ?? "1", 10) || 1),
+		pageSize: Math.min(
+			MAX_PAGE_SIZE,
+			Math.max(
+				1,
+				parseInt(sp.get("pageSize") ?? String(DEFAULT_PAGE_SIZE), 10) ||
+					DEFAULT_PAGE_SIZE,
+			),
+		),
+		sort: sp.get("sort") ?? undefined,
+	};
+}
 
-  const [first, ...rest] = segments;
+function handleRoot(sp: SearchParams) {
+	if (sp.q) {
+		return NextResponse.json({
+			...searchProducts(sp.q, { page: sp.page, pageSize: sp.pageSize }),
+			page: sp.page,
+			pageSize: sp.pageSize,
+		});
+	}
+	return NextResponse.json({
+		categories: CATEGORIES,
+		bestsellers: getBestsellers(8),
+	});
+}
 
-  // === Route: /api/shop/catalog/categories ===
-  if (first === 'categories') {
-    return NextResponse.json({ categories: CATEGORIES });
-  }
+function handleCategoryList(sp: SearchParams) {
+	if (sp.q) {
+		const result = searchProducts(sp.q, {
+			page: sp.page,
+			pageSize: sp.pageSize,
+		});
+		return NextResponse.json({
+			...result,
+			page: sp.page,
+			pageSize: sp.pageSize,
+		});
+	}
+	return NextResponse.json({ categories: CATEGORIES });
+}
 
-  // === Route: /api/shop/catalog/bestsellers ===
-  if (first === 'bestsellers') {
-    const limit = parseInt(searchParams.get('limit') ?? '8', 10);
-    return NextResponse.json({ products: getBestsellers(limit) });
-  }
+function handleBestsellers(request: NextRequest) {
+	const limit =
+		parseInt(request.nextUrl.searchParams.get("limit") ?? "8", 10) || 8;
+	return NextResponse.json({ products: getBestsellers(limit) });
+}
 
-  // === Route: /api/shop/catalog/category/[slug] or /subcategory/[slug] ===
-  if (first === 'category' || first === 'subcategory') {
-    const categorySlug = rest[0];
-    if (!categorySlug) {
-      return NextResponse.json({ error: 'Missing category slug' }, { status: 400 });
-    }
-    const result = getProductsByCategory(categorySlug, {
-      search: q ?? undefined,
-      sort,
-      page,
-      pageSize,
-    });
-    const response: ProductListResponse = {
-      products: result.products,
-      total: result.total,
-      page,
-      pageSize,
-      facets: result.facets,
-    };
-    return NextResponse.json(response);
-  }
+function handleCategory(categorySlug: string | undefined, sp: SearchParams) {
+	if (!categorySlug) {
+		return NextResponse.json(
+			{ error: "Missing category slug" },
+			{ status: 400 },
+		);
+	}
+	const result = getProductsByCategory(categorySlug, {
+		search: sp.q ?? undefined,
+		sort: sp.sort,
+		page: sp.page,
+		pageSize: sp.pageSize,
+	});
+	const response: ProductListResponse = {
+		products: result.products,
+		total: result.total,
+		page: sp.page,
+		pageSize: sp.pageSize,
+		facets: result.facets,
+	};
+	return NextResponse.json(response);
+}
 
-  // === Route: /api/shop/catalog/product/[slug] ===
-  if (first === 'product') {
-    const slug = rest[0];
-    if (!slug) {
-      return NextResponse.json({ error: 'Missing product slug' }, { status: 400 });
-    }
-    const product = getProductBySlug(slug);
-    if (!product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-    }
-    return NextResponse.json({ product });
-  }
+function handleProduct(slug: string | undefined) {
+	if (!slug) {
+		return NextResponse.json(
+			{ error: "Missing product slug" },
+			{ status: 400 },
+		);
+	}
+	const product = getProductBySlug(slug);
+	if (!product) {
+		return NextResponse.json({ error: "Product not found" }, { status: 404 });
+	}
+	return NextResponse.json({ product });
+}
 
-  // Fallback: try as a direct product slug
-  const directProduct = getProductBySlug(first);
-  if (directProduct) {
-    return NextResponse.json({ product: directProduct });
-  }
+export function GET(request: NextRequest, { params }: RouteParams) {
+	const segments = params.slug ?? [];
+	const sp = parseSearchParams(request);
 
-  return NextResponse.json({ error: 'Not found' }, { status: 404 });
+	// Root: /api/shop/catalog
+	if (segments.length === 0) {
+		return handleRoot(sp);
+	}
+
+	const [first, ...rest] = segments;
+
+	switch (first) {
+		case "categories":
+			return handleCategoryList(sp);
+		case "bestsellers":
+			return handleBestsellers(request);
+		case "category":
+		case "subcategory":
+			return handleCategory(rest[0], sp);
+		case "product":
+			return handleProduct(rest[0]);
+		default:
+			// Fallback: try as a direct product slug
+			const directProduct = getProductBySlug(first);
+			if (directProduct) {
+				return NextResponse.json({ product: directProduct });
+			}
+			return NextResponse.json({ error: "Not found" }, { status: 404 });
+	}
 }

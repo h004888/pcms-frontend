@@ -16,7 +16,7 @@ interface Props {
 
 export function ProductGallery({ images, alt }: Props) {
   const [active, setActive] = useState(0);
-  const safeImages = images.length > 0 ? images : ['/placeholder-products/default.svg'];
+  const safeImages = images.length > 0 ? images : ['/placeholder-products/product.svg'];
 
   return (
     <div className="space-y-3">

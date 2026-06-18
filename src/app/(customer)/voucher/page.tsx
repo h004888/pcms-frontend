@@ -84,7 +84,7 @@ export default function VoucherPage() {
               ) : (
                 <span className="text-lg font-bold">-{formatVND(v.discount)}</span>
               )}
-              <span className="text-[10px] uppercase tracking-wider">OFF</span>
+              <span className="text-xs">OFF</span>
             </div>
             <div className="flex-1 p-4">
               <p className="text-sm font-semibold text-ink-900">{v.title}</p>

@@ -15,7 +15,7 @@ import { useInstallPrompt } from '@/hooks/shop/useInstallPrompt';
 
 const STORAGE_KEY = 'pcms_pwa_install_dismissed';
 const VISITS_KEY = 'pcms_visit_count';
-const MIN_VISITS = 2;
+const MIN_VISITS = 3; // user đã có vài lần trải nghiệm trước khi gợi ý cài app
 const DISMISS_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export function PWAInstallPrompt() {
@@ -80,7 +80,7 @@ export function PWAInstallPrompt() {
       role="dialog"
       aria-labelledby="pwa-install-title"
       aria-describedby="pwa-install-desc"
-      className="fixed bottom-4 left-4 right-4 sm:right-auto sm:max-w-sm z-40 bg-white rounded-lg border border-ink-200 shadow-lg p-4 animate-in slide-in-from-bottom-4 duration-300"
+      className="fixed bottom-4 left-4 right-4 sm:right-auto sm:max-w-sm z-40 bg-white rounded-lg border border-ink-200 p-4 animate-in slide-in-from-bottom-4 duration-300"
       style={{ boxShadow: '0 4px 12px rgba(15, 29, 61, 0.12)' }}
     >
       <button

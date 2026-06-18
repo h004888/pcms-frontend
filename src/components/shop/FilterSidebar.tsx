@@ -259,7 +259,7 @@ function PriceRangeFacet({
           />
         </div>
       </div>
-      <p className="text-[10px] text-ink-500 font-mono">
+      <p className="text-xs text-ink-500 font-mono">
         Khoảng: {min.toLocaleString('vi-VN')} — {max.toLocaleString('vi-VN')}
       </p>
     </div>

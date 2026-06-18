@@ -105,14 +105,10 @@
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ],
-  "categories": ["health", "medical", "shopping"],
-  "lang": "vi",
-  "dir": "ltr",
   "edge_side_panel": {
     "preferred_width": 480
   },
   "launch_handler": {
     "client_mode": "auto"
-  },
-  "prefer_related_applications": false
+  }
 }

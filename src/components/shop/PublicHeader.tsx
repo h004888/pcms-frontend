@@ -38,7 +38,7 @@ const CATEGORIES = [
 
 const QUICK_LINKS = [
   { label: 'Tra cứu thuốc', href: '/tra-cuu-thuoc', icon: Search },
-  { label: 'Đặt thuốc theo toa', href: '/prescriptions/upload', icon: Pill },
+  { label: 'Đặt thuốc theo toa', href: '/upload-toa', icon: Pill },
   { label: 'Hệ thống nhà thuốc', href: '/he-thong-cua-hang', icon: MapPin },
   { label: 'Tiêm chủng', href: '/tiem-chung', icon: Calendar },
   { label: 'Tư vấn dược sĩ', href: '/ai/chat', icon: MessageCircle },
@@ -82,8 +82,8 @@ export function PublicHeader() {
     <header
       ref={headerRef}
       className={clsx(
-        'sticky top-0 z-30 w-full bg-white transition-shadow',
-        scrolled && 'shadow-sm border-b border-ink-200'
+        'sticky top-0 z-30 w-full bg-white border-b transition-colors',
+        scrolled ? 'border-ink-200' : 'border-transparent'
       )}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -123,8 +123,7 @@ export function PublicHeader() {
             </button>
             <div
               role="menu"
-              className="absolute left-0 top-full mt-1 w-64 bg-white border border-ink-200 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all shadow-lg py-2 z-40"
-              style={{ boxShadow: '0 4px 12px rgba(15, 29, 61, 0.08)' }}
+              className="absolute left-0 top-full mt-1 w-64 bg-white border border-ink-200 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-opacity duration-150 py-2 z-40"
             >
               {CATEGORIES.map((cat) => {
                 const Icon = cat.icon;
@@ -194,7 +193,7 @@ export function PublicHeader() {
               {hydrated && itemCount > 0 && (
                 <span
                   aria-hidden="true"
-                  className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 bg-danger-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center font-mono"
+                  className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 bg-danger-600 text-white text-xs font-bold rounded-full flex items-center justify-center font-mono"
                 >
                   {itemCount > 99 ? '99+' : itemCount}
                 </span>
@@ -270,7 +269,7 @@ export function PublicHeader() {
 
             <nav className="flex-1 overflow-y-auto p-4 space-y-6" aria-label="Menu chính">
               <div>
-                <h2 className="px-2 mb-2 text-xs font-semibold uppercase tracking-wider text-ink-500">
+                <h2 className="px-2 mb-2 text-xs font-semibold text-ink-500">
                   Danh mục
                 </h2>
                 <ul className="space-y-1">
@@ -293,7 +292,7 @@ export function PublicHeader() {
               </div>
 
               <div>
-                <h2 className="px-2 mb-2 text-xs font-semibold uppercase tracking-wider text-ink-500">
+                <h2 className="px-2 mb-2 text-xs font-semibold text-ink-500">
                   Tiện ích
                 </h2>
                 <ul className="space-y-1">
