@@ -10,6 +10,11 @@ import { SEED_BRANCHES, type MockBranch } from './data/branches';
 import { SEED_CATEGORIES, type MockCategory } from './data/categories';
 import { SEED_SUPPLIERS, type MockSupplier } from './data/suppliers';
 import { SEED_INVENTORY_BATCHES, type MockInventoryBatch } from './data/inventory';
+import { SEED_ORDERS, type MockOrder } from './data/orders';
+import { SEED_PAYMENTS, type MockPayment } from './data/payments';
+import { SEED_PRESCRIPTIONS, type MockPrescription } from './data/prescriptions';
+import { SEED_NOTIFICATIONS, type MockNotification } from './data/notifications';
+import { SEED_REPORTS, type MockReport } from './data/reports';
 
 interface MockStore {
   users: MockUser[];
@@ -19,6 +24,11 @@ interface MockStore {
   categories: MockCategory[];
   suppliers: MockSupplier[];
   inventoryBatches: MockInventoryBatch[];
+  orders: MockOrder[];
+  payments: MockPayment[];
+  prescriptions: MockPrescription[];
+  notifications: MockNotification[];
+  reports: MockReport[];
 }
 
 declare global {
@@ -36,6 +46,14 @@ export const mockStore: MockStore =
     categories: [...SEED_CATEGORIES],
     suppliers: [...SEED_SUPPLIERS],
     inventoryBatches: [...SEED_INVENTORY_BATCHES],
+    orders: [...SEED_ORDERS],
+    payments: [...SEED_PAYMENTS],
+    prescriptions: [...SEED_PRESCRIPTIONS],
+    notifications: [...SEED_NOTIFICATIONS],
+    reports: [...SEED_REPORTS],
   });
 
-export type { MockUser, MockMedicine, MockCustomer, MockBranch, MockCategory, MockSupplier, MockInventoryBatch };
+export type {
+  MockUser, MockMedicine, MockCustomer, MockBranch, MockCategory, MockSupplier,
+  MockInventoryBatch, MockOrder, MockPayment, MockPrescription, MockNotification, MockReport,
+};
