@@ -8,6 +8,7 @@ import { SEED_MEDICINES, type MockMedicine } from './data/medicines';
 import { SEED_CUSTOMERS, type MockCustomer } from './data/customers';
 import { SEED_BRANCHES, type MockBranch } from './data/branches';
 import { SEED_CATEGORIES, type MockCategory } from './data/categories';
+import { SEED_SUPPLIERS, type MockSupplier } from './data/suppliers';
 
 interface MockStore {
   users: MockUser[];
@@ -15,6 +16,7 @@ interface MockStore {
   customers: MockCustomer[];
   branches: MockBranch[];
   categories: MockCategory[];
+  suppliers: MockSupplier[];
 }
 
 declare global {
@@ -30,6 +32,7 @@ export const mockStore: MockStore =
     customers: [...SEED_CUSTOMERS],
     branches: [...SEED_BRANCHES],
     categories: [...SEED_CATEGORIES],
+    suppliers: [...SEED_SUPPLIERS],
   });
 
-export type { MockUser, MockMedicine, MockCustomer, MockBranch, MockCategory };
+export type { MockUser, MockMedicine, MockCustomer, MockBranch, MockCategory, MockSupplier };
