@@ -1,33 +1,62 @@
 // =====================================================
-// PCMS - Category Service
+// PCMS - Category Service (P1.6)
 // =====================================================
 
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import type { PageResponse } from '@/types';
-import type { Category } from '../types';
+import type {
+  Category,
+  CreateCategoryRequest,
+  UpdateCategoryRequest,
+} from '../types';
 
-export async function fetchCategories(params: Record<string, unknown> = {}) {
+/** Fetch categories (paginated + search) */
+export async function fetchCategories(
+  params: Record<string, unknown> = {}
+): Promise<PageResponse<Category>> {
   const searchParams = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {
-    if (v !== null && v !== undefined && v !== '') searchParams.set(k, String(v));
+    if (v !== null && v !== undefined && v !== '') {
+      searchParams.set(k, String(v));
+    }
   });
-  const queryString = searchParams.toString();
-  const url = queryString ? `${API_ENDPOINTS.CATEGORIES}?${queryString}` : API_ENDPOINTS.CATEGORIES;
+  const qs = searchParams.toString();
+  const url = qs
+    ? `${API_ENDPOINTS.CATEGORIES}?${qs}`
+    : API_ENDPOINTS.CATEGORIES;
   const res = await apiClient.get<PageResponse<Category>>(url);
   return res.data;
 }
 
-export async function createCategory(data: Omit<Category, 'id' | 'createdAt'>) {
+/** Fetch single category by id */
+export async function fetchCategoryById(id: string): Promise<Category> {
+  const res = await apiClient.get<Category>(
+    API_ENDPOINTS.CATEGORY_DETAIL(id)
+  );
+  return res.data;
+}
+
+/** Create new category */
+export async function createCategory(
+  data: CreateCategoryRequest
+): Promise<Category> {
   const res = await apiClient.post<Category>(API_ENDPOINTS.CATEGORIES, data);
   return res.data;
 }
 
-export async function updateCategory(id: string, data: Partial<Category>) {
-  const res = await apiClient.put<Category>(API_ENDPOINTS.CATEGORY_DETAIL(id), data);
+/** Update category */
+export async function updateCategory(
+  id: string,
+  data: UpdateCategoryRequest
+): Promise<Category> {
+  const res = await apiClient.put<Category>(
+    API_ENDPOINTS.CATEGORY_DETAIL(id),
+    data
+  );
   return res.data;
 }
 
-export async function deleteCategory(id: string) {
-  const res = await apiClient.delete(API_ENDPOINTS.CATEGORY_DETAIL(id));
-  return res.data;
+/** Delete category */
+export async function deleteCategory(id: string): Promise<void> {
+  await apiClient.delete(API_ENDPOINTS.CATEGORY_DETAIL(id));
 }
