@@ -1,13 +1,14 @@
 // =====================================================
 // PCMS - Axios HTTP Client
-// Always calls /api/v1/* (same-origin) which Next.js rewrites to the
-// real Spring Cloud Gateway via the rule in next.config.js.
-// All data comes from the real backend (MySQL via microservices).
+// Calls backend directly at NEXT_PUBLIC_API_URL (cross-origin).
+// CORS is configured on the Spring Cloud Gateway side
+// (see api-gateway/ApiGatewayApplication.java @Bean corsWebFilter
+//  + application.yml spring.cloud.gateway.globalcors).
 // =====================================================
 
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
-const API_URL = '/api/v1';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
 
 const TOKEN_KEY = 'pcms_access_token';
 const REFRESH_KEY = 'pcms_refresh_token';
