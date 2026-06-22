@@ -1,5 +1,5 @@
 // =====================================================
-// PCMS - Inventory List Page - UC05
+// PCMS - Inventory List Page (UC05)
 // =====================================================
 
 import { InventoryList } from '@/features/inventory';

@@ -21,7 +21,7 @@ import {
   TrendingDown,
   CalendarClock,
   Warehouse,
-  Pill,
+  type LucideIcon,
 } from 'lucide-react';
 
 // Lazy-load form
@@ -32,7 +32,7 @@ const InventoryForm = dynamic(
 
 const STATUS_TONES: Record<
   string,
-  { bg: string; text: string; dot: string; icon: typeof Pill; label: string }
+  { bg: string; text: string; dot: string; icon: LucideIcon; label: string }
 > = {
   ACTIVE: {
     bg: 'bg-success-50 border-success-200',
@@ -92,7 +92,7 @@ export function InventoryList() {
       });
   }, []);
 
-  // Load low-stock count + expiring count (optional)
+  // Load low-stock count + expiring count
   useEffect(() => {
     apiClient
       .get<InventoryBatch[]>('/inventory/low-stock')
@@ -101,9 +101,10 @@ export function InventoryList() {
   }, [refreshKey]);
 
   useEffect(() => {
-    // Count expiring by filter on inventory list
     apiClient
-      .get<{ data: InventoryBatch[] }>('/inventory?status=EXPIRING_SOON&size=200')
+      .get<{ data: InventoryBatch[] }>(
+        '/inventory?status=EXPIRING_SOON&size=200'
+      )
       .then((r) => setExpiringCount(r.data?.data?.length ?? 0))
       .catch(() => {});
   }, [refreshKey]);
@@ -185,7 +186,9 @@ export function InventoryList() {
         return (
           <div className="flex items-center gap-1.5 text-sm">
             <Warehouse className="w-3.5 h-3.5 text-ink-500" />
-            <span className="text-ink-800">{br?.name ?? b.branchId.slice(0, 8)}</span>
+            <span className="text-ink-800">
+              {br?.name ?? b.branchId.slice(0, 8)}
+            </span>
           </div>
         );
       },
@@ -206,9 +209,7 @@ export function InventoryList() {
           >
             {b.qtyOnHand}
           </div>
-          <div className="text-xs text-ink-500">
-            min: {b.minStockLevel}
-          </div>
+          <div className="text-xs text-ink-500">min: {b.minStockLevel}</div>
         </div>
       ),
     },
@@ -245,42 +246,44 @@ export function InventoryList() {
       header: 'Ngày nhập',
       width: '140px',
       render: (b) => (
-        <span className="text-xs text-ink-500">{formatDateTime(b.receivedAt)}</span>
+        <span className="text-xs text-ink-500">
+          {formatDateTime(b.receivedAt)}
+        </span>
       ),
     },
   ];
 
   // Endpoint with filters
-  const endpoint = (() => {
+  const endpoint = useMemo(() => {
     const params = new URLSearchParams();
     if (filterBranch) params.set('branchId', filterBranch);
     if (filterStatus) params.set('status', filterStatus);
     const qs = params.toString();
     return qs ? `/inventory?${qs}` : '/inventory';
-  })();
+  }, [filterBranch, filterStatus]);
 
   return (
     <DashboardLayout>
       {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <StatCard
-                title="Tổng lô tồn kho"
-                value={`${lowStockCount + expiringCount}+`}
-                icon={Package}
-              />
-              <StatCard
-                title="Sắp hết hàng"
-                value={lowStockCount}
-                icon={TrendingDown}
-                color={lowStockCount > 0 ? 'warning' : 'ink'}
-              />
-              <StatCard
-                title="Sắp hết hạn"
-                value={expiringCount}
-                icon={CalendarClock}
-                color={expiringCount > 0 ? 'warning' : 'ink'}
-              />
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <StatCard
+          title="Tổng lô tồn kho"
+          value={`${lowStockCount + expiringCount}+`}
+          icon={Package}
+        />
+        <StatCard
+          title="Sắp hết hàng"
+          value={lowStockCount}
+          icon={TrendingDown}
+          color={lowStockCount > 0 ? 'warning' : 'ink'}
+        />
+        <StatCard
+          title="Sắp hết hạn"
+          value={expiringCount}
+          icon={CalendarClock}
+          color={expiringCount > 0 ? 'warning' : 'ink'}
+        />
+      </div>
 
       {/* Filters */}
       <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
