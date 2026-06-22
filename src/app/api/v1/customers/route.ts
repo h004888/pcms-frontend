@@ -41,6 +41,8 @@ export async function POST(req: NextRequest) {
   const now = new Date().toISOString();
   const year = new Date().getFullYear();
   const seq = String(mockStore.customers.length + 1).padStart(4, '0');
+  const status: 'ACTIVE' | 'INACTIVE' | 'BLOCKED' = 'ACTIVE';
+  const tier: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' = 'BRONZE';
   const newCust = {
     id: newId(),
     code: `CUST-${year}${seq}`,
@@ -50,9 +52,9 @@ export async function POST(req: NextRequest) {
     address: body.address,
     dob: body.dob,
     gender: body.gender,
-    status: 'ACTIVE',
+    status,
     points: 0,
-    tier: 'BRONZE',
+    tier,
     totalSpent: 0,
     createdAt: now,
     updatedAt: now,
