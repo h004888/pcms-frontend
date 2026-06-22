@@ -1,5 +1,5 @@
 // =====================================================
-// PCMS - Suppliers Page - UC11
+// PCMS - Suppliers Page (UC11)
 // =====================================================
 
 import { SuppliersView } from '@/features/suppliers';
