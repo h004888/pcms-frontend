@@ -5,7 +5,9 @@
 
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+const API_URL = process.env.NEXT_PUBLIC_USE_MOCK_API === 'false'
+  ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1')
+  : '/api/v1';
 const TOKEN_KEY = 'pcms_access_token';
 const REFRESH_KEY = 'pcms_refresh_token';
 
