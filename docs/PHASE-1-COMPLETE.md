@@ -12,8 +12,8 @@ Phase 1 (B2B Dashboard - List Pages) đã hoàn thành. Frontend chạy độc l
 |---|---|---|
 | Mock services (seed data) | 13 | ✅ |
 | BFF route handlers | 30+ | ✅ |
-| Frontend list pages hoạt động | 13/13 | ✅ |
-| Type-check | 6 errors | ⚠️ Phase 2 only |
+| Frontend list pages hoạt động | 16/16 | ✅ (13 list + 3 inventory detail) |
+| Type-check | 0 errors | ✅ |
 | Login flow | OK | ✅ admin/admin123 |
 | Home dashboard | OK | ✅ 6 stat cards |
 
@@ -158,17 +158,17 @@ pcms-frontend/
 | Type files updated | 4 (auth, customer, common, order) |
 | Service modules | 14 |
 
-## Known Issues / Limitations
+## Known Issues / Limitations (đã fix trong commit 22b2b5b)
 
 1. **Mock data mất khi restart dev server**: In-memory store dùng `globalThis` để survive hot-reload, nhưng restart hoàn toàn sẽ reset về seed. Đây là design choice — Phase 2 sẽ thêm persistence qua file/DB.
 
-2. **6 type errors còn lại** thuộc Phase 2 (inventory detail pages): `import`, `export`, `transfer` detail pages reference components chưa được export. Sẽ fix ở Phase 2.
+2. **Token không thật sự verify signature**: Mock JWT chỉ dùng HS256 + shared secret. Khi đổi sang backend Java thật, backend sẽ verify signature với cùng secret (`pcms-jwt-secret-key-...`).
 
-3. **Token không thật sự verify signature**: Mock JWT chỉ dùng HS256 + shared secret. Khi đổi sang backend Java thật, backend sẽ verify signature với cùng secret (`pcms-jwt-secret-key-...`).
+3. **Pagination từ BE khác từ FE**: FE dùng `page=0` + `size=20`, BE thật cũng dùng cùng pattern. Nếu BE dùng 1-based, cần update `handlers.ts`.
 
-4. **Pagination từ BE khác từ FE**: FE dùng `page=0` + `size=20`, BE thật cũng dùng cùng pattern. Nếu BE dùng 1-based, cần update `handlers.ts`.
+4. **Không có error retry/circuit breaker**: Khi backend down, FE chỉ show error toast. Production cần retry + fallback.
 
-5. **Không có error retry/circuit breaker**: Khi backend down, FE chỉ show error toast. Production cần retry + fallback.
+5. **Logout route chưa có ở BFF mock** (`POST /api/v1/auth/logout` 404): Sẽ thêm ở Phase 2.
 
 ## Phase 2 (sẽ làm tiếp)
 
