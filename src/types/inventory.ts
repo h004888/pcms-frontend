@@ -4,15 +4,23 @@
 
 import type { UUID, ISODate, TransactionType } from './common';
 
+export type InventoryBatchStatus =
+  | 'ACTIVE'
+  | 'LOW_STOCK'
+  | 'EXPIRING_SOON'
+  | 'EXPIRED';
+
 export interface InventoryBatch {
   id: UUID;
   medicineId: UUID;
   branchId: UUID;
   batchNo: string;
+  barcode?: string;
   qtyOnHand: number;
   expiryDate: string;
   minStockLevel: number;
   receivedAt: ISODate;
+  status?: InventoryBatchStatus;
 }
 
 export interface InventoryTransaction {
