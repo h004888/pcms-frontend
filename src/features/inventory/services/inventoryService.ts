@@ -1,53 +1,86 @@
 // =====================================================
-// PCMS - Inventory Service
+// PCMS - Inventory Service (P1.10)
+// UC05 - Quản lý tồn kho theo lô + chi nhánh
 // =====================================================
 
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import type { PageResponse } from '@/types';
 import type {
   InventoryBatch,
-  ImportStockRequest,
-  ExportStockRequest,
-  TransferStockRequest,
-  TransferStockResponse,
+  CreateInventoryBatchRequest,
+  UpdateInventoryBatchRequest,
 } from '../types';
 
-export async function fetchInventory(params: Record<string, unknown> = {}) {
+/** Fetch inventory batches (paginated + search + filter) */
+export async function fetchInventory(
+  params: Record<string, unknown> = {}
+): Promise<PageResponse<InventoryBatch>> {
   const searchParams = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {
-    if (v !== null && v !== undefined && v !== '') searchParams.set(k, String(v));
+    if (v !== null && v !== undefined && v !== '') {
+      searchParams.set(k, String(v));
+    }
   });
-  const queryString = searchParams.toString();
-  const url = queryString ? `${API_ENDPOINTS.INVENTORY}?${queryString}` : API_ENDPOINTS.INVENTORY;
+  const qs = searchParams.toString();
+  const url = qs
+    ? `${API_ENDPOINTS.INVENTORY}?${qs}`
+    : API_ENDPOINTS.INVENTORY;
   const res = await apiClient.get<PageResponse<InventoryBatch>>(url);
   return res.data;
 }
 
-export async function fetchLowStock() {
-  const res = await apiClient.get<InventoryBatch[]>(API_ENDPOINTS.INVENTORY_LOW_STOCK);
+/** Fetch single inventory batch by id */
+export async function fetchInventoryById(
+  id: string
+): Promise<InventoryBatch> {
+  const res = await apiClient.get<InventoryBatch>(
+    API_ENDPOINTS.INVENTORY_DETAIL(id)
+  );
   return res.data;
 }
 
-export async function importStock(data: ImportStockRequest) {
-  const res = await apiClient.post(API_ENDPOINTS.INVENTORY_IMPORT, data);
+/** Create new inventory batch */
+export async function createInventory(
+  data: CreateInventoryBatchRequest
+): Promise<InventoryBatch> {
+  const res = await apiClient.post<InventoryBatch>(
+    API_ENDPOINTS.INVENTORY,
+    data
+  );
   return res.data;
 }
 
-/**
- * Xuất kho (SCR-INV-EXPORT).
- * BR05: FIFO — backend tự consume lô hết hạn sớm nhất.
- * Lý do xuất bắt buộc: SALE / DAMAGED / EXPIRED / INTERNAL_USE / RETURN.
- */
-export async function exportStock(data: ExportStockRequest) {
-  const res = await apiClient.post(API_ENDPOINTS.INVENTORY_EXPORT, data);
+/** Update inventory batch */
+export async function updateInventory(
+  id: string,
+  data: UpdateInventoryBatchRequest
+): Promise<InventoryBatch> {
+  const res = await apiClient.put<InventoryBatch>(
+    API_ENDPOINTS.INVENTORY_DETAIL(id),
+    data
+  );
   return res.data;
 }
 
-/**
- * Chuyển kho giữa chi nhánh (SCR-INV-TRANSFER).
- * Trừ tồn chi nhánh nguồn + cộng tồn chi nhánh đích theo cùng batch.
- */
-export async function transferStock(data: TransferStockRequest) {
-  const res = await apiClient.post<TransferStockResponse>(API_ENDPOINTS.INVENTORY_TRANSFER, data);
+/** Delete inventory batch */
+export async function deleteInventory(id: string): Promise<void> {
+  await apiClient.delete(API_ENDPOINTS.INVENTORY_DETAIL(id));
+}
+
+/** Fetch low-stock batches (array, không phân trang) */
+export async function fetchLowStock(
+  params: Record<string, unknown> = {}
+): Promise<InventoryBatch[]> {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== null && v !== undefined && v !== '') {
+      searchParams.set(k, String(v));
+    }
+  });
+  const qs = searchParams.toString();
+  const url = qs
+    ? `${API_ENDPOINTS.INVENTORY_LOW_STOCK}?${qs}`
+    : API_ENDPOINTS.INVENTORY_LOW_STOCK;
+  const res = await apiClient.get<InventoryBatch[]>(url);
   return res.data;
 }
