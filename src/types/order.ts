@@ -19,8 +19,11 @@ export interface Order {
   id: UUID;
   orderNumber: string;
   customerId: UUID;
+  customerName?: string;
   branchId: UUID;
+  branchName?: string;
   staffId?: UUID;
+  staffName?: string;
   subtotal: number;
   discount: number;
   total: number;
@@ -43,14 +46,18 @@ export type CreateOrderRequest = {
 export interface Payment {
   id: UUID;
   orderId: UUID;
+  orderNumber?: string;
   invoiceNumber: string;
   paymentMethod: PaymentMethod;
   amount: number;
+  refundedAmount?: number;
   tenderedAmount?: number;
   changeAmount?: number;
   transactionRef?: string;
   status: PaymentStatus;
-  staffId: UUID;
+  cashierId?: UUID;
+  cashierName?: string;
+  staffId?: UUID;
   createdAt: ISODate;
 }
 
