@@ -5,9 +5,11 @@
 
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_USE_MOCK_API === 'false'
-  ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1')
-  : '/api/v1';
+// Next.js rewrites proxy /api/v1/* to NEXT_PUBLIC_API_URL on the server side.
+// From the browser perspective, we always call /api/v1/* (same-origin) so
+// we never trigger CORS preflight — even when USE_MOCK_API=false.
+// (See next.config.js → async rewrites() for the proxy rule.)
+const API_URL = '/api/v1';
 const TOKEN_KEY = 'pcms_access_token';
 const REFRESH_KEY = 'pcms_refresh_token';
 

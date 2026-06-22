@@ -138,6 +138,17 @@ const nextConfig = {
 			{ protocol: "http", hostname: "**" },
 		],
 	},
+	// Proxy /api/v1/* → http://localhost:8080/api/v1/* (Spring Cloud Gateway)
+	// Same-origin call from browser → no CORS preflight needed.
+	// When useMock=true, this is bypassed (mock route handlers in /src/app/api/v1/ take precedence).
+	async rewrites() {
+		return [
+			{
+				source: "/api/v1/:path*",
+				destination: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1"}/:path*`,
+			},
+		];
+	},
 };
 
 const pwaConfig = withPwa(nextConfig);
