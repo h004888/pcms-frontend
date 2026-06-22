@@ -2,8 +2,7 @@
 // PCMS - Auth feature types
 // =====================================================
 
-import type { UUID, ISODate } from './common';
-import type { UserStatus } from './common';
+import type { UUID, ISODate, UserStatus } from './common';
 
 export type Role = 'ADMIN' | 'CEO' | 'BRANCH_MANAGER' | 'PHARMACIST' | 'CUSTOMER';
 
@@ -17,7 +16,7 @@ export interface LoginResponse {
   refreshToken: string;
   tokenType: string;
   expiresIn: number;
-  user: AuthUser;
+  user: AuthUser; // ← nested (P1.4)
 }
 
 export interface AuthUser {
@@ -26,6 +25,7 @@ export interface AuthUser {
   fullName: string;
   role: Role;
   branchId: UUID | null;
+  status: UserStatus; // ← added (P1.4)
 }
 
 export interface AuthState {
