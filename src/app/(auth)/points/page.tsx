@@ -5,41 +5,13 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { Star, Gift, TrendingUp, Award, X, Sparkles } from 'lucide-react';
 import { formatVND } from '@/lib/shop/format';
-
-interface Tx {
-  id: string;
-  date: string;
-  desc: string;
-  delta: number;
-  type: 'earn' | 'use' | 'bonus';
-}
-
-const POINTS = {
-  balance: 2580,
-  tier: 'Vàng',
-  tierProgress: { current: 2580, target: 5000, nextTier: 'Bạch Kim' },
-  earned: 4250,
-  used: 1670,
-};
-
-const TRANSACTIONS: Tx[] = [
-  { id: '1', date: '2026-06-10', desc: 'Đơn hàng ORD-20260610-0042', delta: +125, type: 'earn' },
-  { id: '2', date: '2026-05-22', desc: 'Đổi voucher giảm 50K', delta: -500, type: 'use' },
-  { id: '3', date: '2026-05-15', desc: 'Đơn hàng ORD-20260515-0008', delta: +78, type: 'earn' },
-  { id: '4', date: '2026-04-30', desc: 'Sinh nhật thành viên', delta: +500, type: 'bonus' },
-];
-
-const REWARDS = [
-  { id: 'r1', title: 'Voucher giảm 50K', cost: 500, desc: 'Đơn tối thiểu 300K' },
-  { id: 'r2', title: 'Voucher giảm 100K', cost: 1000, desc: 'Đơn tối thiểu 500K' },
-  { id: 'r3', title: 'Free ship 1 tháng', cost: 800, desc: 'Không giới hạn đơn' },
-  { id: 'r4', title: 'Tặng Vitamin C', cost: 1500, desc: 'Giao tận nhà' },
-];
+import { fetchPoints, redeemReward } from '@/features/points';
+import type { PointsAccount, PointTransaction, PointReward } from '@/features/points';
 
 const TX_FILTERS = [
   { id: 'all', label: 'Tất cả' },
@@ -49,20 +21,64 @@ const TX_FILTERS = [
 ] as const;
 
 export default function PointsPage() {
+  const [account, setAccount] = useState<PointsAccount | null>(null);
+  const [transactions, setTransactions] = useState<PointTransaction[]>([]);
+  const [rewards, setRewards] = useState<PointReward[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<(typeof TX_FILTERS)[number]['id']>('all');
-  const [redeeming, setRedeeming] = useState<(typeof REWARDS)[number] | null>(null);
+  const [redeeming, setRedeeming] = useState<PointReward | null>(null);
 
-  const list = filter === 'all' ? TRANSACTIONS : TRANSACTIONS.filter((t) => t.type === filter);
+  useEffect(() => {
+    fetchPoints()
+      .then((data) => {
+        setAccount(data.account);
+        setTransactions(data.transactions);
+        setRewards(data.rewards);
+      })
+      .catch(() => toast.error('Không tải được thông tin điểm thưởng'))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const confirmRedeem = () => {
-    if (!redeeming) return;
-    if (POINTS.balance < redeeming.cost) {
-      toast.error(`Bạn cần thêm ${redeeming.cost - POINTS.balance} điểm để đổi quà này`);
+  const list = filter === 'all' ? transactions : transactions.filter((t) => t.type === filter);
+
+  const confirmRedeem = async () => {
+    if (!redeeming || !account) return;
+    if (account.balance < redeeming.cost) {
+      toast.error(`Bạn cần thêm ${redeeming.cost - account.balance} điểm để đổi quà này`);
       return;
     }
-    toast.success(`Đã đổi "${redeeming.title}" — kiểm tra voucher của bạn!`);
-    setRedeeming(null);
+    try {
+      await redeemReward({ rewardId: redeeming.id });
+      toast.success(`Đã đổi "${redeeming.title}" — kiểm tra voucher của bạn!`);
+      setRedeeming(null);
+      // Refresh data
+      const data = await fetchPoints();
+      setAccount(data.account);
+      setTransactions(data.transactions);
+    } catch {
+      toast.error('Không đổi được quà');
+    }
   };
+
+  if (loading) {
+    return (
+      <>
+        <Breadcrumb items={[{ label: 'Tài khoản' }, { label: 'Điểm thưởng' }]} />
+        <h1 className="mt-3 text-xl font-bold text-ink-900">Điểm thưởng</h1>
+        <p className="text-sm text-ink-600 mt-2">Đang tải...</p>
+      </>
+    );
+  }
+
+  if (!account) {
+    return (
+      <>
+        <Breadcrumb items={[{ label: 'Tài khoản' }, { label: 'Điểm thưởng' }]} />
+        <h1 className="mt-3 text-xl font-bold text-ink-900">Điểm thưởng</h1>
+        <p className="text-sm text-ink-600 mt-2">Không có dữ liệu</p>
+      </>
+    );
+  }
 
   return (
     <>
@@ -71,7 +87,7 @@ export default function PointsPage() {
           <Breadcrumb items={[{ label: 'Tài khoản' }, { label: 'Điểm thưởng' }]} />
           <div className="mt-3 inline-flex items-center gap-2 px-3 h-7 bg-warning-600 text-white text-xs font-semibold rounded-full">
             <Award className="w-3 h-3" aria-hidden="true" />
-            Thành viên {POINTS.tier}
+            Thành viên {account.tier}
           </div>
           <h1 className="mt-3 text-2xl font-bold text-ink-900">Điểm thưởng</h1>
         </div>
@@ -81,25 +97,24 @@ export default function PointsPage() {
         <section className="p-5 bg-white border border-ink-200 rounded-md">
           <p className="text-xs text-ink-500">Số dư hiện tại</p>
           <p className="mt-1 text-4xl font-bold text-warning-700 font-mono">
-            {POINTS.balance.toLocaleString('vi-VN')}
+            {account.balance.toLocaleString('vi-VN')}
           </p>
           <p className="text-xs text-ink-500 mt-1">điểm</p>
 
           <div className="mt-4 pt-4 border-t border-ink-100">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs text-ink-600">
-                Tiến độ lên{' '}
-                <strong className="text-ink-900">{POINTS.tierProgress.nextTier}</strong>
+                Tiến độ lên <strong className="text-ink-900">{account.tierProgress.nextTier}</strong>
               </p>
               <p className="text-xs font-mono text-ink-500">
-                {POINTS.tierProgress.current} / {POINTS.tierProgress.target}
+                {account.tierProgress.current} / {account.tierProgress.target}
               </p>
             </div>
             <div className="w-full h-2 bg-ink-100 rounded-full overflow-hidden">
               <div
                 className="h-full bg-warning-500 rounded-full transition-all"
                 style={{
-                  width: `${(POINTS.tierProgress.current / POINTS.tierProgress.target) * 100}%`,
+                  width: `${(account.tierProgress.current / account.tierProgress.target) * 100}%`,
                 }}
               />
             </div>
@@ -107,8 +122,8 @@ export default function PointsPage() {
         </section>
 
         <section className="grid grid-cols-2 gap-3">
-          <Stat icon={TrendingUp} label="Tổng tích lũy" value={POINTS.earned} color="success" />
-          <Stat icon={Gift} label="Đã dùng" value={POINTS.used} color="primary" />
+          <Stat icon={TrendingUp} label="Tổng tích lũy" value={account.earned} color="success" />
+          <Stat icon={Gift} label="Đã dùng" value={account.used} color="primary" />
         </section>
 
         {/* Redeem section */}
@@ -120,8 +135,8 @@ export default function PointsPage() {
             </h2>
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
-            {REWARDS.map((r) => {
-              const canAfford = POINTS.balance >= r.cost;
+            {rewards.map((r) => {
+              const canAfford = account.balance >= r.cost;
               return (
                 <div
                   key={r.id}
@@ -234,7 +249,7 @@ export default function PointsPage() {
               <p className="text-xs text-ink-500">
                 Số dư sau đổi:{' '}
                 <strong className="font-mono text-ink-900">
-                  {(POINTS.balance - redeeming.cost).toLocaleString('vi-VN')}
+                  {(account.balance - redeeming.cost).toLocaleString('vi-VN')}
                 </strong>{' '}
                 điểm
               </p>

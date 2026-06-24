@@ -1,27 +1,52 @@
 // =====================================================
-// /tiem-chung — VACCINE-HOME
-// Danh sách vaccine, phân loại theo đối tượng
+// /tiem-chung — VACCINE-HOME (real API)
+// Danh sách vaccine — /api/v1/vaccines (client component để có JWT token)
 // =====================================================
 
-import Link from 'next/link';
-import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { VACCINES } from '@/data/shop/vaccines';
-import { Syringe, Calendar, FileText } from 'lucide-react';
-import { formatVND } from '@/lib/shop/format';
-import type { Metadata } from 'next';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Tiêm chủng',
-  description: 'Đặt lịch tiêm vaccine cúm, COVID, viêm gan B và nhiều loại khác.',
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import { EmptyState } from '@/components/ui/Feedback';
+import { Syringe, Calendar, FileText, Loader2 } from 'lucide-react';
+import { formatVND } from '@/lib/shop/format';
+import { fetchVaccines } from '@/features/vaccines';
+import type { Vaccine, VaccineAudience } from '@/features/vaccines';
+
+const AUDIENCE_META: Record<
+  VaccineAudience,
+  { label: string; color: string }
+> = {
+  CHILD: { label: 'Trẻ em', color: 'bg-info-50 text-info-700' },
+  ADULT: { label: 'Người lớn', color: 'bg-accent-50 text-accent-700' },
+  PREGNANT: { label: 'Phụ nữ mang thai', color: 'bg-danger-50 text-danger-700' },
+  ELDERLY: { label: 'Người cao tuổi', color: 'bg-warning-50 text-warning-700' },
 };
 
 export default function TiemChungPage() {
-  const categories = [
-    { id: 'trẻ em', label: 'Trẻ em', color: 'bg-info-50 text-info-700' },
-    { id: 'người lớn', label: 'Người lớn', color: 'bg-accent-50 text-accent-700' },
-    { id: 'phụ nữ mang thai', label: 'Phụ nữ mang thai', color: 'bg-danger-50 text-danger-700' },
-    { id: 'người cao tuổi', label: 'Người cao tuổi', color: 'bg-warning-50 text-warning-700' },
-  ] as const;
+  const [vaccines, setVaccines] = useState<Vaccine[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchVaccines()
+      .then((res) => {
+        if (!cancelled) setVaccines(res.vaccines);
+      })
+      .catch(() => {
+        if (!cancelled) setVaccines([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Group by audience (default: ADULT)
+  const categories: VaccineAudience[] = ['CHILD', 'ADULT', 'PREGNANT', 'ELDERLY'];
 
   return (
     <>
@@ -58,56 +83,67 @@ export default function TiemChungPage() {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {categories.map((cat) => {
-          const list = VACCINES.filter((v) => v.category === cat.id);
-          if (list.length === 0) return null;
-          return (
-            <section key={cat.id}>
-              <h2 className="text-lg font-semibold text-ink-900 mb-3 flex items-center gap-2">
-                <span className={`px-2 h-6 inline-flex items-center text-xs font-semibold rounded ${cat.color}`}>
-                  {cat.label}
-                </span>
-              </h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {list.map((v) => (
-                  <article
-                    key={v.id}
-                    className="p-4 bg-white border border-ink-200 rounded-md"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-sm font-semibold text-ink-900 text-balance">
-                        {v.name}
-                      </h3>
-                      <span className="px-2 h-5 bg-accent-600 text-white text-[10px] font-bold rounded uppercase flex-shrink-0">
-                        {v.price === 0 ? 'Miễn phí' : formatVND(v.price)}
-                      </span>
-                    </div>
+        {loading ? (
+          <p className="text-sm text-ink-500 py-8 text-center">
+            <Loader2 className="inline w-4 h-4 animate-spin mr-2" />
+            Đang tải vaccine...
+          </p>
+        ) : vaccines.length === 0 ? (
+          <EmptyState
+            icon={Syringe}
+            title="Chưa có vaccine nào"
+            description="Hệ thống chưa có vaccine khả dụng. Vui lòng quay lại sau."
+          />
+        ) : (
+          <section>
+            <h2 className="text-lg font-semibold text-ink-900 mb-3">
+              Tất cả vaccine ({vaccines.length})
+            </h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {vaccines.map((v) => (
+                <article
+                  key={v.id}
+                  className="p-4 bg-white border border-ink-200 rounded-md"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-sm font-semibold text-ink-900 text-balance">
+                      {v.name}
+                    </h3>
+                    <span className="px-2 h-5 bg-accent-600 text-white text-[10px] font-bold rounded uppercase flex-shrink-0">
+                      {v.price === 0 ? 'Miễn phí' : formatVND(v.price)}
+                    </span>
+                  </div>
+                  {v.description && (
                     <p className="mt-1 text-xs text-ink-600 line-clamp-2 text-pretty">
                       {v.description}
                     </p>
-                    <div className="mt-3 space-y-1 text-xs text-ink-500">
+                  )}
+                  <div className="mt-3 space-y-1 text-xs text-ink-500">
+                    {v.manufacturer && (
                       <p>
-                        <strong className="text-ink-700">Xuất xứ:</strong> {v.manufacturer}, {v.origin}
+                        <strong className="text-ink-700">Hãng:</strong>{' '}
+                        {v.manufacturer}
                       </p>
+                    )}
+                    {v.doses && (
                       <p>
-                        <strong className="text-ink-700">Đối tượng:</strong> {v.ageRange}
+                        <strong className="text-ink-700">Lịch tiêm:</strong>{' '}
+                        {v.doses} mũi
+                        {v.schedule && ` — ${v.schedule}`}
                       </p>
-                      <p>
-                        <strong className="text-ink-700">Lịch tiêm:</strong> {v.doses} mũi — {v.schedule}
-                      </p>
-                    </div>
-                    <Link
-                      href="/tiem-chung/dat-lich"
-                      className="mt-3 block w-full text-center h-8 leading-8 text-xs font-semibold bg-ink-100 text-ink-900 rounded hover:bg-ink-200 transition-colors"
-                    >
-                      Đặt lịch tiêm
-                    </Link>
-                  </article>
-                ))}
-              </div>
-            </section>
-          );
-        })}
+                    )}
+                  </div>
+                  <Link
+                    href="/tiem-chung/dat-lich"
+                    className="mt-3 block w-full text-center h-8 leading-8 text-xs font-semibold bg-ink-100 text-ink-900 rounded hover:bg-ink-200 transition-colors"
+                  >
+                    Đặt lịch tiêm
+                  </Link>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </>
   );

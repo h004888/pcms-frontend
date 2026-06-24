@@ -10,13 +10,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { Send, Bot, User as UserIcon, Sparkles } from 'lucide-react';
-import { getAIResponse } from '@/data/ai-responses';
+import { sendChatMessage } from '@/features/ai-chat';
+import type { AIMessage } from '@/features/ai-chat';
 
-interface Message {
-  id: string;
-  role: 'user' | 'ai';
-  content: string;
-  timestamp: number;
+interface Message extends AIMessage {
+  followUp?: string[];
 }
 
 const SUGGESTIONS = [
@@ -45,7 +43,7 @@ export default function AIChatPage() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages]);
 
-  const send = (text: string) => {
+  const send = async (text: string) => {
     const cleanText = text.trim();
     if (!cleanText || sending) return;
     const userMsg: Message = {
@@ -58,21 +56,28 @@ export default function AIChatPage() {
     setInput('');
     setSending(true);
 
-    // Smart mock với delay
-    const delay = 800 + Math.random() * 600;
-    setTimeout(() => {
-      const { response, followUp } = getAIResponse(cleanText);
+    try {
+      const history = messages.slice(0, -1).map(m => ({ id: m.id, role: m.role, content: m.content, timestamp: m.timestamp }));
+      const { response, followUp } = await sendChatMessage({ message: cleanText, history });
       const aiMsg: Message = {
         id: String(Date.now() + 1),
         role: 'ai',
         content: response,
         timestamp: Date.now(),
-        // @ts-ignore - store followUp for rendering
         followUp,
       };
       setMessages((m) => [...m, aiMsg]);
+    } catch {
+      const aiMsg: Message = {
+        id: String(Date.now() + 1),
+        role: 'ai',
+        content: 'Xin lỗi, tôi đang gặp sự cố. Vui lòng thử lại sau.',
+        timestamp: Date.now(),
+      };
+      setMessages((m) => [...m, aiMsg]);
+    } finally {
       setSending(false);
-    }, delay);
+    }
   };
 
   const clearChat = () => {
@@ -182,7 +187,7 @@ function MessageBubble({
   msg,
   onSuggest,
 }: {
-  msg: Message & { followUp?: string[] };
+  msg: Message;
   onSuggest: (s: string) => void;
 }) {
   return (

@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { LookupNav } from '@/components/shop/LookupNav';
 import { EmptyState } from '@/components/ui/Feedback';
-import { ARTICLES, type ArticleCategory } from '@/data/shop/articles';
 import { BookOpen, Calendar, Clock, User } from 'lucide-react';
+import { fetchArticles } from '@/features/articles';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -15,24 +15,28 @@ export const metadata: Metadata = {
   description: 'Bài viết về sức khỏe, dinh dưỡng, phòng bệnh từ dược sĩ PCMS.',
 };
 
-export default function BaiVietPage({
+const CATEGORIES = [
+  'sức khỏe tổng quát',
+  'dinh dưỡng',
+  'thai kỳ & trẻ em',
+  'bệnh mạn tính',
+  'phòng bệnh',
+  'mẹo vặt',
+];
+
+export default async function BaiVietPage({
   searchParams,
 }: {
   searchParams: { cat?: string };
 }) {
-  const cat = searchParams.cat as ArticleCategory | undefined;
-  let articles = ARTICLES;
-  if (cat) articles = articles.filter((a) => a.category === cat);
-
-  // Categories với count
-  const categories: ArticleCategory[] = [
-    'sức khỏe tổng quát',
-    'dinh dưỡng',
-    'thai kỳ & trẻ em',
-    'bệnh mạn tính',
-    'phòng bệnh',
-    'mẹo vặt',
-  ];
+  const cat = searchParams.cat;
+  let articles: Awaited<ReturnType<typeof fetchArticles>>['articles'] = [];
+  try {
+    const res = await fetchArticles(cat ? { cat } : undefined);
+    articles = res.articles;
+  } catch {
+    articles = [];
+  }
 
   return (
     <>
@@ -63,7 +67,7 @@ export default function BaiVietPage({
           >
             Tất cả
           </Link>
-          {categories.map((c) => (
+          {CATEGORIES.map((c) => (
             <Link
               key={c}
               href={`/bai-viet?cat=${encodeURIComponent(c)}`}

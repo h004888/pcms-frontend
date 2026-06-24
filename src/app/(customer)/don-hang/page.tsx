@@ -1,14 +1,11 @@
 // =====================================================
-// /orders — SHOP-ORDER-HISTORY: Danh sách đơn hàng
+// /orders — SHOP-ORDER-HISTORY (real API)
+// Lịch sử đơn hàng — /api/v1/orders/history
 // =====================================================
 
 import Link from 'next/link';
-import {
-  MOCK_ORDERS,
-  STATUS_LABELS,
-  PAYMENT_LABELS,
-  type OrderStatus,
-} from '@/data/shop/orders';
+import { fetchCustomerOrderHistory } from '@/features/customer-orders';
+import type { Order, OrderStatus } from '@/features/customer-orders';
 import { EmptyState } from '@/components/ui/Feedback';
 import { Package, ChevronRight, Clock, Check, Truck, X } from 'lucide-react';
 import { format } from 'date-fns';
@@ -22,10 +19,28 @@ export const metadata: Metadata = {
   description: 'Lịch sử và trạng thái đơn hàng PCMS.',
 };
 
-const ICON_MAP = { clock: Clock, check: Check, truck: Truck, package: Package, x: X };
+const STATUS_META: Record<
+  OrderStatus,
+  { label: string; color: string; icon: typeof Clock }
+> = {
+  PENDING: { label: 'Chờ xác nhận', color: 'bg-warning-50 text-warning-700', icon: Clock },
+  CONFIRMED: { label: 'Đã xác nhận', color: 'bg-info-50 text-info-700', icon: Check },
+  SHIPPING: { label: 'Đang giao', color: 'bg-accent-50 text-accent-700', icon: Truck },
+  DELIVERED: { label: 'Đã giao', color: 'bg-success-50 text-success-700', icon: Check },
+  CANCELLED: { label: 'Đã hủy', color: 'bg-danger-50 text-danger-700', icon: X },
+};
 
-export default function ShopOrderHistoryPage() {
-  const orders = MOCK_ORDERS;
+async function loadOrders(): Promise<Order[]> {
+  try {
+    const res = await fetchCustomerOrderHistory();
+    return res.orders;
+  } catch {
+    return [];
+  }
+}
+
+export default async function ShopOrderHistoryPage() {
+  const orders = await loadOrders();
 
   if (orders.length === 0) {
     return (
@@ -48,66 +63,55 @@ export default function ShopOrderHistoryPage() {
   }
 
   return (
-    <div className="bg-ink-50 min-h-screen">
-      <div className="bg-white border-b border-ink-200">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-2xl font-bold text-ink-900 text-balance">Đơn hàng của tôi</h1>
-          <p className="mt-1 text-sm text-ink-600 font-mono">{orders.length} đơn hàng</p>
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-6 space-y-3">
+    <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-6">
+      <h1 className="text-2xl font-bold text-ink-900 mb-4">Đơn hàng của tôi</h1>
+      <ul className="space-y-3">
         {orders.map((order) => {
-          const badge = STATUS_LABELS[order.status as OrderStatus];
-          const Icon = ICON_MAP[badge.icon];
-          const totalQty = order.items.reduce((s, i) => s + i.qty, 0);
+          const meta = STATUS_META[order.status] ?? STATUS_META.PENDING;
+          const Icon = meta.icon;
           return (
-            <Link
-              key={order.id}
-              href={`/don-hang/${order.id}`}
-              className="block p-4 bg-white border border-ink-200 rounded-md hover:border-accent-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-ink-900 font-mono">
-                    #{order.code}
-                  </p>
-                  <p className="text-xs text-ink-500 mt-0.5 font-mono">
-                    {format(new Date(order.createdAt), "d 'tháng' M, yyyy", { locale: vi })}
-                  </p>
+            <li key={order.id}>
+              <Link
+                href={`/don-hang/${order.id}`}
+                className="block p-5 bg-white border border-ink-200 rounded-md hover:border-accent-500 transition-colors"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-ink-900 font-mono">
+                      #{order.code}
+                    </p>
+                    <p className="mt-1 text-xs text-ink-500 font-mono">
+                      {format(new Date(order.createdAt), "d 'tháng' M, yyyy", {
+                        locale: vi,
+                      })}
+                      {' · '}
+                      {order.items.length} sản phẩm
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={clsx(
+                        'inline-flex items-center gap-1 px-2 h-6 text-xs font-semibold rounded',
+                        meta.color
+                      )}
+                    >
+                      <Icon className="w-3 h-3" aria-hidden="true" />
+                      {meta.label}
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-ink-400" />
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <span
-                    className={clsx(
-                      'inline-flex items-center gap-1 px-2.5 h-6 rounded-full text-xs font-semibold',
-                      badge.class
-                    )}
-                  >
-                    <Icon className="w-3 h-3" aria-hidden="true" />
-                    {badge.label}
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-xs text-ink-500">Tổng cộng</span>
+                  <span className="text-base font-bold text-accent-700 font-mono">
+                    {formatVND(order.total)}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-ink-400" aria-hidden="true" />
                 </div>
-              </div>
-              <div className="mt-3 flex items-center justify-between pt-3 border-t border-ink-100">
-                <p className="text-sm text-ink-600">
-                  <span className="font-mono font-semibold text-ink-900">
-                    {order.items.length}
-                  </span>{' '}
-                  sản phẩm ·{' '}
-                  <span className="font-mono">
-                    {totalQty}
-                  </span>{' '}
-                  đơn vị
-                </p>
-                <p className="text-base font-bold text-accent-700 font-mono">
-                  {formatVND(order.total)}
-                </p>
-              </div>
-            </Link>
+              </Link>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </div>
   );
 }

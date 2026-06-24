@@ -6,87 +6,14 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { Sparkles, Search, Stethoscope, ArrowRight, Pill } from 'lucide-react';
-import { PRODUCTS } from '@/data/shop/catalog';
+import { semanticSearch } from '@/features/ai-search';
 import { getProductHref, formatVND } from '@/lib/shop/format';
-import { getAIResponse } from '@/data/ai-responses';
 import clsx from 'clsx';
-
-interface SymptomGroup {
-  category: string;
-  items: { symptom: string; drugs: string[]; severity: 'self' | 'consult' | 'urgent' }[];
-}
-
-const SYMPTOM_DB: SymptomGroup[] = [
-  {
-    category: 'Triệu chứng thường gặp',
-    items: [
-      {
-        symptom: 'đau đầu, sốt nhẹ',
-        drugs: ['paracetamol-500-mg-20', 'ibuprofen-400mg'],
-        severity: 'self',
-      },
-      {
-        symptom: 'ho, đau họng',
-        drugs: ['paracetamol-500-mg-20', 'cetirizine-10mg'],
-        severity: 'self',
-      },
-      {
-        symptom: 'sổ mũi, nghẹt mũi',
-        drugs: ['cetirizine-10mg'],
-        severity: 'self',
-      },
-      {
-        symptom: 'đau bụng kinh',
-        drugs: ['paracetamol-500-mg-20', 'ibuprofen-400mg'],
-        severity: 'self',
-      },
-      {
-        symptom: 'mệt mỏi, thiếu năng lượng',
-        drugs: ['vitamin-c-1000-mg-30', 'omega-3-1000-mg-60', 'cal-d3-600-mg-60'],
-        severity: 'self',
-      },
-      {
-        symptom: 'đau cơ, khớp',
-        drugs: ['ibuprofen-400mg'],
-        severity: 'self',
-      },
-      {
-        symptom: 'mất ngủ',
-        drugs: ['melatonin-3mg'],
-        severity: 'consult',
-      },
-    ],
-  },
-  {
-    category: 'Cần tư vấn dược sĩ',
-    items: [
-      {
-        symptom: 'huyết áp cao',
-        drugs: ['amlodipine-5mg'],
-        severity: 'consult',
-      },
-      {
-        symptom: 'mỡ máu cao',
-        drugs: ['atorvastatin-20mg'],
-        severity: 'consult',
-      },
-      {
-        symptom: 'tiểu đường',
-        drugs: ['metformin-500mg'],
-        severity: 'consult',
-      },
-      {
-        symptom: 'viêm phổi, ho có đờm',
-        drugs: ['amoxicillin-500-mg-12'],
-        severity: 'urgent',
-      },
-    ],
-  },
-];
+import type { SemanticSearchResult } from '@/features/ai-search';
 
 const SEVERITY_LABEL = {
   self: { text: 'Tự chăm sóc', class: 'bg-success-50 text-success-700 border-success-200' },
@@ -97,39 +24,27 @@ const SEVERITY_LABEL = {
 export default function SemanticSearchPage() {
   const [query, setQuery] = useState('');
   const [submittedQuery, setSubmittedQuery] = useState('');
+  const [result, setResult] = useState<SemanticSearchResult | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const result = useMemo(() => {
-    if (!submittedQuery) return null;
-    const q = submittedQuery.toLowerCase();
-    // Tìm trong SYMPTOM_DB trước
-    for (const group of SYMPTOM_DB) {
-      for (const item of group.items) {
-        if (item.symptom.toLowerCase().includes(q) || q.includes(item.symptom.toLowerCase())) {
-          const drugs = PRODUCTS.filter((p) => item.drugs.includes(p.slug));
-          return {
-            symptom: item.symptom,
-            severity: item.severity,
-            drugs,
-            advice: getAIResponse(submittedQuery).response,
-          };
-        }
-      }
-    }
-    // Fallback: search trong products
-    const drugs = PRODUCTS.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.brand.toLowerCase().includes(q) ||
-        p.shortDescription?.toLowerCase().includes(q)
-    ).slice(0, 4);
-    if (drugs.length === 0) return { symptom: '', severity: 'self' as const, drugs: [], advice: '' };
-    return { symptom: submittedQuery, severity: 'self' as const, drugs, advice: '' };
-  }, [submittedQuery]);
-
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
     setSubmittedQuery(query.trim());
+    setLoading(true);
+    try {
+      const data = await semanticSearch(query.trim());
+      setResult(data);
+    } catch {
+      setResult({
+        symptom: submittedQuery || query.trim(),
+        severity: 'self',
+        drugs: [],
+        advice: 'Đang gặp sự cố kết nối. Vui lòng thử lại.',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -171,48 +86,13 @@ export default function SemanticSearchPage() {
             />
             <button
               type="submit"
-              className="absolute right-1 top-1 bottom-1 px-4 bg-accent-600 text-white text-sm font-semibold rounded-md hover:bg-accent-700 transition-colors"
+              disabled={loading}
+              className="absolute right-1 top-1 bottom-1 px-4 bg-accent-600 text-white text-sm font-semibold rounded-md hover:bg-accent-700 transition-colors disabled:opacity-50"
             >
-              Tìm
+              {loading ? 'Đang tìm...' : 'Tìm'}
             </button>
           </div>
-          <p className="mt-2 text-xs text-ink-500">
-            Gợi ý: thử các triệu chứng dưới đây hoặc mô tả bất kỳ.
-          </p>
         </form>
-
-        {/* Quick symptoms */}
-        <div className="space-y-3">
-          {SYMPTOM_DB.map((group) => (
-            <div key={group.category}>
-              <p className="text-xs font-semibold text-ink-500 mb-2">
-                {group.category}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {group.items.map((item) => {
-                  const sev = SEVERITY_LABEL[item.severity];
-                  return (
-                    <button
-                      key={item.symptom}
-                      type="button"
-                      onClick={() => {
-                        setQuery(item.symptom);
-                        setSubmittedQuery(item.symptom);
-                      }}
-                      className={clsx(
-                        'inline-flex items-center gap-1 px-3 h-8 text-xs font-medium rounded-full border transition-colors',
-                        sev.class
-                      )}
-                    >
-                      <Stethoscope className="w-3 h-3" aria-hidden="true" />
-                      {item.symptom}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
 
         {/* Result */}
         {result && submittedQuery && (
@@ -284,6 +164,31 @@ export default function SemanticSearchPage() {
                 </Link>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Quick symptoms guide */}
+        {!result && (
+          <div className="p-5 bg-white border border-ink-200 rounded-md">
+            <h3 className="text-sm font-semibold text-ink-900 mb-3 flex items-center gap-2">
+              <Stethoscope className="w-4 h-4 text-accent-600" aria-hidden="true" />
+              Gợi ý triệu chứng
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {['đau đầu, sốt nhẹ', 'ho, đau họng', 'sổ mũi, nghẹt mũi', 'đau bụng kinh', 'mệt mỏi, thiếu năng lượng', 'đau cơ, khớp'].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => {
+                    setQuery(s);
+                    setSubmittedQuery(s);
+                  }}
+                  className="px-3 h-8 text-xs font-medium bg-ink-100 text-ink-700 rounded-full hover:bg-ink-200 transition-colors"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>

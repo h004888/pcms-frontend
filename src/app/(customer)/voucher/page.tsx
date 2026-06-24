@@ -1,50 +1,20 @@
 // =====================================================
-// /voucher — SHOP-VOUCHER
-// Kho voucher & mã giảm giá
+// /voucher — SHOP-VOUCHER (real API)
+// Kho voucher & mã giảm giá — dữ liệu từ /api/v1/vouchers
 // =====================================================
 
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { Tag, Copy, Calendar, Gift, Check } from 'lucide-react';
+import { EmptyState } from '@/components/ui/Feedback';
+import { Tag, Copy, Calendar, Gift, Check, Ticket } from 'lucide-react';
 import { formatVND } from '@/lib/shop/format';
 import type { Metadata } from 'next';
+import { fetchVouchers, fetchVoucherHistory } from '@/features/vouchers';
+import type { Voucher } from '@/features/vouchers';
 
 export const metadata: Metadata = {
   title: 'Voucher của tôi',
   description: 'Mã giảm giá, voucher quà tặng và chương trình khuyến mãi.',
 };
-
-const VOUCHERS = [
-  {
-    id: 'v-1',
-    code: 'WELCOME10',
-    title: 'Giảm 10% đơn hàng đầu tiên',
-    discount: 10,
-    discountType: 'percent',
-    minSpend: 200000,
-    expiresAt: '2026-12-31',
-    status: 'available',
-  },
-  {
-    id: 'v-2',
-    code: 'FREESHIP50K',
-    title: 'Giảm 50K phí vận chuyển',
-    discount: 50000,
-    discountType: 'fixed',
-    minSpend: 300000,
-    expiresAt: '2026-08-31',
-    status: 'available',
-  },
-  {
-    id: 'v-3',
-    code: 'SUMMER25',
-    title: 'Giảm 25% thuốc không kê đơn',
-    discount: 25,
-    discountType: 'percent',
-    minSpend: 0,
-    expiresAt: '2026-07-31',
-    status: 'available',
-  },
-];
 
 const PROGRAMS = [
   {
@@ -55,7 +25,21 @@ const PROGRAMS = [
   },
 ];
 
-export default function VoucherPage() {
+async function loadVouchers() {
+  try {
+    const [vouchersRes, historyRes] = await Promise.all([
+      fetchVouchers(),
+      fetchVoucherHistory().catch(() => ({ items: [], total: 0 })),
+    ]);
+    return { vouchers: vouchersRes.vouchers, history: historyRes };
+  } catch {
+    return { vouchers: [], history: { items: [], total: 0 } };
+  }
+}
+
+export default async function VoucherPage() {
+  const { vouchers } = await loadVouchers();
+
   return (
     <>
       <div className="bg-white border-b border-ink-200">
@@ -70,44 +54,52 @@ export default function VoucherPage() {
 
       <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-6 space-y-3">
         <h2 className="text-base font-semibold text-ink-900">
-          Voucher khả dụng ({VOUCHERS.length})
+          Voucher khả dụng ({vouchers.length})
         </h2>
 
-        {VOUCHERS.map((v) => (
-          <article
-            key={v.id}
-            className="flex items-stretch bg-white border border-ink-200 rounded-md overflow-hidden"
-          >
-            <div className="flex flex-col items-center justify-center w-24 bg-accent-600 text-white px-3">
-              {v.discountType === 'percent' ? (
-                <span className="text-2xl font-bold">-{v.discount}%</span>
-              ) : (
-                <span className="text-lg font-bold">-{formatVND(v.discount)}</span>
-              )}
-              <span className="text-xs">OFF</span>
-            </div>
-            <div className="flex-1 p-4">
-              <p className="text-sm font-semibold text-ink-900">{v.title}</p>
-              <p className="mt-1 text-xs text-ink-500 font-mono">Mã: {v.code}</p>
-              {v.minSpend > 0 && (
-                <p className="text-xs text-ink-600 mt-1">
-                  Đơn tối thiểu {formatVND(v.minSpend)}
+        {vouchers.length === 0 ? (
+          <EmptyState
+            icon={Ticket}
+            title="Chưa có voucher nào"
+            description="Hiện tại bạn chưa có voucher khả dụng."
+          />
+        ) : (
+          vouchers.map((v: Voucher) => (
+            <article
+              key={v.id}
+              className="flex items-stretch bg-white border border-ink-200 rounded-md overflow-hidden"
+            >
+              <div className="flex flex-col items-center justify-center w-24 bg-accent-600 text-white px-3">
+                {v.discountType === 'PERCENT' ? (
+                  <span className="text-2xl font-bold">-{v.discountValue}%</span>
+                ) : (
+                  <span className="text-lg font-bold">-{formatVND(v.discountValue)}</span>
+                )}
+                <span className="text-xs">OFF</span>
+              </div>
+              <div className="flex-1 p-4">
+                <p className="text-sm font-semibold text-ink-900">{v.title}</p>
+                <p className="mt-1 text-xs text-ink-500 font-mono">Mã: {v.code}</p>
+                {v.minSpend > 0 && (
+                  <p className="text-xs text-ink-600 mt-1">
+                    Đơn tối thiểu {formatVND(v.minSpend)}
+                  </p>
+                )}
+                <p className="text-xs text-ink-500 mt-1 flex items-center gap-1">
+                  <Calendar className="w-3 h-3" aria-hidden="true" />
+                  HSD: {new Date(v.expiresAt).toLocaleDateString('vi-VN')}
                 </p>
-              )}
-              <p className="text-xs text-ink-500 mt-1 flex items-center gap-1">
-                <Calendar className="w-3 h-3" aria-hidden="true" />
-                HSD: {new Date(v.expiresAt).toLocaleDateString('vi-VN')}
-              </p>
-              <button
-                type="button"
-                className="mt-2 inline-flex items-center gap-1 px-2.5 h-7 text-xs font-medium bg-accent-50 text-accent-700 rounded hover:bg-accent-100"
-              >
-                <Copy className="w-3 h-3" aria-hidden="true" />
-                Sao chép mã
-              </button>
-            </div>
-          </article>
-        ))}
+                <button
+                  type="button"
+                  className="mt-2 inline-flex items-center gap-1 px-2.5 h-7 text-xs font-medium bg-accent-50 text-accent-700 rounded hover:bg-accent-100"
+                >
+                  <Copy className="w-3 h-3" aria-hidden="true" />
+                  Sao chép mã
+                </button>
+              </div>
+            </article>
+          ))
+        )}
 
         <h2 className="text-base font-semibold text-ink-900 mt-6">
           Chương trình ưu đãi

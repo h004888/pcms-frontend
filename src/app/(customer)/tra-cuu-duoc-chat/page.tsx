@@ -1,43 +1,67 @@
+'use client';
+
 // =====================================================
-// /tra-cuu-duoc-chat — SHOP-LOOKUP-INGREDIENT: Tra cứu hoạt chất
-// Dùng INGREDIENTS data. Search + category filter.
+// /tra-cuu-duoc-chat — SHOP-LOOKUP-INGREDIENT (real API)
+// /api/v1/shop/lookup/ingredient
 // =====================================================
 
 import Link from 'next/link';
-import type { Metadata } from 'next';
-import { Search, Beaker, ChevronRight } from 'lucide-react';
-import {
-  INGREDIENTS,
-  INGREDIENT_CATEGORIES,
-  searchIngredients,
-  getIngredientsByCategory,
-} from '@/data/shop/ingredients';
+import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { Search, Beaker, ChevronRight, Loader2 } from 'lucide-react';
 import { LookupNav } from '@/components/shop/LookupNav';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { EmptyState } from '@/components/ui/Feedback';
-import { Badge } from '@/components/ui/Card';
-import clsx from 'clsx';
+import { lookupIngredient } from '@/features/shop';
 
-export const dynamic = 'force-dynamic';
-
-export const metadata: Metadata = {
-  title: 'Tra cứu hoạt chất',
-  description: 'Tra cứu thông tin hoạt chất/dược chất: công thức, cơ chế, chỉ định, liều dùng, tác dụng phụ, tương tác.',
-};
-
-interface PageProps {
-  searchParams: { q?: string; cat?: string };
+interface IngredientLite {
+  id: string;
+  name: string;
+  slug?: string;
+  category?: string;
+  formula?: string;
 }
 
-export default function TraCuuDuocChatPage({ searchParams }: PageProps) {
-  const q = (searchParams.q ?? '').trim();
-  const catFilter = searchParams.cat as any;
+export default function TraCuuDuocChatPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const q = (searchParams.get('q') ?? '').trim();
+  const [results, setResults] = useState<IngredientLite[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  let results = q
-    ? searchIngredients(q)
-    : catFilter
-      ? getIngredientsByCategory(catFilter)
-      : INGREDIENTS;
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    lookupIngredient(q)
+      .then((data) => {
+        if (cancelled) return;
+        const list = Array.isArray(data)
+          ? (data as IngredientLite[])
+          : Array.isArray((data as { items?: IngredientLite[] })?.items)
+            ? ((data as { items: IngredientLite[] }).items)
+            : [];
+        setResults(list);
+      })
+      .catch(() => {
+        if (!cancelled) setResults([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [q]);
+
+  function handleSearch(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const value = formData.get('q')?.toString() ?? '';
+    const params = new URLSearchParams();
+    if (value) params.set('q', value);
+    router.push(`${pathname}?${params.toString()}`);
+  }
 
   return (
     <>
@@ -50,103 +74,64 @@ export default function TraCuuDuocChatPage({ searchParams }: PageProps) {
             Tra cứu hoạt chất
           </h1>
           <p className="mt-1 text-sm text-ink-600 text-pretty">
-            Thông tin chi tiết hoạt chất: công thức hóa học, cơ chế tác dụng, chỉ định, liều dùng, tác dụng phụ, tương tác thuốc.
+            Thông tin chi tiết hoạt chất/dược chất: công thức, cơ chế, chỉ định, liều dùng, tác dụng phụ, tương tác.
           </p>
 
-          {/* Search form */}
-          <form
-            action="/tra-cuu-duoc-chat"
-            method="get"
-            className="mt-6 max-w-2xl"
-            role="search"
-          >
-            <div className="relative">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-400 pointer-events-none"
-                aria-hidden="true"
-              />
-              <input
-                type="search"
-                name="q"
-                defaultValue={q}
-                placeholder="Tìm hoạt chất (Paracetamol, Amoxicillin, ...)"
-                aria-label="Tìm hoạt chất"
-                className="w-full h-11 pl-10 pr-4 text-sm bg-white border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
-              />
-            </div>
-            {catFilter && <input type="hidden" name="cat" value={catFilter} />}
+          <form onSubmit={handleSearch} className="mt-6 max-w-2xl relative" role="search">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400 pointer-events-none"
+              aria-hidden="true"
+            />
+            <input
+              name="q"
+              type="search"
+              defaultValue={q}
+              placeholder="Tìm hoạt chất (Paracetamol, Ibuprofen, ...)"
+              className="w-full h-12 pl-10 pr-3 text-sm border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
+            />
           </form>
-
-          {/* Category filter */}
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-            {INGREDIENT_CATEGORIES.map((cat) => {
-              const isActive = (catFilter ?? 'all') === cat.id;
-              return (
-                <Link
-                  key={cat.id}
-                  href={
-                    cat.id === 'all'
-                      ? '/tra-cuu-duoc-chat'
-                      : `/tra-cuu-duoc-chat?cat=${cat.id}`
-                  }
-                  className={clsx(
-                    'inline-flex items-center px-3 h-8 text-xs font-medium rounded-full whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500',
-                    isActive
-                      ? 'bg-accent-600 text-white'
-                      : 'bg-ink-100 text-ink-700 hover:bg-ink-200'
-                  )}
-                >
-                  {cat.label}
-                </Link>
-              );
-            })}
-          </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-        <p className="text-sm text-ink-600 mb-3">
-          <span className="font-mono font-semibold text-ink-900">{results.length}</span> hoạt chất
-        </p>
-
-        {results.length === 0 ? (
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-3">
+        {loading ? (
+          <p className="text-sm text-ink-500 py-8 text-center">
+            <Loader2 className="inline w-4 h-4 animate-spin mr-2" />
+            Đang tìm...
+          </p>
+        ) : results.length === 0 ? (
           <EmptyState
-            icon={Search}
-            title="Không tìm thấy hoạt chất"
-            description="Thử từ khóa khác hoặc bỏ bộ lọc"
+            icon={Beaker}
+            title="Không tìm thấy"
+            description={
+              q
+                ? `Không có kết quả cho "${q}".`
+                : 'Nhập từ khóa để bắt đầu tìm.'
+            }
           />
         ) : (
-          <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <ul className="divide-y divide-ink-100 bg-white border border-ink-200 rounded-md">
             {results.map((ing) => (
-              <li key={ing.slug}>
+              <li key={ing.id}>
                 <Link
-                  href={`/tra-cuu-duoc-chat/${ing.slug}`}
-                  className="block p-4 bg-white border border-ink-200 rounded-md hover:border-accent-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+                  href={`/tra-cuu-duoc-chat/${ing.slug ?? ing.id}`}
+                  className="flex items-center gap-3 p-4 hover:bg-ink-50 transition-colors"
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-10 h-10 bg-accent-50 rounded-md flex items-center justify-center">
-                      <Beaker className="w-5 h-5 text-accent-700" aria-hidden="true" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-ink-900 text-balance">
-                        {ing.name}
-                      </p>
-                      {ing.latinName && (
-                        <p className="text-xs italic text-ink-500 mt-0.5">
-                          {ing.latinName}
-                        </p>
-                      )}
-                      {ing.formula && (
-                        <p className="text-xs text-ink-600 mt-1 font-mono">
-                          {ing.formula}
-                        </p>
-                      )}
-                      <div className="mt-2 flex items-center gap-2">
-                        <Badge variant="default">{ing.category}</Badge>
-                        <ChevronRight className="w-4 h-4 text-ink-400 ml-auto" aria-hidden="true" />
-                      </div>
-                    </div>
+                  <div className="w-10 h-10 bg-info-50 text-info-700 rounded-md flex items-center justify-center flex-shrink-0">
+                    <Beaker className="w-5 h-5" aria-hidden="true" />
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-ink-900">{ing.name}</p>
+                    {ing.formula && (
+                      <p className="text-xs text-ink-500 font-mono mt-0.5">
+                        {ing.formula}
+                      </p>
+                    )}
+                  </div>
+                  <ChevronRight
+                    className="w-4 h-4 text-ink-400 flex-shrink-0"
+                    aria-hidden="true"
+                  />
                 </Link>
               </li>
             ))}

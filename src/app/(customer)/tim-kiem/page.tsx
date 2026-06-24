@@ -1,17 +1,15 @@
 // =====================================================
-// /search — SHOP-SEARCH: Tìm kiếm sản phẩm
-// Dùng searchParams để filter (q, sort, minPrice, maxPrice)
-// force-dynamic vì dùng searchParams runtime
+// /search — SHOP-SEARCH (real API)
+// Tìm kiếm sản phẩm — /api/v1/shop/search
 // =====================================================
 
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { PRODUCTS } from '@/data/shop/catalog';
-import { SearchFilters } from '@/components/shop/SearchFilters';
-import { SearchResultCard } from '@/components/shop/SearchResultCard';
 import { EmptyState } from '@/components/ui/Feedback';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Search as SearchIcon, X } from 'lucide-react';
+import { Search as SearchIcon } from 'lucide-react';
+import { searchShop } from '@/features/shop';
+import { formatVND } from '@/lib/shop/format';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -33,113 +31,84 @@ export function generateMetadata({ searchParams }: PageProps): Metadata {
   };
 }
 
-export default function ShopSearchPage({ searchParams }: PageProps) {
-  const q = (searchParams.q ?? '').trim().toLowerCase();
-
-  let results = q
-    ? PRODUCTS.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.brand.toLowerCase().includes(q) ||
-          p.sku.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q)
-      )
-    : PRODUCTS;
-
-  if (searchParams.minPrice) {
-    results = results.filter((p) => p.price >= Number(searchParams.minPrice));
+async function loadResults(params: PageProps['searchParams']) {
+  try {
+    const res = await searchShop(params.q ?? '', {
+      sort: params.sort,
+      minPrice: params.minPrice ? Number(params.minPrice) : undefined,
+      maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
+    });
+    return res.products;
+  } catch {
+    return [];
   }
-  if (searchParams.maxPrice) {
-    results = results.filter((p) => p.price <= Number(searchParams.maxPrice));
-  }
+}
 
-  // Sort
-  const sort = searchParams.sort ?? 'relevance';
-  switch (sort) {
-    case 'price_asc':
-      results = [...results].sort((a, b) => a.price - b.price);
-      break;
-    case 'price_desc':
-      results = [...results].sort((a, b) => b.price - a.price);
-      break;
-    case 'newest':
-      results = [...results].sort((a, b) => a.sku.localeCompare(b.sku));
-      break;
-    case 'best_selling':
-      results = [...results].sort(
-        (a, b) => (b.reviewCount ?? 0) - (a.reviewCount ?? 0)
-      );
-      break;
-    // 'relevance' giữ nguyên thứ tự mặc định
-  }
-
+export default async function ShopSearchPage({ searchParams }: PageProps) {
+  const products = await loadResults(searchParams);
+  const q = (searchParams.q ?? '').trim();
   const hasQuery = q.length > 0;
-  const hasFilters = Boolean(searchParams.minPrice || searchParams.maxPrice || sort !== 'relevance');
 
   return (
     <div className="bg-ink-50 min-h-screen">
       <div className="bg-white border-b border-ink-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-2xl font-bold text-ink-900 text-balance">
-            {hasQuery ? (
-              <>
-                Kết quả cho <span className="text-accent-700">"{searchParams.q}"</span>
-              </>
-            ) : (
-              'Tất cả sản phẩm'
-            )}
-          </h1>
-          <p className="mt-1 text-sm text-ink-600">
-            <span className="font-mono font-semibold text-ink-900">{results.length}</span> kết quả
-            {hasQuery && (
-              <Link
-                href="/tim-kiem"
-                className="ml-3 inline-flex items-center gap-1 text-xs text-ink-500 hover:text-danger-600"
-              >
-                <X className="w-3 h-3" aria-hidden="true" />
-                Xóa từ khóa
-              </Link>
-            )}
-          </p>
+          <form action="/tim-kiem" method="get" className="relative">
+            <SearchIcon
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-400 pointer-events-none"
+              aria-hidden="true"
+            />
+            <input
+              name="q"
+              type="search"
+              defaultValue={q}
+              placeholder="Tìm thuốc, thực phẩm chức năng, dược mỹ phẩm..."
+              className="w-full h-12 pl-10 pr-3 text-sm border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
+            />
+          </form>
         </div>
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid lg:grid-cols-[260px_1fr] gap-6">
-          <Suspense fallback={<div className="space-y-3"><Skeleton height="120px" /><Skeleton height="200px" /></div>}>
-            <SearchFilters />
-          </Suspense>
-          <div>
-            {results.length === 0 ? (
-              <EmptyState
-                icon={SearchIcon}
-                title="Không tìm thấy sản phẩm"
-                description={
-                  hasQuery
-                    ? `Không có kết quả cho "${searchParams.q}". Thử từ khóa khác hoặc điều chỉnh bộ lọc.`
-                    : 'Điều chỉnh bộ lọc để xem thêm sản phẩm.'
-                }
-                action={
-                  hasFilters ? (
-                    <Link
-                      href={hasQuery ? `/tim-kiem?q=${encodeURIComponent(q)}` : '/tim-kiem'}
-                      className="inline-flex items-center justify-center gap-2 px-4 h-10 bg-accent-600 text-white text-sm font-semibold rounded-md hover:bg-accent-700 transition-colors"
-                    >
-                      <X className="w-4 h-4" aria-hidden="true" />
-                      Xóa bộ lọc
-                    </Link>
-                  ) : undefined
-                }
-              />
-            ) : (
-              <div className="space-y-3">
-                {results.map((p) => (
-                  <SearchResultCard key={p.id} product={p} />
-                ))}
-              </div>
-            )}
+        <h2 className="text-base font-semibold text-ink-900 mb-3">
+          {hasQuery ? `Kết quả cho "${q}"` : 'Tất cả sản phẩm'}
+          <span className="ml-2 text-sm font-normal text-ink-500">
+            ({products.length})
+          </span>
+        </h2>
+
+        {products.length === 0 ? (
+          <EmptyState
+            icon={SearchIcon}
+            title="Không tìm thấy"
+            description={
+              hasQuery
+                ? `Không có kết quả cho "${q}". Thử từ khóa khác.`
+                : 'Chưa có sản phẩm nào trong hệ thống.'
+            }
+          />
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {products.map((p) => (
+              <article
+                key={p.id}
+                className="p-4 bg-white border border-ink-200 rounded-md hover:border-accent-500 transition-colors"
+              >
+                <Link href={`/${p.slug ?? p.id}`} className="block">
+                  <h3 className="text-sm font-semibold text-ink-900 line-clamp-2 text-balance">
+                    {p.name}
+                  </h3>
+                  {p.manufacturer && (
+                    <p className="mt-1 text-xs text-ink-500">{p.manufacturer}</p>
+                  )}
+                  <p className="mt-2 text-base font-bold text-accent-700 font-mono">
+                    {formatVND(p.price)}
+                  </p>
+                </Link>
+              </article>
+            ))}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

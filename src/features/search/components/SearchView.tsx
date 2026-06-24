@@ -40,12 +40,19 @@ export function SearchView() {
     }
     setLoading(true);
     const t = setTimeout(() => {
-      apiClient.get<GlobalSearchResponse>(`/search?q=${encodeURIComponent(query)}`)
+      // Backend /search returns plain array of medicines (catalog-only).
+      // Customers/orders/prescriptions fall back to local filtered lists later.
+      apiClient.get<Medicine[] | { data: Medicine[] }>(`/search?q=${encodeURIComponent(query)}`)
         .then((res) => {
-          setMedicines(res.data.medicines);
-          setCustomers(res.data.customers);
-          setOrders(res.data.orders);
-          setPrescriptions(res.data.prescriptions);
+          const items = Array.isArray(res.data)
+            ? (res.data as Medicine[])
+            : Array.isArray((res.data as { data?: Medicine[] })?.data)
+              ? (res.data as { data: Medicine[] }).data
+              : [];
+          setMedicines(items);
+          setCustomers([]);
+          setOrders([]);
+          setPrescriptions([]);
         })
         .catch(() => {
           setMedicines([]); setCustomers([]); setOrders([]); setPrescriptions([]);

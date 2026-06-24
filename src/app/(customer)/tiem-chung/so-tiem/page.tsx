@@ -1,48 +1,32 @@
 // =====================================================
-// /tiem-chung/so-tiem — VACCINE-LEDGER
-// Sổ tiêm chủng điện tử
+// /tiem-chung/so-tiem — VACCINE-LEDGER (real API)
+// Sổ tiêm chủng điện tử — /api/v1/vaccination-ledger/me
 // =====================================================
 
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { EmptyState } from '@/components/ui/Feedback';
 import { Syringe, Check, Calendar } from 'lucide-react';
 import type { Metadata } from 'next';
+import { fetchVaccinationLedger } from '@/features/vaccines';
 
 export const metadata: Metadata = {
   title: 'Sổ tiêm chủng',
   description: 'Sổ tiêm chủng điện tử — lịch sử và nhắc nhở tiêm nhắc.',
 };
 
-// Mock data — thay bằng API khi backend ready
-const MOCK_ENTRIES = [
-  {
-    id: 'shot-1',
-    vaccine: 'Vaccine Cúm mùa (Influenza)',
-    date: '2025-10-15',
-    lot: 'FL2025-A01',
-    location: 'PCMS Quận 1',
-    nextDue: '2026-10-15',
-  },
-  {
-    id: 'shot-2',
-    vaccine: 'Vaccine Viêm gan B — mũi 3',
-    date: '2025-03-20',
-    lot: 'HB2024-A03',
-    location: 'PCMS Bình Thạnh',
-    nextDue: null,
-  },
-  {
-    id: 'shot-3',
-    vaccine: 'Vaccine COVID-19 — mũi nhắc',
-    date: '2024-12-01',
-    lot: 'COV2024-B02',
-    location: 'PCMS Ba Đình',
-    nextDue: null,
-  },
-];
+export default async function SoTiemPage() {
+  let records: Awaited<
+    ReturnType<typeof fetchVaccinationLedger>
+  >['records'] = [];
 
-export default function SoTiemPage() {
-  if (MOCK_ENTRIES.length === 0) {
+  try {
+    const res = await fetchVaccinationLedger();
+    records = res.records;
+  } catch {
+    records = [];
+  }
+
+  if (records.length === 0) {
     return (
       <>
         <div className="bg-white border-b border-ink-200">
@@ -82,49 +66,37 @@ export default function SoTiemPage() {
           <h1 className="mt-3 text-2xl font-bold text-ink-900 text-balance">
             Sổ tiêm chủng
           </h1>
-          <p className="mt-1 text-sm text-ink-600 text-pretty">
-            Lịch sử tiêm chủng và nhắc nhở tiêm nhắc lại
+          <p className="mt-1 text-sm text-ink-600 font-mono">
+            {records.length} lượt tiêm đã ghi nhận
           </p>
         </div>
       </div>
 
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-6 space-y-3">
-        {MOCK_ENTRIES.map((e) => (
+        {records.map((r) => (
           <article
-            key={e.id}
-            className="p-4 bg-white border border-ink-200 rounded-md"
+            key={r.id}
+            className="p-5 bg-white border border-ink-200 rounded-md flex items-start gap-4"
           >
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-success-50 rounded-md flex items-center justify-center flex-shrink-0">
-                <Check className="w-5 h-5 text-success-700" aria-hidden="true" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-semibold text-ink-900 text-balance">
-                  {e.vaccine}
-                </h3>
-                <div className="mt-2 grid sm:grid-cols-3 gap-2 text-xs text-ink-600">
-                  <div>
-                    <p className="text-ink-500">Ngày tiêm</p>
-                    <p className="font-mono font-medium text-ink-900">
-                      {new Date(e.date).toLocaleDateString('vi-VN')}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-ink-500">Số lô</p>
-                    <p className="font-mono text-ink-900">{e.lot}</p>
-                  </div>
-                  <div>
-                    <p className="text-ink-500">Tại nhà thuốc</p>
-                    <p className="text-ink-900">{e.location}</p>
-                  </div>
-                </div>
-                {e.nextDue && (
-                  <div className="mt-3 p-2 bg-warning-50 border border-warning-200 rounded text-xs text-warning-800 flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
-                    Nhắc tiêm nhắc lại vào {new Date(e.nextDue).toLocaleDateString('vi-VN')}
-                  </div>
+            <div className="w-10 h-10 bg-success-50 text-success-600 rounded-md flex items-center justify-center flex-shrink-0">
+              <Check className="w-5 h-5" aria-hidden="true" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-ink-900">
+                {r.vaccineName}
+                {r.doseNumber > 1 && (
+                  <span className="ml-2 px-2 h-5 inline-flex items-center bg-info-50 text-info-700 text-xs font-medium rounded">
+                    Mũi {r.doseNumber}
+                  </span>
                 )}
-              </div>
+              </h3>
+              <p className="mt-1 text-xs text-ink-600 font-mono">
+                <Calendar className="w-3 h-3 inline mr-1" aria-hidden="true" />
+                {new Date(r.administeredAt).toLocaleDateString('vi-VN')}
+              </p>
+              <p className="text-xs text-ink-500 mt-1">
+                Tại: {r.branchName}
+              </p>
             </div>
           </article>
         ))}

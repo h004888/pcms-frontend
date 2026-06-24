@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/Layout';
 import { ListPage } from '@/components/shared/ListPage';
 import { Column } from '@/components/ui';
@@ -13,6 +13,7 @@ import toast from 'react-hot-toast';
 import { formatDateTime, getStatusColor } from '@/lib/utils';
 import { Notification, NotificationChannel, NotificationStatus } from '@/types';
 import { Check, Trash2, Send } from 'lucide-react';
+import { useAuth } from '@/lib/auth/auth-context';
 
 const CHANNEL_LABELS: Record<NotificationChannel, string> = {
   IN_APP: 'Trong app',
@@ -30,6 +31,11 @@ const CHANNEL_TONES: Record<NotificationChannel, string> = {
 
 export default function NotificationsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
+  const { state } = useAuth();
+  const filterParams = useMemo(
+    () => (state.user?.id ? { recipientId: state.user.id } : {}),
+    [state.user?.id]
+  );
 
   const handleMarkRead = async (n: Notification) => {
     if (n.status === 'READ') return;
@@ -95,6 +101,7 @@ export default function NotificationsPage() {
         title="Quản lý thông báo"
         subtitle="UC13 - Hệ thống gửi thông báo đa kênh"
         endpoint="/notifications"
+        filterParams={filterParams}
         columns={columns}
         searchPlaceholder="Tìm theo tiêu đề, nội dung..."
         canAdd={false}

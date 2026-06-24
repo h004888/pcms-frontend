@@ -5,31 +5,34 @@
 import { notFound } from 'next/navigation';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { LookupNav } from '@/components/shop/LookupNav';
-import { ARTICLES } from '@/data/shop/articles';
 import { Calendar, Clock, User, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { fetchArticleBySlug, fetchArticles } from '@/features/articles';
 
 interface PageProps {
   params: { slug: string };
 }
 
-export function generateStaticParams() {
-  return ARTICLES.map((a) => ({ slug: a.slug }));
+export async function generateMetadata({ params }: PageProps): Metadata {
+  try {
+    const article = await fetchArticleBySlug(params.slug);
+    return {
+      title: article.title,
+      description: article.excerpt,
+    };
+  } catch {
+    return { title: 'Không tìm thấy' };
+  }
 }
 
-export function generateMetadata({ params }: PageProps): Metadata {
-  const article = ARTICLES.find((a) => a.slug === params.slug);
-  if (!article) return { title: 'Không tìm thấy' };
-  return {
-    title: article.title,
-    description: article.excerpt,
-  };
-}
-
-export default function BaiVietDetailPage({ params }: PageProps) {
-  const article = ARTICLES.find((a) => a.slug === params.slug);
-  if (!article) notFound();
+export default async function BaiVietDetailPage({ params }: PageProps) {
+  let article;
+  try {
+    article = await fetchArticleBySlug(params.slug);
+  } catch {
+    notFound();
+  }
 
   return (
     <>

@@ -1,13 +1,16 @@
 // =====================================================
-// InstallmentCalculator — Tính trả góp real-time
-// 2 providers, 4 kỳ hạn, fee theo %/năm
+// InstallmentCalculator — Tính trả góp real-time (real API)
+// Sử dụng /api/v1/installment/quote để lấy quote thật từ backend
 // =====================================================
 
 'use client';
 
-import { useState, useMemo, useId } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { formatVND } from '@/lib/shop/format';
 import clsx from 'clsx';
+import { Loader2 } from 'lucide-react';
+import { getInstallmentQuote } from '@/features/installment';
+import type { InstallmentQuote } from '@/features/installment';
 
 const PROVIDERS = [
   { id: 'home_credit', name: 'Home Credit', interestRate: 0, color: 'bg-danger-600' },
@@ -20,16 +23,42 @@ export function InstallmentCalculator() {
   const [amount, setAmount] = useState(2000000);
   const [provider, setProvider] = useState(PROVIDERS[0].id);
   const [term, setTerm] = useState(6);
+  const [quote, setQuote] = useState<InstallmentQuote | null>(null);
+  const [loading, setLoading] = useState(false);
   const amountId = useId();
 
+  // Local fallback estimate for instant feedback while API quote loads
   const selected = PROVIDERS.find((p) => p.id === provider)!;
-  const { monthly, totalRepayment } = useMemo(() => {
-    const total = amount * (1 + (selected.interestRate / 100) * (term / 12));
-    return {
-      monthly: Math.round(total / term),
-      totalRepayment: Math.round(total),
-    };
-  }, [amount, selected, term]);
+  const localMonthly = Math.round(
+    (amount * (1 + (selected.interestRate / 100) * (term / 12))) / term
+  );
+  const localTotal = Math.round(
+    amount * (1 + (selected.interestRate / 100) * (term / 12))
+  );
+
+  // Debounced fetch quote from real API
+  useEffect(() => {
+    if (amount <= 0) return;
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const q = await getInstallmentQuote({
+          amount,
+          tenureMonths: term,
+          paymentMethod: provider,
+        });
+        setQuote(q);
+      } catch {
+        setQuote(null);
+      } finally {
+        setLoading(false);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [amount, term, provider]);
+
+  const monthly = quote?.monthlyPayment ?? localMonthly;
+  const totalRepayment = quote?.totalPayment ?? localTotal;
 
   return (
     <div className="p-5 bg-white border border-ink-200 rounded-md space-y-4">
@@ -97,7 +126,12 @@ export function InstallmentCalculator() {
       </div>
 
       <div className="p-4 bg-gradient-to-br from-accent-50 to-accent-100 rounded-md">
-        <p className="text-xs text-ink-600">Trả hàng tháng</p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-ink-600">Trả hàng tháng</p>
+          {loading && (
+            <Loader2 className="w-3 h-3 animate-spin text-ink-500" aria-hidden="true" />
+          )}
+        </div>
         <p className="text-3xl font-bold text-accent-700 mt-1 font-mono">
           {formatVND(monthly)}
         </p>
@@ -116,6 +150,12 @@ export function InstallmentCalculator() {
             <span>Tổng phải trả</span>
             <span className="font-mono">{formatVND(totalRepayment)}</span>
           </div>
+          {quote?.provider && (
+            <p className="pt-2 text-[11px] text-ink-500 font-mono">
+              Quote từ {quote.provider} · HSD:{' '}
+              {new Date(quote.expiresAt).toLocaleString('vi-VN')}
+            </p>
+          )}
         </div>
       </div>
     </div>
