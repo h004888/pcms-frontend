@@ -5,49 +5,28 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { MapPin, Plus, Home, Briefcase, Star, Edit2, Trash2, X, Save, Check } from 'lucide-react';
-
-interface Address {
-  id: string;
-  label: 'Nhà' | 'Công ty' | 'Khác';
-  name: string;
-  phone: string;
-  line: string;
-  province: string;
-  isDefault: boolean;
-}
-
-const INITIAL: Address[] = [
-  {
-    id: 'addr-1',
-    label: 'Nhà',
-    name: 'Nguyễn Văn A',
-    phone: '0901234567',
-    line: '12 Lê Lợi, Phường Bến Nghé',
-    province: 'Quận 1, TP. Hồ Chí Minh',
-    isDefault: true,
-  },
-  {
-    id: 'addr-2',
-    label: 'Công ty',
-    name: 'Nguyễn Văn A',
-    phone: '0901234567',
-    line: '456 Võ Văn Tần, Phường 5',
-    province: 'Quận 3, TP. Hồ Chí Minh',
-    isDefault: false,
-  },
-];
+import { fetchAddresses, createAddress, updateAddress, deleteAddress, setDefaultAddress } from '@/features/addresses';
+import type { Address } from '@/features/addresses';
 
 const LABEL_ICONS = { 'Nhà': Home, 'Công ty': Briefcase, 'Khác': MapPin };
 
 export default function AddressesPage() {
-  const [list, setList] = useState<Address[]>(INITIAL);
+  const [list, setList] = useState<Address[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | 'new' | null>(null);
   const [draft, setDraft] = useState<Address | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof Address, string>>>({});
+
+  useEffect(() => {
+    fetchAddresses()
+      .then(setList)
+      .catch(() => toast.error('Không tải được danh sách địa chỉ'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const empty: Address = {
     id: '',
@@ -88,7 +67,7 @@ export default function AddressesPage() {
     return e;
   };
 
-  const save = () => {
+  const save = async () => {
     if (!draft) return;
     const e = validate(draft);
     if (Object.keys(e).length > 0) {
@@ -97,37 +76,66 @@ export default function AddressesPage() {
       return;
     }
 
-    setList((prev) => {
-      let next = [...prev];
-      if (draft.isDefault) {
-        // Only one default
-        next = next.map((a) => ({ ...a, isDefault: false }));
-      }
-      const idx = next.findIndex((a) => a.id === draft.id);
-      if (idx >= 0) {
-        next[idx] = draft;
-        toast.success('Đã cập nhật địa chỉ');
-      } else {
-        next.push(draft);
+    try {
+      if (editingId === 'new') {
+        const newAddr = await createAddress(draft);
+        setList((prev) => {
+          let next = [...prev];
+          if (newAddr.isDefault) {
+            next = next.map((a) => ({ ...a, isDefault: false }));
+          }
+          return [...next, newAddr];
+        });
         toast.success('Đã thêm địa chỉ');
+      } else {
+        const updated = await updateAddress(draft.id, draft);
+        setList((prev) => {
+          let next = prev.map((a) => (a.id === updated.id ? updated : a));
+          if (updated.isDefault) {
+            next = next.map((a) => ({ ...a, isDefault: a.id === updated.id }));
+          }
+          return next;
+        });
+        toast.success('Đã cập nhật địa chỉ');
       }
-      return next;
-    });
-    cancel();
+      cancel();
+    } catch {
+      toast.error('Không lưu được địa chỉ');
+    }
   };
 
-  const remove = (id: string) => {
+  const remove = async (id: string) => {
     const a = list.find((x) => x.id === id);
     if (!a) return;
     if (!window.confirm(`Xóa địa chỉ "${a.line}"?`)) return;
-    setList((prev) => prev.filter((x) => x.id !== id));
-    toast.success('Đã xóa địa chỉ');
+    try {
+      await deleteAddress(id);
+      setList((prev) => prev.filter((x) => x.id !== id));
+      toast.success('Đã xóa địa chỉ');
+    } catch {
+      toast.error('Không xóa được địa chỉ');
+    }
   };
 
-  const setDefault = (id: string) => {
-    setList((prev) => prev.map((a) => ({ ...a, isDefault: a.id === id })));
-    toast.success('Đã đặt làm mặc định');
+  const setDefault = async (id: string) => {
+    try {
+      await setDefaultAddress(id);
+      setList((prev) => prev.map((a) => ({ ...a, isDefault: a.id === id })));
+      toast.success('Đã đặt làm mặc định');
+    } catch {
+      toast.error('Không đặt được mặc định');
+    }
   };
+
+  if (loading) {
+    return (
+      <>
+        <Breadcrumb items={[{ label: 'Tài khoản' }, { label: 'Sổ địa chỉ' }]} />
+        <h1 className="mt-3 text-xl font-bold text-ink-900">Sổ địa chỉ</h1>
+        <p className="text-sm text-ink-600 mt-2">Đang tải...</p>
+      </>
+    );
+  }
 
   return (
     <>

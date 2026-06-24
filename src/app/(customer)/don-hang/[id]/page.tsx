@@ -1,10 +1,11 @@
 // =====================================================
-// /orders/[id] — SHOP-ORDER-TRACK: Chi tiết đơn hàng
+// /orders/[id] — SHOP-ORDER-TRACK (real API)
+// Chi tiết đơn hàng — /api/v1/orders/:id/track
 // =====================================================
 
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { MOCK_ORDERS, PAYMENT_LABELS, SHIPPING_LABELS } from '@/data/shop/orders';
+import { fetchOrderTrack } from '@/features/customer-orders';
 import { OrderTimeline } from '@/components/shop/OrderTimeline';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { format } from 'date-fns';
@@ -16,12 +17,17 @@ interface PageProps {
   params: { id: string };
 }
 
-export function generateStaticParams() {
-  return MOCK_ORDERS.map((o) => ({ id: o.id }));
+async function loadOrder(id: string) {
+  try {
+    const res = await fetchOrderTrack(id);
+    return res.order ?? null;
+  } catch {
+    return null;
+  }
 }
 
-export function generateMetadata({ params }: PageProps): Metadata {
-  const order = MOCK_ORDERS.find((o) => o.id === params.id);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const order = await loadOrder(params.id);
   if (!order) return { title: 'Không tìm thấy đơn hàng' };
   return {
     title: `Đơn hàng ${order.code}`,
@@ -29,8 +35,8 @@ export function generateMetadata({ params }: PageProps): Metadata {
   };
 }
 
-export default function ShopOrderTrackPage({ params }: PageProps) {
-  const order = MOCK_ORDERS.find((o) => o.id === params.id);
+export default async function ShopOrderTrackPage({ params }: PageProps) {
+  const order = await loadOrder(params.id);
   if (!order) notFound();
 
   const subtotal = order.total - order.shippingFee;
@@ -50,18 +56,22 @@ export default function ShopOrderTrackPage({ params }: PageProps) {
           </h1>
           <p className="text-sm text-ink-500 font-mono">
             Đặt ngày{' '}
-            {format(new Date(order.createdAt), "d 'tháng' M, yyyy 'lúc' HH:mm", { locale: vi })}
+            {format(new Date(order.createdAt), "d 'tháng' M, yyyy 'lúc' HH:mm", {
+              locale: vi,
+            })}
           </p>
         </div>
       </div>
 
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-6 space-y-4">
-        <div className="p-5 bg-white border border-ink-200 rounded-md">
-          <h2 className="text-base font-semibold text-ink-900 mb-3">
-            Trạng thái đơn hàng
-          </h2>
-          <OrderTimeline status={order.status} timeline={order.timeline} />
-        </div>
+        {order.timeline && order.timeline.length > 0 && (
+          <div className="p-5 bg-white border border-ink-200 rounded-md">
+            <h2 className="text-base font-semibold text-ink-900 mb-3">
+              Trạng thái đơn hàng
+            </h2>
+            <OrderTimeline status={order.status} timeline={order.timeline} />
+          </div>
+        )}
 
         <div className="p-5 bg-white border border-ink-200 rounded-md">
           <h2 className="text-base font-semibold text-ink-900 mb-3">
@@ -89,27 +99,31 @@ export default function ShopOrderTrackPage({ params }: PageProps) {
           </ul>
         </div>
 
-        <div className="p-5 bg-white border border-ink-200 rounded-md">
-          <h2 className="text-base font-semibold text-ink-900 mb-3">
-            Thông tin giao hàng
-          </h2>
-          <div className="text-sm space-y-1">
-            <p>
-              <strong>Người nhận:</strong> {order.address.name} · {order.address.phone}
-            </p>
-            <p>
-              <strong>Địa chỉ:</strong> {order.address.line}, {order.address.province}
-            </p>
-            <p>
-              <strong>Vận chuyển:</strong>{' '}
-              {SHIPPING_LABELS[order.shippingMethod] ?? order.shippingMethod}
-            </p>
-            <p>
-              <strong>Thanh toán:</strong>{' '}
-              {PAYMENT_LABELS[order.paymentMethod] ?? order.paymentMethod}
-            </p>
+        {order.address && (
+          <div className="p-5 bg-white border border-ink-200 rounded-md">
+            <h2 className="text-base font-semibold text-ink-900 mb-3">
+              Thông tin giao hàng
+            </h2>
+            <div className="text-sm space-y-1">
+              <p>
+                <strong>Người nhận:</strong> {order.address.name} ·{' '}
+                {order.address.phone}
+              </p>
+              <p>
+                <strong>Địa chỉ:</strong> {order.address.line},{' '}
+                {order.address.province}
+              </p>
+              {order.shippingMethod && (
+                <p>
+                  <strong>Vận chuyển:</strong> {order.shippingMethod}
+                </p>
+              )}
+              <p>
+                <strong>Thanh toán:</strong> {order.paymentMethod}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="p-5 bg-white border border-ink-200 rounded-md">
           <div className="flex items-center justify-between">
@@ -133,10 +147,7 @@ export default function ShopOrderTrackPage({ params }: PageProps) {
         </div>
 
         <div className="flex justify-center">
-          <Link
-            href="/don-hang"
-            className="text-sm text-accent-700 hover:underline"
-          >
+          <Link href="/don-hang" className="text-sm text-accent-700 hover:underline">
             ← Quay lại danh sách đơn hàng
           </Link>
         </div>

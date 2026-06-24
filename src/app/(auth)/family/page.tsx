@@ -5,50 +5,16 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { Users, Plus, User, Cake, AlertTriangle, Edit2, Trash2, X, Save } from 'lucide-react';
-
-interface Member {
-  id: string;
-  name: string;
-  relation: string;
-  birthYear: number;
-  allergies: string[];
-  conditions: string[];
-}
+import { fetchFamilyMembers, createFamilyMember, updateFamilyMember, deleteFamilyMember } from '@/features/family';
+import type { FamilyMember } from '@/features/family';
 
 const RELATIONS = ['Bản thân', 'Vợ', 'Chồng', 'Con trai', 'Con gái', 'Bố', 'Mẹ', 'Anh', 'Chị', 'Em', 'Ông', 'Bà', 'Khác'];
 
-const INITIAL: Member[] = [
-  {
-    id: 'fm-1',
-    name: 'Nguyễn Văn A',
-    relation: 'Bản thân',
-    birthYear: 1990,
-    allergies: ['Penicillin'],
-    conditions: [],
-  },
-  {
-    id: 'fm-2',
-    name: 'Trần Thị B',
-    relation: 'Vợ',
-    birthYear: 1992,
-    allergies: [],
-    conditions: ['Tiểu đường type 2'],
-  },
-  {
-    id: 'fm-3',
-    name: 'Nguyễn Minh C',
-    relation: 'Con trai',
-    birthYear: 2018,
-    allergies: ['Sữa'],
-    conditions: [],
-  },
-];
-
-const empty: Member = {
+const empty: FamilyMember = {
   id: '',
   name: '',
   relation: 'Con trai',
@@ -58,12 +24,20 @@ const empty: Member = {
 };
 
 export default function FamilyPage() {
-  const [list, setList] = useState<Member[]>(INITIAL);
+  const [list, setList] = useState<FamilyMember[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | 'new' | null>(null);
-  const [draft, setDraft] = useState<Member | null>(null);
-  const [errors, setErrors] = useState<Partial<Record<keyof Member, string>>>({});
+  const [draft, setDraft] = useState<FamilyMember | null>(null);
+  const [errors, setErrors] = useState<Partial<Record<keyof FamilyMember, string>>>({});
   const [allergyInput, setAllergyInput] = useState('');
   const [conditionInput, setConditionInput] = useState('');
+
+  useEffect(() => {
+    fetchFamilyMembers()
+      .then(setList)
+      .catch(() => toast.error('Không tải được danh sách thành viên'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const startNew = () => {
     setDraft({ ...empty, id: `fm-${Date.now()}` });
@@ -73,7 +47,7 @@ export default function FamilyPage() {
     setEditingId('new');
   };
 
-  const startEdit = (m: Member) => {
+  const startEdit = (m: FamilyMember) => {
     setDraft({ ...m });
     setErrors({});
     setAllergyInput('');
@@ -87,8 +61,8 @@ export default function FamilyPage() {
     setErrors({});
   };
 
-  const validate = (d: Member) => {
-    const e: Partial<Record<keyof Member, string>> = {};
+  const validate = (d: FamilyMember) => {
+    const e: Partial<Record<keyof FamilyMember, string>> = {};
     if (!d.name.trim()) e.name = 'Vui lòng nhập họ tên';
     const currentYear = new Date().getFullYear();
     if (d.birthYear < 1900 || d.birthYear > currentYear)
@@ -96,7 +70,7 @@ export default function FamilyPage() {
     return e;
   };
 
-  const save = () => {
+  const save = async () => {
     if (!draft) return;
     const e = validate(draft);
     if (Object.keys(e).length > 0) {
@@ -104,26 +78,34 @@ export default function FamilyPage() {
       toast.error('Vui lòng kiểm tra các trường có lỗi');
       return;
     }
-    setList((prev) => {
-      const idx = prev.findIndex((m) => m.id === draft.id);
-      if (idx >= 0) {
-        const next = [...prev];
-        next[idx] = draft;
+
+    try {
+      if (editingId === 'new') {
+        const created = await createFamilyMember(draft);
+        setList((prev) => [...prev, created]);
+        toast.success('Đã thêm thành viên');
+      } else {
+        const updated = await updateFamilyMember(draft.id, draft);
+        setList((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
         toast.success('Đã cập nhật hồ sơ');
-        return next;
       }
-      toast.success('Đã thêm thành viên');
-      return [...prev, draft];
-    });
-    cancel();
+      cancel();
+    } catch {
+      toast.error('Không lưu được hồ sơ');
+    }
   };
 
-  const remove = (id: string) => {
+  const remove = async (id: string) => {
     const m = list.find((x) => x.id === id);
     if (!m) return;
     if (!window.confirm(`Xóa hồ sơ "${m.name}"?`)) return;
-    setList((prev) => prev.filter((x) => x.id !== id));
-    toast.success('Đã xóa thành viên');
+    try {
+      await deleteFamilyMember(id);
+      setList((prev) => prev.filter((x) => x.id !== id));
+      toast.success('Đã xóa thành viên');
+    } catch {
+      toast.error('Không xóa được thành viên');
+    }
   };
 
   const addAllergy = () => {
@@ -157,6 +139,16 @@ export default function FamilyPage() {
     if (!draft) return;
     setDraft({ ...draft, conditions: draft.conditions.filter((x) => x !== c) });
   };
+
+  if (loading) {
+    return (
+      <>
+        <Breadcrumb items={[{ label: 'Tài khoản' }, { label: 'Hồ sơ gia đình' }]} />
+        <h1 className="mt-3 text-xl font-bold text-ink-900">Hồ sơ gia đình</h1>
+        <p className="text-sm text-ink-600 mt-2">Đang tải...</p>
+      </>
+    );
+  }
 
   return (
     <>

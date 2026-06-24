@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import {
 	Shield,
@@ -26,70 +26,115 @@ import {
 	type ProfileFormData,
 	type ProfileErrors,
 } from "./_components/ProfileForm";
-
-interface Profile extends ProfileFormData {
-	tier: string;
-	memberSince: string;
-}
-
-const INITIAL: Profile = {
-	name: "Nguyễn Văn A",
-	email: "nguyenvana@example.com",
-	phone: "0901234567",
-	birthday: "1990-05-15",
-	gender: "Nam",
-	tier: "Vàng",
-	memberSince: "2023-08-12",
-};
+import { fetchProfile, updateProfile } from "@/features/profile";
+import type { Profile } from "@/features/profile";
 
 const STATS = [
 	{
 		icon: Sparkles,
 		label: "Điểm hiện tại",
-		value: "1.250",
+		value: "—",
 		color: "accent" as const,
 	},
-	{ icon: Gift, label: "Quà đã đổi", value: "5", color: "warning" as const },
-	{ icon: Heart, label: "Lượt thích", value: "23", color: "danger" as const },
+	{ icon: Gift, label: "Quà đã đổi", value: "—", color: "warning" as const },
+	{ icon: Heart, label: "Lượt thích", value: "—", color: "danger" as const },
 ];
 
 export default function ProfilePage() {
-	const [profile, setProfile] = useState<Profile>(INITIAL);
-	const [draft, setDraft] = useState<ProfileFormData>(INITIAL);
+	const [profile, setProfile] = useState<Profile | null>(null);
+	const [draft, setDraft] = useState<ProfileFormData | null>(null);
 	const [editing, setEditing] = useState(false);
 	const [errors, setErrors] = useState<ProfileErrors>({});
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		fetchProfile()
+			.then((data) => {
+				setProfile(data);
+				setDraft({
+					name: data.name,
+					email: data.email,
+					phone: data.phone,
+					birthday: data.birthday,
+					gender: data.gender as ProfileFormData["gender"],
+				});
+			})
+			.catch(() => toast.error("Không tải được thông tin profile"))
+			.finally(() => setLoading(false));
+	}, []);
 
 	const startEdit = () => {
-		setDraft(profile);
+		if (!profile) return;
+		setDraft({
+			name: profile.name,
+			email: profile.email,
+			phone: profile.phone,
+			birthday: profile.birthday,
+			gender: profile.gender as ProfileFormData["gender"],
+		});
 		setErrors({});
 		setEditing(true);
 	};
 
 	const cancelEdit = () => {
-		setDraft(profile);
+		if (!profile) return;
+		setDraft({
+			name: profile.name,
+			email: profile.email,
+			phone: profile.phone,
+			birthday: profile.birthday,
+			gender: profile.gender as ProfileFormData["gender"],
+		});
 		setErrors({});
 		setEditing(false);
 	};
 
-	const save = () => {
+	const save = async () => {
+		if (!draft) return;
 		const errs = validateProfile(draft);
 		setErrors(errs);
 		if (Object.keys(errs).length > 0) {
 			toast.error("Vui lòng kiểm tra các trường lỗi");
 			return;
 		}
-		setProfile({ ...profile, ...draft });
-		setEditing(false);
-		toast.success("Đã lưu thông tin cá nhân");
+		try {
+			const updated = await updateProfile(draft);
+			setProfile((prev) => prev ? { ...prev, ...updated } : updated);
+			setEditing(false);
+			toast.success("Đã lưu thông tin cá nhân");
+		} catch {
+			toast.error("Không lưu được thông tin");
+		}
 	};
 
 	const updateField = <K extends keyof ProfileFormData>(
 		key: K,
 		value: ProfileFormData[K],
 	) => {
-		setDraft((d) => ({ ...d, [key]: value }));
+		setDraft((d) => d ? { ...d, [key]: value } : d);
 		if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
 	};
+
+	if (loading) {
+		return (
+			<div className="space-y-5">
+				<div className="h-48 bg-ink-100 rounded-2xl animate-pulse" />
+				<div className="grid grid-cols-3 gap-3">
+					{[1, 2, 3].map((i) => (
+						<div key={i} className="h-20 bg-ink-100 rounded-lg animate-pulse" />
+					))}
+				</div>
+			</div>
+		);
+	}
+
+	if (!profile || !draft) {
+		return (
+			<div className="text-center py-10">
+				<p className="text-ink-500">Không có dữ liệu</p>
+			</div>
+		);
+	}
 
 	return (
 		<div className="space-y-5">

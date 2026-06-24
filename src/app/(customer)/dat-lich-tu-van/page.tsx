@@ -1,22 +1,21 @@
 // =====================================================
-// /dat-lich-tu-van — STORE-CONSULT
-// Đặt lịch tư vấn dược sĩ
+// /dat-lich-tu-van — STORE-CONSULT (real API)
+// Đặt lịch tư vấn dược sĩ — /api/v1/consultations
 // =====================================================
 
-import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { Calendar, User, MessageSquare, Check } from 'lucide-react';
-import type { Metadata } from 'next';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Đặt lịch tư vấn dược sĩ',
-  description: 'Đặt lịch tư vấn 1-1 với dược sĩ PCMS về thuốc và liều dùng.',
-};
+import { useState } from 'react';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import { Calendar, User, MessageSquare, Check, Loader2 } from 'lucide-react';
+import { createConsultation } from '@/features/consultations';
+import toast from 'react-hot-toast';
 
 const CONSULT_TYPES = [
-  { id: 'in-person', label: 'Trực tiếp tại nhà thuốc', icon: User },
-  { id: 'phone', label: 'Tư vấn qua điện thoại', icon: MessageSquare },
-  { id: 'video', label: 'Video call', icon: MessageSquare },
-];
+  { id: 'IN_PERSON', label: 'Trực tiếp tại nhà thuốc', icon: User },
+  { id: 'PHONE', label: 'Tư vấn qua điện thoại', icon: MessageSquare },
+  { id: 'VIDEO', label: 'Video call', icon: MessageSquare },
+] as const;
 
 const TIME_SLOTS = [
   '08:00 — 09:00',
@@ -28,6 +27,44 @@ const TIME_SLOTS = [
 ];
 
 export default function DatLichTuVanPage() {
+  const [submitting, setSubmitting] = useState(false);
+  const [type, setType] = useState<string>('IN_PERSON');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [date, setDate] = useState('');
+  const [slot, setSlot] = useState(TIME_SLOTS[0]);
+  const [note, setNote] = useState('');
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name || !phone || !date) {
+      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const scheduledAt = `${date}T${slot.split(' — ')[0]}:00`;
+      await createConsultation({
+        customerId: 'me',
+        type,
+        topic: note || 'Tư vấn dược sĩ',
+        scheduledAt,
+      });
+      toast.success(
+        'Đặt lịch tư vấn thành công! Dược sĩ sẽ liên hệ bạn trong ít phút.'
+      );
+      setName('');
+      setPhone('');
+      setEmail('');
+      setNote('');
+    } catch {
+      toast.error('Đặt lịch thất bại, vui lòng thử lại');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <>
       <div className="bg-white border-b border-ink-200">
@@ -43,13 +80,16 @@ export default function DatLichTuVanPage() {
       </div>
 
       <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-6">
-        <form className="p-5 bg-white border border-ink-200 rounded-md space-y-5">
+        <form
+          onSubmit={handleSubmit}
+          className="p-5 bg-white border border-ink-200 rounded-md space-y-5"
+        >
           <fieldset>
             <legend className="text-sm font-semibold text-ink-900 mb-2">
               Hình thức tư vấn
             </legend>
             <div className="space-y-2">
-              {CONSULT_TYPES.map((t, i) => {
+              {CONSULT_TYPES.map((t) => {
                 const Icon = t.icon;
                 return (
                   <label
@@ -59,11 +99,14 @@ export default function DatLichTuVanPage() {
                     <input
                       type="radio"
                       name="type"
-                      defaultChecked={i === 0}
+                      checked={type === t.id}
+                      onChange={() => setType(t.id)}
                       className="w-4 h-4 text-accent-600 focus:ring-accent-500"
                     />
                     <Icon className="w-4 h-4 text-ink-600" aria-hidden="true" />
-                    <span className="text-sm font-medium text-ink-900">{t.label}</span>
+                    <span className="text-sm font-medium text-ink-900">
+                      {t.label}
+                    </span>
                   </label>
                 );
               })}
@@ -77,7 +120,10 @@ export default function DatLichTuVanPage() {
             <input
               id="name"
               type="text"
+              required
               placeholder="Nguyễn Văn A"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="mt-1 w-full h-10 px-3 text-sm border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
             />
           </div>
@@ -90,7 +136,10 @@ export default function DatLichTuVanPage() {
               <input
                 id="phone"
                 type="tel"
+                required
                 placeholder="0901234567"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 className="mt-1 w-full h-10 px-3 text-sm font-mono border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
               />
             </div>
@@ -102,6 +151,8 @@ export default function DatLichTuVanPage() {
                 id="email"
                 type="email"
                 placeholder="email@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 w-full h-10 px-3 text-sm border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
               />
             </div>
@@ -119,26 +170,32 @@ export default function DatLichTuVanPage() {
               <input
                 id="date"
                 type="date"
+                required
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
                 className="w-full h-10 pl-9 pr-3 text-sm border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-ink-900">Khung giờ *</label>
+            <label className="text-sm font-semibold text-ink-900">
+              Khung giờ *
+            </label>
             <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {TIME_SLOTS.map((slot, i) => (
+              {TIME_SLOTS.map((s) => (
                 <label
-                  key={slot}
+                  key={s}
                   className="flex items-center justify-center gap-1 p-2 text-xs font-mono border border-ink-200 rounded-md cursor-pointer hover:border-accent-500 has-[:checked]:border-accent-600 has-[:checked]:bg-accent-50"
                 >
                   <input
                     type="radio"
                     name="slot"
-                    defaultChecked={i === 0}
+                    checked={slot === s}
+                    onChange={() => setSlot(s)}
                     className="sr-only"
                   />
-                  <span className="text-ink-700">{slot}</span>
+                  <span className="text-ink-700">{s}</span>
                 </label>
               ))}
             </div>
@@ -152,16 +209,23 @@ export default function DatLichTuVanPage() {
               id="note"
               rows={3}
               placeholder="Ví dụ: tôi đang dùng Paracetamol và Amoxicillin, có tương tác gì không?"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
               className="mt-1 w-full px-3 py-2 text-sm border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full h-11 inline-flex items-center justify-center gap-2 bg-accent-600 text-white text-sm font-semibold rounded-md hover:bg-accent-700 transition-colors"
+            disabled={submitting}
+            className="w-full h-11 inline-flex items-center justify-center gap-2 bg-accent-600 text-white text-sm font-semibold rounded-md hover:bg-accent-700 transition-colors disabled:bg-ink-300"
           >
-            <Check className="w-4 h-4" aria-hidden="true" />
-            Đặt lịch
+            {submitting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Check className="w-4 h-4" aria-hidden="true" />
+            )}
+            {submitting ? 'Đang đặt lịch...' : 'Đặt lịch'}
           </button>
         </form>
       </div>

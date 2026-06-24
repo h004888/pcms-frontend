@@ -10,6 +10,37 @@ export const API_ENDPOINTS = {
   AUTH_REFRESH: '/auth/refresh',
   AUTH_LOGOUT: '/auth/logout',
 
+  // ============= Favorites =============
+  FAVORITES: '/favorites',
+
+  // ============= Points =============
+  POINTS: '/points',
+  POINTS_REDEEM: '/points/redeem',
+
+  // ============= Family =============
+  FAMILY: '/family',
+  FAMILY_MEMBER_DETAIL: (id: string) => `/family/${id}`,
+
+  // ============= Addresses =============
+  ADDRESSES: '/addresses',
+  ADDRESS_DETAIL: (id: string) => `/addresses/${id}`,
+  ADDRESS_SET_DEFAULT: (id: string) => `/addresses/${id}/set-default`,
+
+  // ============= Profile =============
+  PROFILE: '/profile',
+  PROFILE_AVATAR: '/profile/avatar',
+
+  // ============= Wallet =============
+  WALLET: '/wallet',
+
+  // ============= AI Chat =============
+  AI_CHAT: '/ai/chat',
+  AI_SEMANTIC_SEARCH: '/ai/semantic-search',
+
+  // ============= Articles =============
+  ARTICLES: '/articles',
+  ARTICLE_DETAIL: (slug: string) => `/articles/${slug}`,
+
   // ============= Users =============
   USERS: '/users',
   USER_DETAIL: (id: string) => `/users/${id}`,
@@ -75,4 +106,107 @@ export const API_ENDPOINTS = {
   // ============= Search =============
   SEARCH: '/search',
   SEARCH_MEDICINES: '/search/medicines',
+
+  // ============= Shop (customer-portal-service) =============
+  SHOP_HOME: '/shop/home',
+  SHOP_PDP: (id: string) => `/shop/pdp/${id}`,
+  SHOP_SEARCH: '/shop/search',
+  SHOP_LOOKUP_DRUG: '/shop/lookup/drug',
+  SHOP_LOOKUP_INGREDIENT: '/shop/lookup/ingredient',
+  SHOP_LOOKUP_HERB: '/shop/lookup/herb',
+
+  // ============= Store locator (customer-portal-service) =============
+  STORE_LOCATOR: '/store/locator',
+  STORE_DETAIL: (id: string) => `/store/locator/${id}`,
+
+  // ============= Diseases (customer-portal-service) =============
+  DISEASES: '/diseases',
+
+  // ============= Cart (customer-portal-service) =============
+  CART: '/cart',
+  CART_ITEMS: '/cart/items',
+  CART_ITEM_DETAIL: (itemId: string) => `/cart/items/${itemId}`,
+  CART_CHECKOUT_PREVIEW: '/cart/checkout/preview',
+  CART_CHECKOUT_CONFIRM: '/cart/checkout/confirm',
+
+  // ============= Vouchers (customer-portal-service) =============
+  VOUCHERS: '/vouchers',
+  VOUCHERS_APPLY: '/vouchers/apply',
+  VOUCHERS_HISTORY: '/vouchers/history',
+
+  // ============= Order tracking (customer-portal-service) =============
+  ORDER_TRACK: (id: string) => `/orders/${id}/track`,
+  ORDER_HISTORY: '/orders/history',
+
+  // ============= Wallet (customer-portal-service) =============
+  WALLET_TRANSACTIONS: '/wallet/transactions',
+  WALLET_REDEEM: '/wallet/redeem',
+
+  // ============= Vaccines (customer-portal-service) =============
+  VACCINES: '/vaccines',
+  VACCINE_SLOTS: (id: string) => `/vaccines/${id}/slots`,
+  VACCINE_BOOKINGS: '/vaccine-bookings',
+  VACCINE_BOOKINGS_ME: '/vaccine-bookings/me',
+  VACCINE_BOOKING_DETAIL: (id: string) => `/vaccine-bookings/${id}`,
+  VACCINATION_LEDGER_ME: '/vaccination-ledger/me',
+
+  // ============= Verify origin (customer-portal-service) =============
+  VERIFY_ORIGIN_SCAN: '/verify-origin/scan',
+
+  // ============= Installment (customer-portal-service) =============
+  INSTALLMENT_QUOTE: '/installment/quote',
+  INSTALLMENT_CONFIRM: '/installment/confirm',
+
+  // ============= Consultations (pharmacist-workbench) =============
+  CONSULTATIONS: '/consultations',
+  CONSULTATION_DETAIL: (id: string) => `/consultations/${id}`,
+  CONSULTATION_END: (id: string) => `/consultations/${id}/end`,
+  CONSULTATION_MESSAGES: (id: string) => `/consultations/${id}/messages`,
+  CONSULTATIONS_BY_CUSTOMER: (id: string) => `/consultations/by-customer/${id}`,
+  CONSULTATIONS_BY_PHARMACIST: (id: string) => `/consultations/by-pharmacist/${id}`,
+
+  // ============= Health tools (health-tools-service) =============
+  HEALTH_QUIZZES: '/health/quizzes',
+  HEALTH_QUIZ_DETAIL: (slug: string) => `/health/quizzes/${slug}`,
+  HEALTH_QUIZ_SUBMIT: (slug: string) => `/health/quizzes/${slug}/submit`,
+  HEALTH_QUIZ_RESULTS_ME: '/health/quiz-results/me',
+
+  // ============= Flash sales (ecom-ops-service) =============
+  FLASH_SALES_ACTIVE: '/ecom-ops/flash-sales/active',
+  FLASH_SALE_DETAIL: (id: string) => `/ecom-ops/flash-sales/${id}`,
+
+  // ============= Mobile BFF (mobile-bff) =============
+  MOBILE_HOME: '/mobile/home',
+  MOBILE_NEARBY_PHARMACIES: '/mobile/nearby-pharmacies',
+  MOBILE_MEDICATION_REMINDERS: '/mobile/medication-reminders',
+  MOBILE_MEDICATION_REMINDER_DETAIL: (id: string) =>
+    `/mobile/medication-reminders/${id}`,
+  MOBILE_REMINDER_DEACTIVATE: (id: string) =>
+    `/mobile/medication-reminders/${id}/deactivate`,
+
+  // ============= Videos (admin/customer-portal-service) =============
+  VIDEOS: '/admin/videos',
+  VIDEO_DETAIL: (id: string) => `/admin/videos/${id}`,
+
+  // ============= Notification settings (customer-portal-service) =============
+  NOTIF_SETTINGS: '/notif-settings',
+
+  // ============= Rx console (pharmacist-workbench-service) =============
+  RX_CUSTOMER_360: (id: string) => `/rx/customers/${id}/profile-360`,
+  RX_CROSS_SELL: '/rx/cross-sell',
+  RX_DRUG_CHECK: '/rx/drug-check',
+
+  // ============= Follow-ups (pharmacist-workbench-service) =============
+  FOLLOW_UPS: '/follow-ups',
+  FOLLOW_UPS_BY_CUSTOMER: (id: string) => `/follow-ups/by-customer/${id}`,
+  FOLLOW_UP_RESPONSE: (id: string) => `/follow-ups/${id}/response`,
+
+  // ============= VIP marks (pharmacist-workbench-service) =============
+  VIP_MARKS: '/vip-marks',
+  VIP_MARKS_BY_CUSTOMER: (id: string) => `/vip-marks/by-customer/${id}`,
+  VIP_MARKS_BY_TIER: (tier: string) => `/vip-marks/by-tier/${tier}`,
+
+  // ============= Prescription history (customer-portal-service) =============
+  PRESCRIPTIONS_ME: '/prescriptions/me',
+  PRESCRIPTION_REDOWNLOAD: (id: string) => `/prescriptions/${id}/re-download`,
 } as const;

@@ -56,12 +56,21 @@ export function useApiList<T = unknown>(
     });
 
     apiClient
-      .get<PageResponse<T>>(`${endpoint}?${searchParams.toString()}`)
+      .get(`${endpoint}?${searchParams.toString()}`)
       .then((res) => {
         if (cancelled) return;
-        setData(res.data.data || []);
-        setTotal(res.data.total);
-        setTotalPages(res.data.totalPages);
+        // Backend returns either PageResponse { data, total, totalPages } or plain array T[]
+        const body = res.data;
+        if (Array.isArray(body)) {
+          setData(body as T[]);
+          setTotal(body.length);
+          setTotalPages(1);
+        } else {
+          const items = body?.data;
+          setData(Array.isArray(items) ? items : []);
+          setTotal(typeof body?.total === 'number' ? body.total : (Array.isArray(items) ? items.length : 0));
+          setTotalPages(typeof body?.totalPages === 'number' ? body.totalPages : 1);
+        }
       })
       .catch((err) => {
         if (cancelled) return;

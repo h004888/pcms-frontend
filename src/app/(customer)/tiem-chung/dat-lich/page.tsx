@@ -1,37 +1,122 @@
 // =====================================================
-// /tiem-chung/dat-lich — VACCINE-BOOKING
-// Đặt lịch tiêm vaccine
+// /tiem-chung/dat-lich — VACCINE-BOOKING (real API)
+// Đặt lịch tiêm vaccine — gọi /api/v1/vaccines + /vaccine-bookings
 // =====================================================
 
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { Calendar, MapPin, User, Check } from 'lucide-react';
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'Đặt lịch tiêm',
-  description: 'Đặt lịch tiêm vaccine tại nhà thuốc PCMS.',
-};
-
-const VACCINE_OPTIONS = [
-  { id: 'vac-cum', label: 'Vaccine Cúm mùa', price: 350000 },
-  { id: 'vac-covid', label: 'Vaccine COVID-19', price: 0 },
-  { id: 'vac-viem-gan-b', label: 'Vaccine Viêm gan B', price: 250000 },
-  { id: 'vac-uon-van', label: 'Vaccine Uốn ván (VAT)', price: 120000 },
-  { id: 'vac-phoi-cum', label: 'Vaccine Phế cầu', price: 1500000 },
-  { id: 'vac-cum-quadrivalent', label: 'Vaccine Cúm tứ giá', price: 480000 },
-];
-
-const STORE_OPTIONS = [
-  'PCMS Quận 1 — TP.HCM',
-  'PCMS Bình Thạnh — TP.HCM',
-  'PCMS Ba Đình — Hà Nội',
-  'PCMS Cầu Giấy — Hà Nội',
-  'PCMS Hải Châu — Đà Nẵng',
-];
-
-const TIME_SLOTS = ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'];
+import {
+  Calendar,
+  MapPin,
+  User,
+  Check,
+  Loader2,
+} from 'lucide-react';
+import toast from 'react-hot-toast';
+import {
+  fetchVaccines,
+  fetchVaccineSlots,
+  bookVaccine,
+} from '@/features/vaccines';
+import type { Vaccine, VaccineSlot } from '@/features/vaccines';
+import { fetchStores } from '@/features/stores';
+import type { StoreLocation } from '@/features/stores';
 
 export default function DatLichTiemPage() {
+  const router = useRouter();
+  const [vaccines, setVaccines] = useState<Vaccine[]>([]);
+  const [stores, setStores] = useState<StoreLocation[]>([]);
+  const [slots, setSlots] = useState<VaccineSlot[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [vaccineId, setVaccineId] = useState('');
+  const [storeId, setStoreId] = useState('');
+  const [slotId, setSlotId] = useState('');
+  const [date, setDate] = useState('');
+  const [name, setName] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    Promise.all([fetchVaccines(), fetchStores()])
+      .then(([vRes, sRes]) => {
+        if (cancelled) return;
+        setVaccines(vRes.vaccines);
+        setStores(sRes.stores);
+        if (vRes.vaccines[0]) setVaccineId(vRes.vaccines[0].id);
+        if (sRes.stores[0]) setStoreId(sRes.stores[0].id);
+      })
+      .catch(() => {
+        toast.error('Không thể tải dữ liệu vaccine');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!vaccineId) {
+      setSlots([]);
+      return;
+    }
+    let cancelled = false;
+    fetchVaccineSlots(vaccineId)
+      .then((res) => {
+        if (!cancelled) {
+          setSlots(res.slots);
+          if (res.slots[0]) setSlotId(res.slots[0].id);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setSlots([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [vaccineId]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!vaccineId || !slotId || !name || !phone || !date) {
+      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const booking = await bookVaccine({
+        vaccineId,
+        slotId,
+      });
+      toast.success(
+        `Đặt lịch thành công! Mã booking: ${booking.id.slice(0, 8).toUpperCase()}`
+      );
+      router.push('/tiem-chung/so-tiem');
+    } catch (err) {
+      toast.error('Đặt lịch thất bại, vui lòng thử lại');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-16 text-center text-sm text-ink-500">
+        <Loader2 className="inline w-4 h-4 animate-spin mr-2" />
+        Đang tải dữ liệu vaccine...
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="bg-white border-b border-ink-200">
@@ -46,19 +131,22 @@ export default function DatLichTiemPage() {
             Đặt lịch tiêm vaccine
           </h1>
           <p className="mt-1 text-sm text-ink-600 text-pretty">
-            Điền thông tin, chọn nhà thuốc và khung giờ. Nhân viên sẽ gọi xác nhận.
+            Chọn vaccine, nhà thuốc và khung giờ. Nhân viên sẽ gọi xác nhận.
           </p>
         </div>
       </div>
 
       <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-6">
-        <form className="p-5 bg-white border border-ink-200 rounded-md space-y-5">
+        <form
+          onSubmit={handleSubmit}
+          className="p-5 bg-white border border-ink-200 rounded-md space-y-5"
+        >
           <fieldset>
             <legend className="text-sm font-semibold text-ink-900 mb-2">
               Chọn vaccine
             </legend>
             <div className="space-y-2">
-              {VACCINE_OPTIONS.map((v, i) => (
+              {vaccines.map((v) => (
                 <label
                   key={v.id}
                   className="flex items-center justify-between gap-3 p-3 border border-ink-200 rounded-md cursor-pointer hover:border-accent-500 has-[:checked]:border-accent-600 has-[:checked]:bg-accent-50"
@@ -67,13 +155,18 @@ export default function DatLichTiemPage() {
                     <input
                       type="radio"
                       name="vaccine"
-                      defaultChecked={i === 0}
+                      checked={vaccineId === v.id}
+                      onChange={() => setVaccineId(v.id)}
                       className="w-4 h-4 text-accent-600 focus:ring-accent-500"
                     />
-                    <span className="text-sm font-medium text-ink-900">{v.label}</span>
+                    <span className="text-sm font-medium text-ink-900">
+                      {v.name}
+                    </span>
                   </div>
                   <span className="text-sm font-semibold font-mono text-accent-700">
-                    {v.price === 0 ? 'Miễn phí' : `${v.price.toLocaleString('vi-VN')} ₫`}
+                    {v.price === 0
+                      ? 'Miễn phí'
+                      : `${v.price.toLocaleString('vi-VN')} ₫`}
                   </span>
                 </label>
               ))}
@@ -87,10 +180,14 @@ export default function DatLichTiemPage() {
             </label>
             <select
               id="store"
+              value={storeId}
+              onChange={(e) => setStoreId(e.target.value)}
               className="mt-1 w-full h-10 px-3 text-sm border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
             >
-              {STORE_OPTIONS.map((s) => (
-                <option key={s}>{s}</option>
+              {stores.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} — {s.address}
+                </option>
               ))}
             </select>
           </div>
@@ -108,27 +205,46 @@ export default function DatLichTiemPage() {
                 <input
                   id="bdate"
                   type="date"
+                  required
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
                   className="w-full h-10 pl-9 pr-3 text-sm border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
                 />
               </div>
             </div>
             <div>
-              <label className="text-sm font-semibold text-ink-900">Khung giờ *</label>
+              <label className="text-sm font-semibold text-ink-900">
+                Khung giờ *
+              </label>
               <div className="mt-1 grid grid-cols-3 gap-1">
-                {TIME_SLOTS.map((slot, i) => (
-                  <label
-                    key={slot}
-                    className="flex items-center justify-center h-10 text-xs font-mono border border-ink-200 rounded-md cursor-pointer hover:border-accent-500 has-[:checked]:border-accent-600 has-[:checked]:bg-accent-50"
-                  >
-                    <input
-                      type="radio"
-                      name="time"
-                      defaultChecked={i === 0}
-                      className="sr-only"
-                    />
-                    <span className="text-ink-700">{slot}</span>
-                  </label>
-                ))}
+                {slots.length === 0 ? (
+                  <p className="col-span-3 text-xs text-ink-500 py-2 text-center">
+                    Không có khung giờ khả dụng
+                  </p>
+                ) : (
+                  slots.map((s) => {
+                    const start = new Date(s.startTime);
+                    const label = `${start.getHours().toString().padStart(2, '0')}:${start
+                      .getMinutes()
+                      .toString()
+                      .padStart(2, '0')}`;
+                    return (
+                      <label
+                        key={s.id}
+                        className="flex items-center justify-center h-10 text-xs font-mono border border-ink-200 rounded-md cursor-pointer hover:border-accent-500 has-[:checked]:border-accent-600 has-[:checked]:bg-accent-50"
+                      >
+                        <input
+                          type="radio"
+                          name="slot"
+                          checked={slotId === s.id}
+                          onChange={() => setSlotId(s.id)}
+                          className="sr-only"
+                        />
+                        <span className="text-ink-700">{label}</span>
+                      </label>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
@@ -141,7 +257,10 @@ export default function DatLichTiemPage() {
               <input
                 id="bname"
                 type="text"
+                required
                 placeholder="Nguyễn Văn A"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="mt-1 w-full h-10 px-3 text-sm border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
               />
             </div>
@@ -152,6 +271,9 @@ export default function DatLichTiemPage() {
               <input
                 id="bage"
                 type="date"
+                required
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
                 className="mt-1 w-full h-10 px-3 text-sm font-mono border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
               />
             </div>
@@ -165,7 +287,10 @@ export default function DatLichTiemPage() {
               <input
                 id="bphone"
                 type="tel"
+                required
                 placeholder="0901234567"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 className="mt-1 w-full h-10 px-3 text-sm font-mono border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
               />
             </div>
@@ -176,6 +301,8 @@ export default function DatLichTiemPage() {
               <input
                 id="bemail"
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 w-full h-10 px-3 text-sm border border-ink-200 rounded-md focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-200"
               />
             </div>
@@ -190,10 +317,15 @@ export default function DatLichTiemPage() {
 
           <button
             type="submit"
-            className="w-full h-11 inline-flex items-center justify-center gap-2 bg-accent-600 text-white text-sm font-semibold rounded-md hover:bg-accent-700 transition-colors"
+            disabled={submitting}
+            className="w-full h-11 inline-flex items-center justify-center gap-2 bg-accent-600 text-white text-sm font-semibold rounded-md hover:bg-accent-700 transition-colors disabled:bg-ink-300"
           >
-            <Check className="w-4 h-4" aria-hidden="true" />
-            Xác nhận đặt lịch
+            {submitting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Check className="w-4 h-4" aria-hidden="true" />
+            )}
+            {submitting ? 'Đang đặt lịch...' : 'Xác nhận đặt lịch'}
           </button>
         </form>
       </div>

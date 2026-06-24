@@ -1,11 +1,12 @@
 // =====================================================
-// /tra-thuoc-chinh-hang — SHOP-VERIFY-ORIGIN
+// /tra-thuoc-chinh-hang — SHOP-VERIFY-ORIGIN (real API)
 // Kiểm tra thuốc chính hãng: mã vạch, QR, bao bì
-// PCMS portal: hỗ trợ dược sĩ & khách hàng verify
+// Sử dụng /api/v1/verify-origin/scan
 // =====================================================
 
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { LookupNav } from '@/components/shop/LookupNav';
+import { VerifyOriginScanner } from '@/components/shop/VerifyOriginScanner';
 import { ShieldCheck, ScanLine, QrCode, Package, AlertTriangle, Check } from 'lucide-react';
 import type { Metadata } from 'next';
 
@@ -65,6 +66,9 @@ export default function TraThuocChinhHangPage() {
       </div>
 
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Real-time scanner (verify-origin API) */}
+        <VerifyOriginScanner />
+
         {/* Steps */}
         <section>
           <h2 className="text-lg font-semibold text-ink-900 mb-3">
