@@ -2,28 +2,27 @@
 // OrderTimeline — Visual timeline cho order detail
 // Status: PENDING → CONFIRMED → SHIPPING → DELIVERED
 // Special: CANCELLED riêng
+// SPRINT 4 - T12: types moved to @/types/order (OrderTimelineStatus, OrderTimelineEntry)
 // =====================================================
 
 import { Check, Clock, Truck, Package, X } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import type { OrderStatus, OrderTimelineEntry } from '@/data/shop/orders';
+import type { OrderTimelineStatus, OrderTimelineEntry } from '@/types/order';
 
-const STEPS: { id: OrderStatus; label: string; icon: typeof Check }[] = [
+const STEPS: { id: OrderTimelineStatus; label: string; icon: typeof Check }[] = [
   { id: 'PENDING', label: 'Đã đặt', icon: Clock },
   { id: 'CONFIRMED', label: 'Xác nhận', icon: Check },
   { id: 'SHIPPING', label: 'Đang giao', icon: Truck },
   { id: 'DELIVERED', label: 'Hoàn tất', icon: Package },
 ];
 
-const ICON_MAP = { clock: Clock, check: Check, truck: Truck, package: Package, x: X };
-
 export function OrderTimeline({
   status,
   timeline,
 }: {
-  status: OrderStatus;
+  status: OrderTimelineStatus;
   timeline: OrderTimelineEntry[];
 }) {
   if (status === 'CANCELLED') {

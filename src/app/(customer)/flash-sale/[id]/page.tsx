@@ -12,7 +12,7 @@ import { formatVND } from '@/lib/shop/format';
 import type { Metadata } from 'next';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 async function loadFlashSale(id: string) {
@@ -26,7 +26,7 @@ async function loadFlashSale(id: string) {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const fs = await loadFlashSale(params.id);
+  const fs = await loadFlashSale((await params).id);
   return {
     title: fs?.name ?? 'Flash sale',
     description: fs?.name,
@@ -34,7 +34,7 @@ export async function generateMetadata({
 }
 
 export default async function FlashSaleDetailPage({ params }: PageProps) {
-  const fs = await loadFlashSale(params.id);
+  const fs = await loadFlashSale((await params).id);
   if (!fs) notFound();
 
   const startTime = fs.startTime ?? new Date().toISOString();

@@ -1,10 +1,12 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 // =====================================================
 // /tra-cuu-duoc-lieu — SHOP-LOOKUP-HERB (real API)
 // /api/v1/shop/lookup/herb
 // =====================================================
 
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
@@ -22,7 +24,7 @@ interface HerbLite {
   category?: string;
 }
 
-export default function TraCuuDuocLieuPage() {
+function HerbSearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -65,8 +67,6 @@ export default function TraCuuDuocLieuPage() {
 
   return (
     <>
-      <LookupNav active="tra-cuu-duoc-lieu" />
-
       <div className="bg-white border-b border-ink-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           <Breadcrumb items={[{ label: 'Tra cứu dược liệu' }]} />
@@ -136,6 +136,28 @@ export default function TraCuuDuocLieuPage() {
           </ul>
         )}
       </div>
+    </>
+  );
+}
+
+function HerbSearchFallback() {
+  return (
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 space-y-3">
+      <p className="text-sm text-ink-500 py-8 text-center">
+        <Loader2 className="inline w-4 h-4 animate-spin mr-2" />
+        Đang tải...
+      </p>
+    </div>
+  );
+}
+
+export default function TraCuuDuocLieuPage() {
+  return (
+    <>
+      <LookupNav active="tra-cuu-duoc-lieu" />
+      <Suspense fallback={<HerbSearchFallback />}>
+        <HerbSearchContent />
+      </Suspense>
     </>
   );
 }

@@ -9,7 +9,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { formatVND, getProductHref } from '@/lib/shop/format';
-import type { CartItem } from '@/lib/shop/cart';
+import type { CartItem } from '@/lib/shop/cart-context';
 import { useCart } from '@/lib/shop/cart-context';
 
 interface Props {
@@ -56,7 +56,7 @@ export function CartItemRow({ item, showRemove = true }: Props) {
         {showRemove && (
           <button
             type="button"
-            onClick={() => removeItem(item.productId)}
+            onClick={() => removeItem(item.medicineId)}
             aria-label={`Xóa ${item.name}`}
             className="p-1 text-ink-400 hover:text-danger-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 rounded"
           >
@@ -66,7 +66,7 @@ export function CartItemRow({ item, showRemove = true }: Props) {
         <div className="flex items-center border border-ink-200 rounded-md">
           <button
             type="button"
-            onClick={() => updateItem(item.productId, item.qty - 1)}
+            onClick={() => updateItem(item.medicineId, item.qty - 1)}
             aria-label="Giảm số lượng"
             className="w-7 h-7 flex items-center justify-center text-ink-700 hover:bg-ink-50 rounded-l-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
           >
@@ -80,7 +80,7 @@ export function CartItemRow({ item, showRemove = true }: Props) {
           </span>
           <button
             type="button"
-            onClick={() => updateItem(item.productId, item.qty + 1)}
+            onClick={() => updateItem(item.medicineId, item.qty + 1)}
             aria-label="Tăng số lượng"
             className="w-7 h-7 flex items-center justify-center text-ink-700 hover:bg-ink-50 rounded-r-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
           >

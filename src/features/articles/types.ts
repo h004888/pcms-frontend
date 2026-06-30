@@ -13,6 +13,10 @@ export interface Article {
   publishedAt: string;
   readingMinutes: number;
   thumbnail?: string;
+  tags?: string[];
+  relatedArticleSlugs?: string[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ArticlesResponse {

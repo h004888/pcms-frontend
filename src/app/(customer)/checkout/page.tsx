@@ -5,12 +5,14 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/shop/cart-context';
 import { CheckoutStepper } from '@/components/shop/CheckoutStepper';
+import { checkoutConfirm, checkoutPreview } from '@/features/cart';
+import { useAuth } from '@/lib/auth/auth-context';
 import { formatVND } from '@/lib/shop/format';
-import { MapPin, Truck, CreditCard, Check, ChevronRight, ChevronLeft, Wallet, Smartphone, Banknote, CreditCard as CardIcon, QrCode } from 'lucide-react';
+import { MapPin, Truck, CreditCard, Check, ChevronRight, ChevronLeft, Wallet, Banknote, CreditCard as CardIcon, QrCode } from 'lucide-react';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 import Link from 'next/link';
@@ -37,6 +39,7 @@ interface CheckoutDraft {
   address: { name: string; phone: string; line: string; province: string };
   shipping: string;
   payment: string;
+  voucherCode?: string;
 }
 
 const EMPTY_DRAFT: CheckoutDraft = {
@@ -47,23 +50,30 @@ const EMPTY_DRAFT: CheckoutDraft = {
 
 export default function ShopCheckoutPage() {
   const router = useRouter();
-  const { items, subtotal, clear, hydrated } = useCart();
+  const { items, subtotal, clear, hydrated, cart } = useCart();
+  const { state: { user } } = useAuth();
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<CheckoutDraft>(EMPTY_DRAFT);
   const [errors, setErrors] = useState<{ name?: string; phone?: string; line?: string; province?: string }>({});
+  const [preview, setPreview] = useState<{ subtotal: number; shipping: number; discount: number; total: number } | null>(null);
 
-  // Restore draft
+  // Restore draft + pre-fill name from auth
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const saved = JSON.parse(raw) as CheckoutDraft;
         setDraft(saved);
+      } else if (user) {
+        setDraft((d) => ({
+          ...d,
+          address: { ...d.address, name: user.fullName ?? '' },
+        }));
       }
     } catch {
       // ignore
     }
-  }, []);
+  }, [user]);
 
   // Persist draft
   useEffect(() => {
@@ -83,6 +93,24 @@ export default function ShopCheckoutPage() {
       // ignore
     }
   };
+
+  // Fetch checkout preview when shipping/voucher changes
+  useEffect(() => {
+    if (!hydrated) return;
+    (async () => {
+      try {
+        const p = await checkoutPreview({
+          shippingMethod: draft.shipping,
+          voucherCode: cart.voucherCode,
+        });
+        setPreview(p);
+      } catch {
+        // fallback: local calculation
+        const fee = SHIPPING_METHODS.find((m) => m.id === draft.shipping)?.fee ?? 0;
+        setPreview({ subtotal, shipping: fee, discount: cart.voucherDiscount ?? 0, total: subtotal + fee - (cart.voucherDiscount ?? 0) });
+      }
+    })();
+  }, [hydrated, draft.shipping, cart.voucherCode, cart.voucherDiscount, subtotal]);
 
   if (!hydrated) {
     return (
@@ -107,8 +135,8 @@ export default function ShopCheckoutPage() {
     );
   }
 
-  const shipFee = SHIPPING_METHODS.find((m) => m.id === draft.shipping)!.fee;
-  const total = subtotal + shipFee;
+  const shipFee = preview?.shipping ?? SHIPPING_METHODS.find((m) => m.id === draft.shipping)!.fee;
+  const total = preview?.total ?? subtotal + shipFee;
 
   const validateAddress = (): boolean => {
     const e: typeof errors = {};
@@ -130,15 +158,27 @@ export default function ShopCheckoutPage() {
     return true;
   };
 
-  const next = () => {
+  const next = async () => {
     if (step === 0 && !validateAddress()) return;
-    if (step < 3) setStep(step + 1);
-    else {
-      // Place order
+    if (step < 3) {
+      setStep(step + 1);
+      return;
+    }
+    // Place order via backend
+    try {
+      const voucherCode = cart.voucherCode ?? draft.voucherCode;
+      await checkoutConfirm({
+        shippingMethod: draft.shipping,
+        paymentMethod: draft.payment,
+        voucherCode,
+        address: draft.address,
+      });
       toast.success('Đặt hàng thành công!');
-      clear();
+      await clear();
       cleanup();
       router.push('/don-hang');
+    } catch {
+      toast.error('Không thể đặt hàng, thử lại');
     }
   };
 
@@ -341,7 +381,7 @@ export default function ShopCheckoutPage() {
                   </p>
                   <ul className="text-sm text-ink-600 mt-1 space-y-0.5">
                     {items.slice(0, 3).map((it) => (
-                      <li key={it.productId} className="flex justify-between">
+                      <li key={it.medicineId} className="flex justify-between">
                         <span className="truncate">
                           {it.name} × {it.qty}
                         </span>

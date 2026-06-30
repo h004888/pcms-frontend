@@ -1,5 +1,12 @@
 // =====================================================
 // PCMS - Shop Service
+// SPRINT 1 - T05: thêm getHomePage() trỏ vào /shop/home
+//
+// Mapping:
+// - Backend trả ShopHomeData { bestsellers: [...] } với shape rỗng
+//   (id/name/price/oldPrice/imageUrl/slug).
+// - ProductSummary của @/types/shop/catalog đòi nhiều field hơn (brand,
+//   country, rating, ...). Ở đây throw nếu rỗng (fail-loud mode).
 // =====================================================
 
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
@@ -8,6 +15,18 @@ import type { ShopHomeData, ShopSearchResult } from '../types';
 export async function fetchShopHome() {
   const res = await apiClient.get<ShopHomeData>(API_ENDPOINTS.SHOP_HOME);
   return res.data;
+}
+
+/**
+ * T05 — Server-side helper cho ShopHomeBestseller.
+ * Trả về danh sách bestSellers từ /shop/home. Throw nếu rỗng (mode fail-loud).
+ */
+export async function getHomePage() {
+  const home = await fetchShopHome();
+  if (!home.bestsellers?.length) {
+    throw new Error('SHOP_HOME_BESTSELLERS_EMPTY');
+  }
+  return home.bestsellers;
 }
 
 export async function fetchShopPDP(id: string) {

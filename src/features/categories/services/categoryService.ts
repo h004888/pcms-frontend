@@ -36,6 +36,14 @@ export async function fetchCategoryById(id: string): Promise<Category> {
   return res.data;
 }
 
+/** Fetch single category by slug */
+export async function fetchCategoryBySlug(slug: string): Promise<Category> {
+  const res = await apiClient.get<Category>(
+    API_ENDPOINTS.CATEGORY_BY_SLUG(slug)
+  );
+  return res.data;
+}
+
 /** Create new category */
 export async function createCategory(
   data: CreateCategoryRequest

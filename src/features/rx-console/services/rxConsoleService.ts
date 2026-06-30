@@ -76,3 +76,12 @@ export async function createVipMark(payload: {
   const res = await apiClient.post<VipMark>(API_ENDPOINTS.VIP_MARKS, payload);
   return res.data;
 }
+
+export async function fetchConsultations(params?: { status?: string }) {
+  const searchParams = new URLSearchParams();
+  if (params?.status) searchParams.set('status', params.status);
+  const query = searchParams.toString();
+  const url = query ? `${API_ENDPOINTS.CONSULTATIONS}?${query}` : API_ENDPOINTS.CONSULTATIONS;
+  const res = await apiClient.get<import('@/features/consultations').ConsultationsResponse>(url);
+  return res.data ?? { consultations: [], total: 0 };
+}

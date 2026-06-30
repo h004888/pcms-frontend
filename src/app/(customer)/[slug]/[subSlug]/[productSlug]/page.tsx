@@ -1,169 +1,155 @@
 // =====================================================
-// [slug]/[subSlug]/[productSlug] — SHOP-PDP: Product Detail Page
+// [slug]/[subSlug]/[productSlug] — SHOP-PDP: Product Detail Page (real API)
 // Route: /thuoc/thuoc-giam-dau/paracetamol-500mg, ...
-// Hoặc nếu L1 không có L2: /thuoc/paracetamol (handled by [slug]/[slugProduct])
+// Hoặc nếu L1 không có L2: /thuoc/{productSlug} (params.subSlug chứa productSlug)
 // =====================================================
 
 import { notFound } from 'next/navigation';
-import { CATEGORIES, PRODUCTS } from '@/data/shop/catalog';
-import { ProductGallery } from '@/components/shop/ProductGallery';
-import { ProductInfo } from '@/components/shop/ProductInfo';
-import { ProductTabs } from '@/components/shop/ProductTabs';
-import { ProductCard } from '@/components/shop/ProductCard';
-import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { getCategoryL1Href, getCategoryL2Href } from '@/lib/shop/format';
+import Link from 'next/link';
 import type { Metadata } from 'next';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import { EmptyState } from '@/components/ui/Feedback';
+import { Package } from 'lucide-react';
+import { formatVND } from '@/lib/shop/format';
+import { fetchMedicineBySlug } from '@/features/medicines';
+import { fetchCategoryBySlug } from '@/features/categories';
+import { AddToCartButton } from '@/components/shop/AddToCartButton';
 
 interface PageProps {
-  params: { slug: string; subSlug: string; productSlug: string };
+  params: Promise<{ slug: string; subSlug: string; productSlug: string }>;
 }
 
-export function generateStaticParams() {
-  return PRODUCTS.map((p) => {
-    const directCat = CATEGORIES.find((c) => c.id === p.category.id);
-    const parentCat = CATEGORIES.find((c) =>
-      c.children?.some((ch) => ch.id === p.category.id)
-    );
-    const isL2 = Boolean(parentCat);
-    if (isL2) {
-      return { slug: parentCat!.slug, subSlug: p.category.slug, productSlug: p.slug };
-    }
-    return { slug: directCat?.slug ?? 'thuoc', subSlug: p.slug, productSlug: p.slug };
-  });
+async function loadProduct(slug: string) {
+  try {
+    return await fetchMedicineBySlug(slug);
+  } catch {
+    return null;
+  }
 }
 
-export function generateMetadata({ params }: PageProps): Metadata {
-  const product = PRODUCTS.find((p) => p.slug === params.productSlug);
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const product = await loadProduct((await params).productSlug);
   if (!product) return { title: 'Không tìm thấy' };
   return {
     title: product.name,
-    description: product.shortDescription,
+    description: `Mua ${product.name} chính hãng tại PCMS.`,
   };
 }
 
-export default function ProductDetailPage({ params }: PageProps) {
-  // Hỗ trợ 2 trường hợp:
-  // - L2: /{L1}/{L2}/{productSlug} → match product by slug
-  // - L1 trực tiếp: /{L1}/{productSlug} → tìm theo productSlug = subSlug
-  let product = PRODUCTS.find((p) => p.slug === params.productSlug);
-  let categorySlug: string | undefined;
-  let subcategorySlug: string | undefined;
+export default async function ProductDetailPage({ params }: PageProps) {
+  const product = await loadProduct((await params).productSlug);
 
-  if (product) {
-    // L2: dùng product.category
-    const directCat = CATEGORIES.find((c) => c.id === product!.category.id);
-    const parentCat = CATEGORIES.find((c) =>
-      c.children?.some((ch) => ch.id === product!.category.id)
-    );
-    if (parentCat) {
-      categorySlug = parentCat.slug;
-      subcategorySlug = product.category.slug;
-    } else {
-      categorySlug = directCat?.slug;
-      subcategorySlug = product.category.slug;
-    }
-  } else {
-    // L1 trực tiếp: subSlug = productSlug
-    product = PRODUCTS.find((p) => p.slug === params.subSlug);
-    if (product) {
-      categorySlug = params.slug;
-      subcategorySlug = product.category.slug;
-    }
-  }
+  // Fallback: nếu /{L1}/{productSlug} trực tiếp, (await params).subSlug chứa productSlug
+  const resolved = product ?? (await loadProduct((await params).subSlug));
+  if (!resolved) notFound();
 
-  if (!product || !categorySlug) notFound();
+  const category = resolved.categoryId
+    ? await fetchCategoryBySlug(resolved.categoryId).catch(() => null)
+    : null;
 
-  const related = PRODUCTS.filter(
-    (p) => p.id !== product!.id && p.category.id === product!.category.id
-  ).slice(0, 5);
-
-  // L2 hay L1? parentCat tồn tại nếu L2
-  const isL2 = CATEGORIES.find((c) =>
-    c.children?.some((ch) => ch.id === product!.category.id)
-  );
+  const breadcrumbs = [
+    ...(category
+      ? [{ label: category.name, href: `/${category.slug ?? resolved.categoryId}` }]
+      : []),
+    { label: resolved.name },
+  ];
 
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-        <Breadcrumb
-          items={[
-            { label: CATEGORIES.find((c) => c.slug === categorySlug)?.name ?? '', href: getCategoryL1Href(categorySlug) },
-            ...(isL2 && subcategorySlug
-              ? [{ label: product.category.name, href: getCategoryL2Href(categorySlug, subcategorySlug) }]
-              : []),
-            { label: product.name },
-          ]}
-        />
+        <Breadcrumb items={breadcrumbs} />
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-10">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-          <ProductGallery images={product.images} alt={product.name} />
-          <ProductInfo product={product} />
+          <div className="aspect-square bg-ink-50 border border-ink-200 rounded-md flex items-center justify-center overflow-hidden">
+            {resolved.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={resolved.imageUrl}
+                alt={resolved.name}
+                className="object-contain w-full h-full"
+              />
+            ) : (
+              <Package className="w-16 h-16 text-ink-300" aria-hidden="true" />
+            )}
+          </div>
+
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-ink-900 text-balance">
+              {resolved.name}
+            </h1>
+            {resolved.sku && (
+              <p className="mt-1 text-xs text-ink-500 font-mono">SKU: {resolved.sku}</p>
+            )}
+            <p className="mt-4 text-3xl font-bold text-accent-700 font-mono">
+              {formatVND(resolved.price)}
+              {resolved.unit && (
+                <span className="ml-1 text-base font-normal text-ink-500">
+                  / {resolved.unit}
+                </span>
+              )}
+            </p>
+
+            {resolved.prescriptionRequired && (
+              <div className="mt-4 inline-flex items-center gap-2 px-3 h-7 bg-warning-50 border border-warning-200 rounded-full text-xs text-warning-800">
+                Thuốc kê đơn — cần đơn của bác sĩ
+              </div>
+            )}
+
+            <AddToCartButton
+              medicineId={resolved.id}
+              medicineName={resolved.name}
+              unit={resolved.unit ?? ''}
+              prescriptionRequired={Boolean(resolved.prescriptionRequired)}
+            />
+
+            {category && (
+              <p className="mt-6 text-sm text-ink-600">
+                Danh mục:{' '}
+                <Link
+                  href={`/${category.slug ?? resolved.categoryId}`}
+                  className="text-accent-700 hover:underline"
+                >
+                  {category.name}
+                </Link>
+              </p>
+            )}
+          </div>
         </div>
 
-        <div className="mt-10">
-          <ProductTabs
-            tabs={[
-              {
-                id: 'desc',
-                label: 'Mô tả',
-                content: (
-                  <div className="prose prose-sm max-w-none">
-                    <p>{product.description}</p>
-                    <h4>Thành phần</h4>
-                    <p>{product.ingredients}</p>
-                    <h4>Hãng sản xuất</h4>
-                    <p>{product.manufacturer}</p>
-                  </div>
-                ),
-              },
-              {
-                id: 'usage',
-                label: 'Công dụng & Liều dùng',
-                content: (
-                  <div className="space-y-3">
-                    <div>
-                      <h4 className="font-semibold text-ink-900">Công dụng</h4>
-                      <p>{product.usage}</p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-ink-900">Liều dùng</h4>
-                      <p>{product.dosage}</p>
-                    </div>
-                    {product.sideEffects && (
-                      <div>
-                        <h4 className="font-semibold text-ink-900">Tác dụng phụ</h4>
-                        <p>{product.sideEffects}</p>
-                      </div>
-                    )}
-                  </div>
-                ),
-              },
-              {
-                id: 'storage',
-                label: 'Bảo quản',
-                content: (
-                  <div>
-                    <p>{product.storage}</p>
-                    <p className="mt-2 text-ink-500">
-                      Hạn dùng: {product.expiryMonths} tháng từ ngày sản xuất.
-                    </p>
-                  </div>
-                ),
-              },
-            ]}
-          />
-        </div>
+        {resolved.description && (
+          <section className="mt-10 p-5 bg-white border border-ink-200 rounded-md">
+            <h2 className="text-lg font-semibold text-ink-900 mb-2">Mô tả</h2>
+            <p className="text-sm text-ink-700 text-pretty whitespace-pre-line">
+              {resolved.description}
+            </p>
+          </section>
+        )}
 
-        {related.length > 0 && (
-          <section className="mt-10">
-            <h2 className="text-xl font-bold text-ink-900 mb-4">Sản phẩm liên quan</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              {related.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
+        {resolved.usage && (
+          <section className="mt-4 p-5 bg-white border border-ink-200 rounded-md">
+            <h2 className="text-lg font-semibold text-ink-900 mb-2">Công dụng &amp; cách dùng</h2>
+            <p className="text-sm text-ink-700 text-pretty whitespace-pre-line">
+              {resolved.usage}
+            </p>
+          </section>
+        )}
+
+        {resolved.ingredients && resolved.ingredients.trim().length > 0 && (
+          <section className="mt-4 p-5 bg-white border border-ink-200 rounded-md">
+            <h2 className="text-lg font-semibold text-ink-900 mb-2">Thành phần</h2>
+            <ul className="list-disc pl-5 space-y-1 text-sm text-ink-700">
+              {resolved.ingredients
+                .split(/[;,\n]/)
+                .map((s) => s.trim())
+                .filter((s) => s.length > 0)
+                .map((ing, i) => (
+                  <li key={i}>{ing}</li>
+                ))}
+            </ul>
           </section>
         )}
       </div>

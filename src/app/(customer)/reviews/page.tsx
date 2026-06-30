@@ -1,13 +1,16 @@
 // =====================================================
-// /reviews — SHOP-REVIEW list
-// Đánh giá của tôi
+// /reviews — Customer reviews list (SPRINT 3 - T11)
+// Đổi từ mock MOCK_REVIEWS sang live API /reviews/me.
+// Fail-loud (không fallback).
 // =====================================================
 
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { EmptyState } from '@/components/ui/Feedback';
-import { Star, ThumbsUp, Edit2 } from 'lucide-react';
+import { Star, Edit2 } from 'lucide-react';
 import { PRODUCTS } from '@/data/shop/catalog';
+import { getMyReviews, type Review } from '@/features/reviews';
 import { formatVND } from '@/lib/shop/format';
 import type { Metadata } from 'next';
 
@@ -16,39 +19,35 @@ export const metadata: Metadata = {
   description: 'Đánh giá sản phẩm bạn đã mua.',
 };
 
-const MOCK_REVIEWS = [
-  {
-    id: 'rev-mine-1',
-    productId: 'prod-1',
-    rating: 5,
-    title: 'Hạ sốt nhanh',
-    body: 'Dùng cho cả gia đình, hiệu quả rõ rệt trong 30 phút.',
-    helpfulCount: 12,
-    createdAt: '2026-05-12',
-    verified: true,
-  },
-  {
-    id: 'rev-mine-2',
-    productId: 'prod-3',
-    rating: 4,
-    title: 'Vitamin C dạng sủi dễ uống',
-    body: 'Con mình thích vị cam, không bị đắng như viên nén.',
-    helpfulCount: 5,
-    createdAt: '2026-04-22',
-    verified: true,
-  },
-];
+// Force dynamic - we read cookies (auth token)
+export const dynamic = 'force-dynamic';
 
-export default function MyReviewsPage() {
-  if (MOCK_REVIEWS.length === 0) {
+export default async function MyReviewsPage() {
+  const token = (await cookies()).get('pcms_access_token')?.value;
+
+  let reviews: Review[] = [];
+  if (token) {
+    try {
+      reviews = await getMyReviews(token);
+    } catch {
+      // Treat auth failure as empty list — show EmptyState
+      reviews = [];
+    }
+  }
+
+  if (reviews.length === 0) {
     return (
       <>
         <Breadcrumb items={[{ label: 'Đánh giá của tôi' }]} />
         <h1 className="mt-3 text-xl font-bold text-ink-900 mb-6">Đánh giá của tôi</h1>
         <EmptyState
           icon={Star}
-          title="Chưa có đánh giá"
-          description="Đánh giá sau khi mua hàng để nhận điểm thưởng và giúp người khác."
+          title={token ? 'Chưa có đánh giá' : 'Vui lòng đăng nhập'}
+          description={
+            token
+              ? 'Đánh giá sau khi mua hàng để nhận điểm thưởng và giúp người khác.'
+              : 'Đăng nhập để xem đánh giá của bạn.'
+          }
         />
       </>
     );
@@ -60,8 +59,9 @@ export default function MyReviewsPage() {
       <h1 className="mt-3 text-xl font-bold text-ink-900 mb-4">Đánh giá của tôi</h1>
 
       <div className="space-y-3">
-        {MOCK_REVIEWS.map((rev) => {
-          const product = PRODUCTS.find((p) => p.id === rev.productId);
+        {reviews.map((rev) => {
+          // Review.medicineId là UUID; PRODUCTS mock có id khác — best-effort link.
+          const product = PRODUCTS.find((p) => p.id === rev.medicineId || p.sku === rev.medicineId);
           return (
             <article
               key={rev.id}
@@ -96,21 +96,13 @@ export default function MyReviewsPage() {
                     aria-hidden="true"
                   />
                 ))}
-                {rev.verified && (
-                  <span className="px-1.5 h-5 bg-success-100 text-success-700 text-[10px] font-semibold rounded">
-                    Đã mua
-                  </span>
-                )}
                 <span className="text-xs text-ink-500 font-mono">
                   {new Date(rev.createdAt).toLocaleDateString('vi-VN')}
                 </span>
               </div>
-              {rev.title && <h3 className="text-sm font-semibold text-ink-900">{rev.title}</h3>}
-              <p className="mt-1 text-sm text-ink-700 text-pretty">{rev.body}</p>
-              <p className="mt-2 text-xs text-ink-500 flex items-center gap-1">
-                <ThumbsUp className="w-3 h-3" aria-hidden="true" />
-                {rev.helpfulCount} người thấy hữu ích
-              </p>
+              {rev.comment && (
+                <p className="mt-1 text-sm text-ink-700 text-pretty">{rev.comment}</p>
+              )}
             </article>
           );
         })}

@@ -21,7 +21,7 @@ import { formatVND } from '@/lib/shop/format';
 import { fetchShopPDP, searchShop } from '@/features/shop';
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 interface ProductDetailLite {
@@ -80,7 +80,7 @@ async function loadProduct(slug: string): Promise<ProductDetailLite | null> {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const product = await loadProduct(params.slug);
+  const product = await loadProduct((await params).slug);
   if (!product) return { title: 'Không tìm thấy' };
   return {
     title: `${product.name} — Tra cứu`,
@@ -89,7 +89,7 @@ export async function generateMetadata({
 }
 
 export default async function TraCuuThuocDetailPage({ params }: PageProps) {
-  const product = await loadProduct(params.slug);
+  const product = await loadProduct((await params).slug);
   if (!product) notFound();
 
   const stockVariant =

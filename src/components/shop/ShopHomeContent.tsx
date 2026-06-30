@@ -1,11 +1,9 @@
 // =====================================================
-// ShopHomeContent — Shared content cho SHOP-HOME
-// Dùng ở cả /(shop)/page.tsx (URL /) và /(customer)/page.tsx (URL /customer)
-// Tránh duplicate 8 component imports ở 2 chỗ
+// ShopHomeContent — Orchestrator cho SHOP-HOME
+// Bỏ TrustStrip (merge vào Hero), gộp Video+StoreLocator
 // =====================================================
 
 import { ShopHomeHero } from '@/components/shop/ShopHomeHero';
-import { ShopTrustStrip } from '@/components/shop/ShopTrustStrip';
 import { ShopFlashSaleBanner } from '@/components/shop/ShopFlashSaleBanner';
 import { ShopHomeCategories } from '@/components/shop/ShopHomeCategories';
 import { ShopHomeBestseller } from '@/components/shop/ShopHomeBestseller';
@@ -17,13 +15,20 @@ export function ShopHomeContent() {
   return (
     <>
       <ShopHomeHero />
-      <ShopTrustStrip />
       <ShopFlashSaleBanner />
       <ShopHomeCategories />
       <ShopHomeBestseller />
       <ShopHomeHealthTools />
-      <ShopHomeStoreLocator />
-      <ShopHomeShortVideos />
+
+      {/* Utilities section — ghép Video + Store Locator */}
+      <section className="bg-white border-b border-ink-200" aria-label="Tiện ích">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 md:py-14">
+          <div className="grid lg:grid-cols-2 gap-8">
+            <ShopHomeShortVideos />
+            <ShopHomeStoreLocator />
+          </div>
+        </div>
+      </section>
     </>
   );
 }

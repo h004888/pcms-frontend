@@ -43,8 +43,19 @@ export async function deactivateUser(id: string) {
   return res.data;
 }
 
-/** Send password reset email */
-export async function resetUserPassword(id: string) {
-  const res = await apiClient.post(API_ENDPOINTS.USER_RESET_PASSWORD(id));
+// SPRINT 0 FIX T04: Backend exposes reset-password at auth-level (not nested under /users/{id}).
+// Admin override: truyền X-User-Id header (admin uuid) + body chứa token.
+// Body shape (theo AuthController.resetPassword @Valid):
+//   { token: string, newPassword: string }
+export async function resetUserPassword(opts: {
+  token: string;
+  newPassword: string;
+  adminId: string;
+}) {
+  const res = await apiClient.post<{ message: string }>(
+    API_ENDPOINTS.USER_RESET_PASSWORD,
+    { token: opts.token, newPassword: opts.newPassword },
+    { headers: { 'X-User-Id': opts.adminId } }
+  );
   return res.data;
 }

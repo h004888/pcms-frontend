@@ -9,36 +9,24 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { MapPin, Phone, Clock, ArrowRight } from 'lucide-react';
-import { apiClient } from '@/lib/api';
+import { fetchBranches } from '@/features/branches';
+import type { Branch } from '@/features/branches';
 import { EmptyState } from '@/components/ui/Feedback';
 
-interface BranchDTO {
-  id: string;
-  code: string;
-  name: string;
-  address?: string;
-  phone?: string;
-  status?: string;
-}
-
 export default function HeThongCuaHangPage() {
-  const [branches, setBranches] = useState<BranchDTO[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    apiClient
-      .get('/branches?size=100')
+    fetchBranches({ size: 100 })
       .then((res) => {
         if (cancelled) return;
-        const body = res.data;
-        const items: BranchDTO[] = Array.isArray(body)
-          ? body
-          : Array.isArray(body?.data)
-            ? body.data
-            : [];
-        setBranches(items.filter((b) => (b.status ?? 'ACTIVE') === 'ACTIVE'));
+        const items = (res.data ?? []).filter(
+          (b) => (b.status ?? 'ACTIVE') === 'ACTIVE'
+        );
+        setBranches(items);
       })
       .catch(() => {
         if (!cancelled) setBranches([]);
