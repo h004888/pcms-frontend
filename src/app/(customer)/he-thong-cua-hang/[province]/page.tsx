@@ -13,7 +13,7 @@ import { MapPin, Phone, Clock, ArrowRight } from 'lucide-react';
 import { EmptyState } from '@/components/ui/Feedback';
 
 interface PageProps {
-  params: { province: string };
+  params: Promise<{ province: string }>;
 }
 
 const PROVINCE_NAMES: Record<string, string> = {
@@ -44,7 +44,8 @@ async function loadStoresByProvince(slug: string): Promise<{
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { provinceName } = await loadStoresByProvince(params.province);
+  const { province: metaProvince } = await params;
+  const { provinceName } = await loadStoresByProvince(metaProvince);
   return {
     title: `Nhà thuốc tại ${provinceName}`,
     description: 'Danh sách nhà thuốc PCMS theo tỉnh thành.',
@@ -52,7 +53,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function StoreListProvincePage({ params }: PageProps) {
-  const { stores, provinceName } = await loadStoresByProvince(params.province);
+  const { province } = await params;
+  const { stores, provinceName } = await loadStoresByProvince(province);
 
   if (!provinceName && stores.length === 0) notFound();
 
@@ -86,7 +88,7 @@ export default async function StoreListProvincePage({ params }: PageProps) {
           stores.map((store) => (
             <Link
               key={store.id}
-              href={`/he-thong-cua-hang/${params.province}/${store.id}`}
+              href={`/he-thong-cua-hang/${province}/${store.id}`}
               className="block p-4 bg-white border border-ink-200 rounded-md hover:border-accent-500 transition-colors"
             >
               <div className="flex items-start gap-3">

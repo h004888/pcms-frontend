@@ -11,7 +11,7 @@ import { fetchStoreDetail } from '@/features/stores';
 import { MapPin, Phone, Clock, Navigation } from 'lucide-react';
 
 interface PageProps {
-  params: { province: string; id: string };
+  params: Promise<{ province: string; id: string }>;
 }
 
 async function loadStore(id: string) {
@@ -23,13 +23,13 @@ async function loadStore(id: string) {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const store = await loadStore(params.id);
+  const store = await loadStore((await params).id);
   if (!store) return { title: 'Không tìm thấy' };
   return { title: store.name, description: `${store.name} — ${store.address}` };
 }
 
 export default async function StoreDetailPage({ params }: PageProps) {
-  const store = await loadStore(params.id);
+  const store = await loadStore((await params).id);
   if (!store) notFound();
 
   const lat = store.latitude ?? 0;
@@ -44,8 +44,8 @@ export default async function StoreDetailPage({ params }: PageProps) {
             items={[
               { label: 'Hệ thống nhà thuốc', href: '/he-thong-cua-hang' },
               {
-                label: store.province ?? params.province,
-                href: `/he-thong-cua-hang/${params.province}`,
+                label: store.province ?? (await params).province,
+                href: `/he-thong-cua-hang/${(await params).province}`,
               },
               { label: store.name },
             ]}

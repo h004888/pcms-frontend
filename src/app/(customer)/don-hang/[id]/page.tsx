@@ -14,7 +14,7 @@ import { formatVND } from '@/lib/shop/format';
 import type { Metadata } from 'next';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 async function loadOrder(id: string) {
@@ -27,7 +27,7 @@ async function loadOrder(id: string) {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const order = await loadOrder(params.id);
+  const order = await loadOrder((await params).id);
   if (!order) return { title: 'Không tìm thấy đơn hàng' };
   return {
     title: `Đơn hàng ${order.code}`,
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function ShopOrderTrackPage({ params }: PageProps) {
-  const order = await loadOrder(params.id);
+  const order = await loadOrder((await params).id);
   if (!order) notFound();
 
   const subtotal = order.total - order.shippingFee;

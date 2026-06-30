@@ -1,8 +1,25 @@
 // =====================================================
 // PCMS - Order & Payment feature types (UC06, UC07)
+// SPRINT 4 - T12: extracted OrderTimelineStatus + OrderTimelineEntry
+//                  from data/shop/orders.ts (mock dead-code cleaned)
 // =====================================================
 
 import type { UUID, ISODate, OrderStatus, PaymentMethod, PaymentStatus } from './common';
+
+// SPRINT 4 - T12: B2C order timeline status (5 states, distinct from BE OrderStatus).
+// Frontend customer-portal renders this in OrderTimeline component.
+export type OrderTimelineStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'SHIPPING'
+  | 'DELIVERED'
+  | 'CANCELLED';
+
+export interface OrderTimelineEntry {
+  status: OrderTimelineStatus;
+  at: string; // ISO datetime
+  note?: string;
+}
 
 export interface OrderItem {
   id?: UUID;

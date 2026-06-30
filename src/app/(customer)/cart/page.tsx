@@ -13,6 +13,7 @@ import { CartItemRow } from '@/components/shop/CartItemRow';
 import { EmptyState } from '@/components/ui/Feedback';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { formatVND } from '@/lib/shop/format';
+import { applyVoucher as backendApplyVoucher } from '@/features/cart';
 import {
   ShoppingCart,
   ArrowRight,
@@ -26,15 +27,8 @@ import {
 const FREE_SHIPPING_THRESHOLD = 200000;
 const SHIPPING_FEE = 30000;
 
-// Voucher catalog (mock)
-const VOUCHERS = {
-  WELCOME10: { type: 'percent' as const, value: 10, minSpend: 200000 },
-  FREESHIP50K: { type: 'fixed' as const, value: 50000, minSpend: 300000 },
-  SUMMER25: { type: 'percent' as const, value: 25, minSpend: 0 },
-};
-
 export default function ShopCartPage() {
-  const { items, subtotal, hydrated } = useCart();
+  const { items, subtotal, hydrated, cart, applyVoucher: setVoucherInCtx } = useCart();
   const [voucherCode, setVoucherCode] = useState('');
   const [appliedVoucher, setAppliedVoucher] = useState<string | null>(null);
   const [voucherError, setVoucherError] = useState('');
@@ -74,40 +68,32 @@ export default function ShopCartPage() {
   const freeShipNeed = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
   const freeShipProgress = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
 
-  // Voucher discount
-  let discount = 0;
-  if (appliedVoucher && VOUCHERS[appliedVoucher as keyof typeof VOUCHERS]) {
-    const v = VOUCHERS[appliedVoucher as keyof typeof VOUCHERS];
-    if (subtotal >= v.minSpend) {
-      discount = v.type === 'percent' ? Math.round((subtotal * v.value) / 100) : v.value;
-    }
-  }
+  const discount = cart.voucherDiscount ?? 0;
 
   const total = subtotal + shippingFee - discount;
 
-  const applyVoucher = () => {
+  const handleApplyVoucher = async () => {
     const code = voucherCode.trim().toUpperCase();
     setVoucherError('');
     if (!code) {
       setVoucherError('Vui lòng nhập mã');
       return;
     }
-    const v = VOUCHERS[code as keyof typeof VOUCHERS];
-    if (!v) {
-      setVoucherError('Mã không hợp lệ hoặc đã hết hạn');
-      toast.error('Mã voucher không hợp lệ');
-      return;
+    try {
+      const result = await backendApplyVoucher(code);
+      if (!result.valid) {
+        setVoucherError(result.reason ?? 'Mã không hợp lệ hoặc đã hết hạn');
+        toast.error('Mã voucher không hợp lệ');
+        return;
+      }
+      setAppliedVoucher(code);
+      setVoucherInCtx(code, result.discount);
+      setVoucherCode('');
+      toast.success(`Áp dụng mã ${code} thành công`);
+    } catch {
+      setVoucherError('Không thể kiểm tra mã, vui lòng thử lại');
+      toast.error('Lỗi kết nối');
     }
-    if (subtotal < v.minSpend) {
-      setVoucherError(
-        `Đơn tối thiểu ${formatVND(v.minSpend)} để dùng mã này`
-      );
-      toast.error('Chưa đủ điều kiện');
-      return;
-    }
-    setAppliedVoucher(code);
-    setVoucherCode('');
-    toast.success(`Áp dụng mã ${code} thành công`);
   };
 
   const removeVoucher = () => {
@@ -139,7 +125,7 @@ export default function ShopCartPage() {
           {/* Cart items */}
           <div className="space-y-3">
             {items.map((item) => (
-              <CartItemRow key={item.productId} item={item} />
+              <CartItemRow key={item.medicineId} item={item} />
             ))}
 
             {/* Continue shopping */}
@@ -199,7 +185,7 @@ export default function ShopCartPage() {
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
-                              applyVoucher();
+                              handleApplyVoucher();
                             }
                           }}
                           placeholder="WELCOME10, FREESHIP50K..."
@@ -214,7 +200,7 @@ export default function ShopCartPage() {
                       </div>
                       <button
                         type="button"
-                        onClick={applyVoucher}
+                        onClick={handleApplyVoucher}
                         className="px-3 h-9 bg-ink-900 text-white text-sm font-medium rounded-md hover:bg-ink-800 transition-colors"
                       >
                         Áp dụng

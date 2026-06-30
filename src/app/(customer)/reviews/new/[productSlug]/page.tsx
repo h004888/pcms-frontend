@@ -10,7 +10,9 @@ import { useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { PRODUCTS } from '@/data/shop/catalog';
+import { getAccessToken } from '@/lib/api/client';
+import { fetchMedicineBySlug } from '@/features/medicines';
+import { createReview } from '@/features/reviews';
 import { Star, Save, Camera, X, ImageIcon, Upload } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -19,8 +21,30 @@ interface PageProps {
 }
 
 export default function NewReviewPage({ params }: PageProps) {
-  const product = PRODUCTS.find((p) => p.slug === params.productSlug);
-  if (!product) notFound();
+  const { productSlug } = params;
+  const [medicine, setMedicine] = useState<{ id: string; name: string; manufacturer: string; thumbnail?: string } | null>(null);
+  const [loadingMedicine, setLoadingMedicine] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const m = await fetchMedicineBySlug(productSlug);
+        setMedicine({
+          id: m.id,
+          name: m.name,
+          manufacturer: m.supplierId ?? '',
+          thumbnail: m.imageUrl ?? '/placeholder-products/product.svg',
+        });
+      } catch {
+        notFound();
+      } finally {
+        setLoadingMedicine(false);
+      }
+    })();
+  }, [productSlug]);
+
+  if (loadingMedicine) return null;
+  if (!medicine) return null; // should have called notFound() above
 
   const router = useRouter();
   const [rating, setRating] = useState(0);
@@ -94,12 +118,25 @@ export default function NewReviewPage({ params }: PageProps) {
       toast.error('Vui lòng hoàn thiện các trường bắt buộc');
       return;
     }
+    if (!medicine) return;
     setSubmitting(true);
-    // Mock API call
-    await new Promise((r) => setTimeout(r, 1200));
-    toast.success('Đã gửi đánh giá — cảm ơn bạn!');
-    setSubmitting(false);
-    router.push('/reviews');
+    try {
+      const token = getAccessToken() ?? '';
+      await createReview(
+        {
+          medicineId: medicine.id,
+          rating,
+          comment: `${title}\n\n${body}`,
+        },
+        token
+      );
+      toast.success('Đã gửi đánh giá — cảm ơn bạn!');
+      router.push('/reviews');
+    } catch {
+      toast.error('Không thể gửi đánh giá, vui lòng thử lại');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const displayRating = hoverRating || rating;
@@ -125,14 +162,14 @@ export default function NewReviewPage({ params }: PageProps) {
         <div className="p-4 bg-white border border-ink-200 rounded-md flex items-center gap-3">
           <div className="w-14 h-14 bg-ink-50 rounded-md flex-shrink-0 overflow-hidden">
             <img
-              src={product.thumbnail}
-              alt={product.name}
+              src={medicine.thumbnail}
+              alt={medicine.name}
               className="w-full h-full object-contain p-1"
             />
           </div>
           <div>
-            <p className="text-sm font-semibold text-ink-900">{product.name}</p>
-            <p className="text-xs text-ink-500 font-mono">{product.brand} · {product.country}</p>
+            <p className="text-sm font-semibold text-ink-900">{medicine.name}</p>
+            <p className="text-xs text-ink-500 font-mono">{medicine.manufacturer}</p>
           </div>
         </div>
 

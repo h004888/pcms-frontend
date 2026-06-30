@@ -23,6 +23,13 @@ export async function fetchMedicineById(id: string) {
   return res.data;
 }
 
+export async function fetchMedicineBySlug(slug: string): Promise<Medicine> {
+  const res = await apiClient.get<Medicine>(
+    API_ENDPOINTS.MEDICINE_BY_SLUG(slug)
+  );
+  return res.data;
+}
+
 export async function createMedicine(data: Omit<Medicine, 'id' | 'createdAt' | 'updatedAt'>) {
   const res = await apiClient.post<Medicine>(API_ENDPOINTS.MEDICINES, data);
   return res.data;
@@ -52,6 +59,11 @@ export async function fetchCategories(params: Record<string, unknown> = {}) {
 
 export async function createCategory(data: Omit<Category, 'id' | 'createdAt'>) {
   const res = await apiClient.post<Category>(API_ENDPOINTS.CATEGORIES, data);
+  return res.data;
+}
+
+export async function fetchCategoryBySlug(slug: string) {
+  const res = await apiClient.get<Category>(API_ENDPOINTS.CATEGORY_BY_SLUG(slug));
   return res.data;
 }
 

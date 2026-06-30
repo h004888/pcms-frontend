@@ -11,13 +11,13 @@ import { fetchQuizBySlug } from '@/features/health-tools';
 import { HealthQuizForm } from '@/components/health/HealthQuizForm';
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export default async function HealthQuizDetailPage({ params }: PageProps) {
   let quiz;
   try {
-    quiz = await fetchQuizBySlug(params.slug);
+    quiz = await fetchQuizBySlug((await params).slug);
   } catch {
     notFound();
   }

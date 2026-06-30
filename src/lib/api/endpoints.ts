@@ -13,9 +13,9 @@ export const API_ENDPOINTS = {
   // ============= Favorites =============
   FAVORITES: '/favorites',
 
-  // ============= Points =============
+  // ============= Points (SPRINT 0 FIX T02: redeem uses /wallet/redeem) =============
   POINTS: '/points',
-  POINTS_REDEEM: '/points/redeem',
+  POINTS_REDEEM: '/wallet/redeem',
 
   // ============= Family =============
   FAMILY: '/family',
@@ -26,25 +26,22 @@ export const API_ENDPOINTS = {
   ADDRESS_DETAIL: (id: string) => `/addresses/${id}`,
   ADDRESS_SET_DEFAULT: (id: string) => `/addresses/${id}/set-default`,
 
-  // ============= Profile =============
-  PROFILE: '/profile',
-  PROFILE_AVATAR: '/profile/avatar',
+  // ============= Profile (SPRINT 0 FIX T03: backend exposes profile under /customers/me) =============
+  PROFILE: '/customers/me',
+  PROFILE_AVATAR: '/profile/avatar',  // (Backend chưa hỗ trợ — placeholder, sẽ trả 404)
 
   // ============= Wallet =============
   WALLET: '/wallet',
 
-  // ============= AI Chat =============
-  AI_CHAT: '/ai/chat',
-  AI_SEMANTIC_SEARCH: '/ai/semantic-search',
-
-  // ============= Articles =============
-  ARTICLES: '/articles',
-  ARTICLE_DETAIL: (slug: string) => `/articles/${slug}`,
+  // ============= Articles (UC14 - SPRINT 0 FIX T01: backend uses /health-articles) =============
+  ARTICLES: '/health-articles',
+  ARTICLE_DETAIL: (slug: string) => `/health-articles/${slug}`,
 
   // ============= Users =============
   USERS: '/users',
   USER_DETAIL: (id: string) => `/users/${id}`,
-  USER_RESET_PASSWORD: (id: string) => `/users/${id}/reset-password`,
+  // SPRINT 0 FIX T04: admin reset flows qua auth-level endpoint với header X-User-Id override
+  USER_RESET_PASSWORD: '/auth/reset-password',
 
   // ============= Branches =============
   BRANCHES: '/branches',
@@ -53,10 +50,12 @@ export const API_ENDPOINTS = {
   // ============= Medicines =============
   MEDICINES: '/medicines',
   MEDICINE_DETAIL: (id: string) => `/medicines/${id}`,
+  MEDICINE_BY_SLUG: (slug: string) => `/medicines/slug/${slug}`,
 
   // ============= Categories (UC04) =============
   CATEGORIES: '/categories',
   CATEGORY_DETAIL: (id: string) => `/categories/${id}`,
+  CATEGORY_BY_SLUG: (slug: string) => `/categories/slug/${slug}`,
 
   // ============= Suppliers (UC11) =============
   SUPPLIERS: '/suppliers',
@@ -121,6 +120,7 @@ export const API_ENDPOINTS = {
 
   // ============= Diseases (customer-portal-service) =============
   DISEASES: '/diseases',
+  DISEASE_DETAIL: (slug: string) => `/diseases/${slug}`,
 
   // ============= Cart (customer-portal-service) =============
   CART: '/cart',
@@ -174,15 +174,6 @@ export const API_ENDPOINTS = {
   // ============= Flash sales (ecom-ops-service) =============
   FLASH_SALES_ACTIVE: '/ecom-ops/flash-sales/active',
   FLASH_SALE_DETAIL: (id: string) => `/ecom-ops/flash-sales/${id}`,
-
-  // ============= Mobile BFF (mobile-bff) =============
-  MOBILE_HOME: '/mobile/home',
-  MOBILE_NEARBY_PHARMACIES: '/mobile/nearby-pharmacies',
-  MOBILE_MEDICATION_REMINDERS: '/mobile/medication-reminders',
-  MOBILE_MEDICATION_REMINDER_DETAIL: (id: string) =>
-    `/mobile/medication-reminders/${id}`,
-  MOBILE_REMINDER_DEACTIVATE: (id: string) =>
-    `/mobile/medication-reminders/${id}/deactivate`,
 
   // ============= Videos (admin/customer-portal-service) =============
   VIDEOS: '/admin/videos',

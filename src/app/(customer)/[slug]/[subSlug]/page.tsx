@@ -1,46 +1,63 @@
 // =====================================================
-// [slug]/[subSlug] — SHOP-CAT-2: Danh mục cấp 2
+// [slug]/[subSlug] — SHOP-CAT-2: Danh mục cấp 2 (real API)
 // Route: /thuoc/thuoc-giam-dau, /thuc-pham-chuc-nang/vitamin-khoang-chat, ...
 // =====================================================
 
 import { notFound } from 'next/navigation';
-import { CATEGORIES, PRODUCTS, stripToSummary } from '@/data/shop/catalog';
-import { ProductCard } from '@/components/shop/ProductCard';
+import Link from 'next/link';
+import type { Metadata } from 'next';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { getCategoryL1Href } from '@/lib/shop/format';
+import { EmptyState } from '@/components/ui/Feedback';
+import { Package } from 'lucide-react';
+import { formatVND } from '@/lib/shop/format';
+import { fetchCategoryBySlug } from '@/features/categories';
+import { fetchMedicines } from '@/features/medicines';
+import type { Medicine } from '@/features/medicines';
 
 interface PageProps {
-  params: { slug: string; subSlug: string };
+  params: Promise<{ slug: string; subSlug: string }>;
 }
 
-export function generateStaticParams() {
-  const params: Array<{ slug: string; subSlug: string }> = [];
-  for (const cat of CATEGORIES) {
-    for (const sub of cat.children ?? []) {
-      params.push({ slug: cat.slug, subSlug: sub.slug });
-    }
+async function loadL2(slug: string, subSlug: string) {
+  try {
+    const [parent, sub] = await Promise.all([
+      fetchCategoryBySlug(slug),
+      fetchCategoryBySlug(subSlug),
+    ]);
+    if (!sub) return null;
+    return { parent, sub };
+  } catch {
+    return null;
   }
-  return params;
 }
 
-export function generateMetadata({ params }: PageProps) {
-  const parent = CATEGORIES.find((c) => c.slug === params.slug);
-  const sub = parent?.children?.find((s) => s.slug === params.subSlug);
-  if (!sub) return { title: 'Không tìm thấy' };
+async function loadProductsBySubCategory(categoryId: string): Promise<Medicine[]> {
+  try {
+    const res = await fetchMedicines({ categoryId, size: 24 });
+    return res.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const ctx = await loadL2((await params).slug, (await params).subSlug);
+  if (!ctx?.sub) return { title: 'Không tìm thấy' };
   return {
-    title: sub.name,
-    description: `${sub.productCount} sản phẩm ${sub.name.toLowerCase()} chính hãng.`,
+    title: ctx.sub.name,
+    description: `Sản phẩm ${ctx.sub.name.toLowerCase()} chính hãng.`,
   };
 }
 
-export default function ShopCategoryL2Page({ params }: PageProps) {
-  const parent = CATEGORIES.find((c) => c.slug === params.slug);
-  const sub = parent?.children?.find((s) => s.slug === params.subSlug);
-  if (!parent || !sub) notFound();
+export default async function ShopCategoryL2Page({ params }: PageProps) {
+  const ctx = await loadL2((await params).slug, (await params).subSlug);
+  if (!ctx?.sub) notFound();
 
-  const products = PRODUCTS.filter((p) => p.category.id === sub.id)
-    .slice(0, 24)
-    .map(stripToSummary);
+  const products = await loadProductsBySubCategory(ctx.sub.id);
+  const subSlug = ctx.sub.slug ?? (await params).subSlug;
+  const parentSlug = ctx.parent?.slug ?? (await params).slug;
 
   return (
     <div className="bg-white">
@@ -48,29 +65,42 @@ export default function ShopCategoryL2Page({ params }: PageProps) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
           <Breadcrumb
             items={[
-              { label: parent.name, href: getCategoryL1Href(parent.slug) },
-              { label: sub.name },
+              { label: ctx.parent?.name ?? 'Danh mục', href: `/${parentSlug}` },
+              { label: ctx.sub.name },
             ]}
             className="text-accent-100"
           />
           <h1 className="mt-3 text-2xl md:text-3xl font-bold tracking-tight text-balance">
-            {sub.name}
+            {ctx.sub.name}
           </h1>
           <p className="mt-1 text-sm text-accent-100 font-mono">
-            {sub.productCount.toLocaleString('vi-VN')} sản phẩm
+            {products.length.toLocaleString('vi-VN')} sản phẩm
           </p>
         </div>
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
         {products.length === 0 ? (
-          <div className="text-center py-12 bg-white border border-ink-200 rounded-md">
-            <p className="text-sm text-ink-600">Chưa có sản phẩm trong danh mục này.</p>
-          </div>
+          <EmptyState
+            icon={Package}
+            title="Chưa có sản phẩm"
+            description="Danh mục này hiện chưa có sản phẩm nào."
+          />
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {products.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <Link
+                key={p.id}
+                href={`/${parentSlug}/${subSlug}/${p.slug ?? p.id}`}
+                className="block p-3 bg-white border border-ink-200 rounded-md hover:border-accent-500 transition-colors"
+              >
+                <h3 className="text-sm font-medium text-ink-900 line-clamp-2 text-balance">
+                  {p.name}
+                </h3>
+                <p className="mt-2 text-base font-bold text-accent-700 font-mono">
+                  {formatVND(p.price)}
+                </p>
+              </Link>
             ))}
           </div>
         )}

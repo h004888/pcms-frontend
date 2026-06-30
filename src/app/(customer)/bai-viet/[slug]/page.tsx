@@ -11,12 +11,12 @@ import type { Metadata } from 'next';
 import { fetchArticleBySlug, fetchArticles } from '@/features/articles';
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps): Metadata {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   try {
-    const article = await fetchArticleBySlug(params.slug);
+    const article = await fetchArticleBySlug((await params).slug);
     return {
       title: article.title,
       description: article.excerpt,
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Metadata {
 export default async function BaiVietDetailPage({ params }: PageProps) {
   let article;
   try {
-    article = await fetchArticleBySlug(params.slug);
+    article = await fetchArticleBySlug((await params).slug);
   } catch {
     notFound();
   }

@@ -8,6 +8,7 @@ export interface Category {
   id: UUID;
   code: string;
   name: string;
+  slug?: string;
   description?: string;
   parentId: UUID | null;
   createdAt: ISODate;
