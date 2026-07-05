@@ -189,7 +189,7 @@ export async function LongChauHomeContent() {
             {bestSellers.map((p: any, idx: number) => (
               <Link
                 key={p.id}
-                href={`/thuoc/${p.slug}`}
+                href={`/tra-cuu-thuoc/${p.slug}`}
                 className="group bg-white border border-ink-100 rounded-xl p-4 text-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300 animate-card-enter"
                 style={{ animationDelay: `${(idx % 5) * 80}ms` }}
               >
@@ -225,7 +225,7 @@ export async function LongChauHomeContent() {
             {categories.slice(0, 12).map((c: Category, idx: number) => (
               <Link
                 key={c.id}
-                href={`/thuoc/${c.slug}`}
+                href={`/tra-cuu-thuoc?q=${encodeURIComponent(c.name)}`}
                 className="group bg-white border border-ink-100 rounded-xl p-4 md:p-5 text-center hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 animate-card-enter"
                 style={{ animationDelay: `${(idx % 6) * 50}ms` }}
               >
@@ -289,7 +289,7 @@ export async function LongChauHomeContent() {
                 <HealthCheckCard title="Kiểm tra chuyên khoa" sub="Nhanh chóng - dễ dàng - hiệu quả" />
                 <HealthCheckCard title="Tư vấn sức khỏe" sub="Nhận lời khuyên từ dược sĩ và AI" />
               </div>
-              <a href={healthQuizTeaser.url || '/suc-khoe'} className="mt-6 inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 px-6 py-3 rounded-full text-sm font-semibold transition-all">
+              <a href={healthQuizTeaser.url || '/health-quiz'} className="mt-6 inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 px-6 py-3 rounded-full text-sm font-semibold transition-all">
                 Bắt đầu ngay
                 <ArrowRight className="w-4 h-4" />
               </a>
@@ -300,7 +300,7 @@ export async function LongChauHomeContent() {
 
       {/* ===== DISEASE BY SEASON ===== */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-8">
-        <SectionHeading action={{ label: 'Xem tất cả', href: '/suc-khoe' }}>
+        <SectionHeading action={{ label: 'Xem tất cả', href: '/benh-thuong-gap' }}>
           Bệnh theo mùa
         </SectionHeading>
         {diseases.length > 0 ? (
@@ -316,7 +316,7 @@ export async function LongChauHomeContent() {
               return (
                 <Link
                   key={d.id}
-                  href={`/suc-khoe/benh/${d.slug ?? ''}`}
+                  href={`/benh-thuong-gap/${d.slug ?? ''}`}
                   className="group bg-white border border-ink-100 rounded-xl overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
                 >
                   <div className={`bg-gradient-to-r ${gradient} text-white p-4`}>
@@ -354,7 +354,7 @@ export async function LongChauHomeContent() {
         <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-8">
           <SectionHeading>Bài viết sức khỏe mới nhất</SectionHeading>
           <div className="bg-white border border-ink-100 rounded-2xl p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow">
-            <Link href={`/suc-khoe/${latestArticle.slug}`} className="group">
+            <Link href={`/bai-viet/${latestArticle.slug}`} className="group">
               <h3 className="text-xl font-bold text-ink-900 group-hover:text-accent-700 transition-colors">{latestArticle.title}</h3>
               <p className="mt-3 text-sm text-ink-600 leading-relaxed whitespace-pre-line line-clamp-4">{latestArticle.bodyMarkdown}</p>
             </Link>
@@ -369,7 +369,7 @@ export async function LongChauHomeContent() {
 
       {/* ===== DISEASE BY GENDER ===== */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-8 mb-12">
-        <SectionHeading action={{ label: 'Xem tất cả', href: '/suc-khoe' }}>
+        <SectionHeading action={{ label: 'Xem tất cả', href: '/benh-thuong-gap' }}>
           Bệnh theo đối tượng
         </SectionHeading>
         {diseases.length > 0 ? (
@@ -383,7 +383,7 @@ export async function LongChauHomeContent() {
                   {(items as Disease[]).slice(0, 5).map((d) => (
                     <li key={d.id}>
                       <Link
-                        href={`/suc-khoe/benh/${d.slug ?? ''}`}
+                        href={`/benh-thuong-gap/${d.slug ?? ''}`}
                         className="flex items-center gap-2.5 px-2 py-1.5 text-sm text-ink-700 hover:text-accent-700 hover:bg-accent-50 rounded-lg transition-all"
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-accent-400 shrink-0" />

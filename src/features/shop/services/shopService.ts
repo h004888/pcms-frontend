@@ -34,6 +34,11 @@ export async function fetchShopPDP(id: string) {
   return res.data;
 }
 
+export async function fetchShopPDPBySlug(slug: string) {
+  const res = await apiClient.get(API_ENDPOINTS.SHOP_PDP_SLUG(slug));
+  return res.data;
+}
+
 interface PageResponse<T> {
   data?: T[];
   products?: T[];

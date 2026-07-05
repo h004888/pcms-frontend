@@ -99,6 +99,18 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+const PUBLIC_PATHS = [
+  '/', '/login', '/register', '/forgot-password',
+  '/bai-viet', '/benh-thuong-gap', '/video', '/tra-cuu-thuoc',
+  '/tra-cuu-duoc-chat', '/tra-cuu-duoc-lieu', '/tra-thuoc-chinh-hang',
+  '/categories', '/he-thong-cua-hang', '/health-quiz',
+  '/voucher', '/flash-sale', '/health-articles', '/danh-muc', '/suc-khoe',
+];
+
+function isPublicPage(pathname: string): boolean {
+  return PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'));
+}
+
 /**
  * Response interceptor - try refresh on 401 before redirecting
  */
@@ -129,9 +141,9 @@ apiClient.interceptors.response.use(
       return apiClient.request(error.config);
     }
 
-    // Refresh failed — clear and redirect to login
+    // Refresh failed — clear and redirect to login (only for private pages)
     clearTokens();
-    if (!window.location.pathname.startsWith('/login')) {
+    if (!isPublicPage(window.location.pathname) && !window.location.pathname.startsWith('/login')) {
       window.location.href = '/login';
     }
     return Promise.reject(error);
