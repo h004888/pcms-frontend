@@ -44,7 +44,7 @@ export async function ShopHomeHealthTools() {
               const Icon = SLUG_ICONS[quiz.slug] ?? Activity;
               return (
                 <Link key={quiz.slug} href={`/suc-khoe/kiem-tra/${quiz.slug}`}
-                  className="inline-flex items-center gap-2 px-4 h-10 bg-white hover:bg-accent-50 border border-ink-200 hover:border-accent-300 rounded-full text-sm font-medium text-ink-800 hover:text-accent-800 transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+                  className="press inline-flex items-center gap-2 px-4 h-10 bg-white hover:bg-accent-50 border border-ink-200 hover:border-accent-300 rounded-full text-sm font-medium text-ink-800 hover:text-accent-800 transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
                 >
                   <Icon className="w-4 h-4 text-ink-500" aria-hidden="true" />
                   {quiz.title}

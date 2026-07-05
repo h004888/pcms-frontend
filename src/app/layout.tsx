@@ -97,6 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="vi" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
+        <meta charSet="utf-8" />
         {/* PWA primary meta tags (also in metadata) */}
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0f1d3d" />

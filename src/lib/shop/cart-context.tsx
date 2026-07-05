@@ -121,7 +121,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
             toast.error(`Không đồng bộ được ${result.failed} sản phẩm`);
           }
         }
-        if (!cancelled) await refresh();
+        if (!cancelled) {
+          if (hasToken) {
+            await refresh();
+          } else {
+            setHydrated(true);
+          }
+        }
       } catch {
         if (!cancelled) setHydrated(true);
       }

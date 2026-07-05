@@ -6,9 +6,12 @@
 export const API_ENDPOINTS = {
   // ============= Auth =============
   AUTH_LOGIN: '/auth/login',
+  AUTH_REGISTER: '/auth/register',
   AUTH_ME: '/auth/me',
   AUTH_REFRESH: '/auth/refresh',
   AUTH_LOGOUT: '/auth/logout',
+  AUTH_FORGOT_PASSWORD: '/auth/forgot-password',
+  AUTH_RESET_PASSWORD: '/auth/reset-password',
 
   // ============= Favorites =============
   FAVORITES: '/favorites',

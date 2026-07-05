@@ -1,21 +1,21 @@
 // =====================================================
 // CustomerLayout — wrapper cho B2C e-commerce routes
 // URL prefix: /customer/*
-// Composes: PublicHeader + page content + PublicFooter + MobileBottomNav
-// Wrap children in CartProvider để header badge đồng bộ với PDP/Cart page
+// Composes: LongChauHeader + page content + LongChauFooter + LongChauMobileBottomNav
 // =====================================================
 
-import { PublicHeader, PublicFooter, MobileBottomNav } from '@/components/shop';
+import { LongChauHeader, LongChauFooter } from '@/components/shop/LongChauLayout';
+import { LongChauMobileBottomNav } from '@/components/shop/LongChauMobileBottomNav';
 import { CartProvider } from '@/lib/shop/cart-context';
 
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   return (
     <CartProvider>
-      <div className="min-h-screen flex flex-col bg-[var(--pcms-bg)]">
-        <PublicHeader />
+      <div className="min-h-screen flex flex-col bg-white text-slate-800">
+        <LongChauHeader />
         <main className="flex-1 pb-14 md:pb-0">{children}</main>
-        <PublicFooter />
-        <MobileBottomNav />
+        <LongChauFooter />
+        <LongChauMobileBottomNav />
       </div>
     </CartProvider>
   );

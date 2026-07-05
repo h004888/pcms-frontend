@@ -38,29 +38,31 @@ export async function ShopHomeCategories() {
 
   return (
     <section className="bg-white border-b border-ink-200" aria-label="Danh mục sản phẩm">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8">
-        <div className="flex items-center justify-between mb-4">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+        <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-ink-900">Danh mục nổi bật</h2>
           <Link href="/thuoc" className="text-xs font-medium text-accent-700 hover:text-accent-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 rounded">
             Xem tất cả →
           </Link>
         </div>
 
-        <div className="overflow-x-auto scrollbar-none -mx-4 sm:-mx-6 lg:mx-0">
-          <div className="flex items-center gap-2 px-4 sm:px-6 lg:px-0 min-w-max">
-            {cats.map((cat) => {
-              const meta = CATEGORY_MAP[cat.slug] ?? { icon: getIcon(cat.slug), label: cat.name };
-              const Icon = meta.icon;
-              return (
-                <Link key={cat.slug} href={`/${cat.slug}`}
-                  className="inline-flex items-center gap-2 px-4 h-10 bg-ink-50 hover:bg-accent-50 border border-ink-200 hover:border-accent-300 rounded-full text-sm font-medium text-ink-800 hover:text-accent-800 transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
-                >
-                  <Icon className="w-4 h-4 text-ink-500" aria-hidden="true" />
+        <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-4">
+          {cats.map((cat) => {
+            const meta = CATEGORY_MAP[cat.slug] ?? { icon: getIcon(cat.slug), label: cat.name };
+            const Icon = meta.icon;
+            return (
+              <Link key={cat.slug} href={`/${cat.slug}`}
+                className="press group flex flex-col items-center gap-2.5 p-3 md:p-4 rounded-lg bg-white hover:bg-accent-50 border border-ink-200 hover:border-accent-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+              >
+                <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-ink-50 group-hover:bg-accent-100 flex items-center justify-center transition-colors">
+                  <Icon className="w-6 h-6 md:w-7 md:h-7 text-accent-700" aria-hidden="true" />
+                </div>
+                <span className="text-xs md:text-sm font-medium text-ink-800 text-center leading-tight">
                   {meta.label}
-                </Link>
-              );
-            })}
-          </div>
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>

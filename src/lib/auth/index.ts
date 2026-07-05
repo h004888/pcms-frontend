@@ -3,4 +3,4 @@
 // =====================================================
 
 export { AuthProvider, useAuth } from './auth-context';
-export { login, logout, getCurrentUser, isAuthenticated, hasRole } from './auth';
+export { login, logout, register, forgotPassword, getCurrentUser, isAuthenticated, hasRole } from './auth';

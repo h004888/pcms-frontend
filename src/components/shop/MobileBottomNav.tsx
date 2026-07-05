@@ -9,18 +9,21 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Search, ShoppingCart, Bell, User } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
 import clsx from 'clsx';
 
-const TABS = [
+const BASE_TABS = [
   { href: '/', label: 'Trang chủ', icon: Home, exact: true },
   { href: '/tra-cuu-thuoc', label: 'Tra cứu', icon: Search },
-  { href: '/cart', label: 'Giỏ hàng', icon: ShoppingCart, badge: 0 }, // TODO: read from cart store
+  { href: '/cart', label: 'Giỏ hàng', icon: ShoppingCart, badge: 0 },
   { href: '/reminders', label: 'Nhắc thuốc', icon: Bell },
-  { href: '/login', label: 'Tài khoản', icon: User },
+  { href: '/profile', label: 'Tài khoản', icon: User, authHref: '/login' },
 ];
 
 export function MobileBottomNav() {
   const pathname = usePathname();
+  const { state } = useAuth();
+  const isLoggedIn = state.hydrated && state.isAuthenticated;
 
   return (
     <nav
@@ -28,17 +31,19 @@ export function MobileBottomNav() {
       className="mobile-bottom-nav fixed bottom-0 left-0 right-0 h-14 bg-white border-t border-ink-200 z-40 safe-area-inset-bottom"
     >
       <ul className="grid grid-cols-5 h-full">
-        {TABS.map((tab) => {
+        {BASE_TABS.map((tab) => {
           const Icon = tab.icon;
+          // Use profile if logged in, login if not
+          const href = tab.authHref && !isLoggedIn ? tab.authHref : tab.href;
           const isActive = tab.exact
-            ? pathname === tab.href
-            : pathname === tab.href || pathname.startsWith(tab.href + '/');
+            ? pathname === href
+            : pathname === href || pathname.startsWith(href + '/');
           const hasBadge = tab.badge !== undefined && tab.badge > 0;
 
           return (
             <li key={tab.href} className="h-full">
               <Link
-                href={tab.href}
+                href={href}
                 aria-current={isActive ? 'page' : undefined}
                 aria-label={tab.label}
                 className={clsx(
