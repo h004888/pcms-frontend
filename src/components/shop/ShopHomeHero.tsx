@@ -23,8 +23,10 @@ const STATS = [
 
 export function ShopHomeHero() {
   return (
-    <section className="bg-ink-900 text-white" aria-labelledby="hero-title">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 md:py-14">
+    <section className="relative bg-ink-900 text-white overflow-hidden" aria-labelledby="hero-title">
+      {/* Subtle noise texture overlay */}
+      <div className="absolute inset-0 bg-noise pointer-events-none" aria-hidden="true" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 md:py-14">
         <div className="max-w-3xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-3 h-7 bg-white/10 border border-white/20 rounded-full text-xs font-medium text-accent-200 mb-4">
             <span className="w-1.5 h-1.5 rounded-full bg-accent-400" aria-hidden="true" />
@@ -48,7 +50,7 @@ export function ShopHomeHero() {
                 aria-label="Tra cứu sản phẩm"
                 className="w-full h-11 pl-10 pr-28 text-sm bg-white/10 border border-white/20 rounded-md text-white placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-accent-400 focus:border-transparent transition-colors"
               />
-              <button type="submit" className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 px-3.5 bg-accent-600 text-white text-xs font-semibold rounded hover:bg-accent-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400">
+              <button type="submit" className="press absolute right-1.5 top-1/2 -translate-y-1/2 h-8 px-3.5 bg-accent-600 text-white text-xs font-semibold rounded hover:bg-accent-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400">
                 Tìm kiếm
               </button>
             </div>
@@ -56,7 +58,7 @@ export function ShopHomeHero() {
               <span>Phổ biến:</span>
               {['Paracetamol', 'Vitamin C', 'Omega-3', 'Khẩu trang', 'Siro ho'].map((kw) => (
                 <Link key={kw} href={`/tim-kiem?q=${encodeURIComponent(kw)}`}
-                  className="px-2.5 h-6 inline-flex items-center bg-white/5 hover:bg-white/15 border border-white/10 rounded-full text-ink-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+                  className="press-sm px-2.5 h-6 inline-flex items-center bg-white/5 hover:bg-white/15 border border-white/10 rounded-full text-ink-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
                 >
                   {kw}
                 </Link>
@@ -70,7 +72,7 @@ export function ShopHomeHero() {
               const Icon = action.icon;
               return (
                 <Link key={action.href} href={action.href}
-                  className="inline-flex items-center gap-1.5 px-3.5 h-9 bg-white/10 hover:bg-white/20 border border-white/15 rounded-full text-xs font-medium text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+                  className="press inline-flex items-center gap-1.5 px-3.5 h-9 bg-white/10 hover:bg-white/20 border border-white/15 rounded-full text-xs font-medium text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
                 >
                   <Icon className="w-3.5 h-3.5 text-accent-300" aria-hidden="true" />
                   {action.label}

@@ -14,9 +14,8 @@ export { PWAInstallPrompt } from './PWAInstallPrompt';
 export { PWABadge } from './PWABadge';
 
 // Layout atoms
-export { PublicHeader } from './PublicHeader';
-export { PublicFooter } from './PublicFooter';
-export { MobileBottomNav } from './MobileBottomNav';
+export { LongChauHeader, LongChauFooter } from './LongChauLayout';
+export { LongChauMobileBottomNav } from './LongChauMobileBottomNav';
 
 // Page templates
 export { StaticPageLayout, Prose } from './StaticPageLayout';

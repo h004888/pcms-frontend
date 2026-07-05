@@ -1,5 +1,5 @@
 // =====================================================
-// PCMS - Auth helpers (login/logout/getCurrentUser)
+// PCMS - Auth helpers (login/logout/register/getCurrentUser)
 // Uses localStorage for token storage (suitable for SPA)
 // =====================================================
 
@@ -20,6 +20,31 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   }
   return response.data;
+}
+
+/**
+ * Register a new customer account
+ */
+export async function register(data: {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+}): Promise<LoginResponse> {
+  const response = await apiClient.post<LoginResponse>(API_ENDPOINTS.AUTH_REGISTER, data);
+  const { accessToken, refreshToken, user } = response.data;
+  saveTokens(accessToken, refreshToken);
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  }
+  return response.data;
+}
+
+/**
+ * Send forgot password request
+ */
+export async function forgotPassword(email: string): Promise<void> {
+  await apiClient.post(API_ENDPOINTS.AUTH_FORGOT_PASSWORD, { email });
 }
 
 /**

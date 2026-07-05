@@ -10,22 +10,35 @@
     --pcms-ink: #0f1d3d;
   }
 
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans), 'Inter', system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
+  }
+
   body {
     @apply bg-[--pcms-bg] text-ink-900 antialiased;
     font-feature-settings: 'rlig' 1, 'calt' 1;
   }
 
-  /* Vietnamese-friendly font */
-  html {
-    font-family: var(--font-sans), 'Inter', system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
-  }
-
   code, kbd, samp, pre {
     font-family: var(--font-mono), 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  /* Highlighted text contrast */
+  ::selection {
+    @apply bg-accent-200 text-ink-900;
   }
 }
 
 @layer components {
+  /* Interactive press feedback — dùng active:scale-98 */
+  .press {
+    @apply active:scale-[0.98] transition-transform duration-75;
+  }
+  .press-sm {
+    @apply active:scale-[0.97] transition-transform duration-75;
+  }
+
   /* Form input focus ring */
   .input-focus {
     @apply focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500;
@@ -60,6 +73,13 @@
   .scrollbar-thin::-webkit-scrollbar-thumb {
     @apply bg-ink-200 rounded;
   }
+
+  /* Subtle noise texture via CSS gradient */
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 128px 128px;
+  }
 }
 
 /* === PWA: hide mobile bottom nav on desktop === */
@@ -90,4 +110,50 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ====== ANIMATIONS ====== */
+
+/* Staggered card entrance */
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-card-enter {
+  animation: card-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Flash sale pulse */
+@keyframes pulse-subtle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+.animate-pulse-subtle {
+  animation: pulse-subtle 3s ease-in-out infinite;
+}
+
+/* Floating back-to-top */
+@keyframes float-up {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.animate-float {
+  animation: float-up 2.5s ease-in-out infinite;
+}
+
+/* Skeleton loading shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--pcms-bg) 25%, var(--pcms-border) 50%, var(--pcms-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }

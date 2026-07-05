@@ -2,8 +2,6 @@
 // PCMS - Axios HTTP Client
 // Calls backend directly at NEXT_PUBLIC_API_URL (cross-origin).
 // CORS is configured on the Spring Cloud Gateway side
-// (see api-gateway/ApiGatewayApplication.java @Bean corsWebFilter
-//  + application.yml spring.cloud.gateway.globalcors).
 // =====================================================
 
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
@@ -12,6 +10,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1
 
 const TOKEN_KEY = 'pcms_access_token';
 const REFRESH_KEY = 'pcms_refresh_token';
+
+/** Track refresh promise to prevent multiple simultaneous refresh calls */
+let refreshPromise: Promise<string | null> | null = null;
 
 /**
  * Get stored access token
@@ -46,6 +47,30 @@ export function clearTokens(): void {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(REFRESH_KEY);
   localStorage.removeItem('pcms_user');
+  refreshPromise = null;
+}
+
+/**
+ * Try to refresh the access token using the stored refresh token.
+ * Returns the new access token or null if refresh failed.
+ */
+async function tryRefreshToken(): Promise<string | null> {
+  try {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) return null;
+
+    const response = await axios.post(
+      `${API_URL}/auth/refresh`,
+      { refreshToken },
+      { headers: { Authorization: `Bearer ${getAccessToken()}` } }
+    );
+
+    const { accessToken, refreshToken: newRefreshToken } = response.data;
+    saveTokens(accessToken, newRefreshToken || refreshToken);
+    return accessToken;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -75,17 +100,39 @@ apiClient.interceptors.request.use(
 );
 
 /**
- * Response interceptor - handle 401 by redirecting to login
+ * Response interceptor - try refresh on 401 before redirecting
  */
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
-    // 401: unauthorized → clear tokens, redirect to login
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
-      clearTokens();
-      if (!window.location.pathname.startsWith('/login')) {
-        window.location.href = '/login';
-      }
+  async (error: AxiosError) => {
+    if (error.response?.status !== 401 || typeof window === 'undefined') {
+      return Promise.reject(error);
+    }
+
+    // Don't try refresh for auth endpoints themselves (prevents infinite loop)
+    const url = error.config?.url || '';
+    if (url.includes('/auth/login') || url.includes('/auth/refresh') || url.includes('/auth/logout')) {
+      return Promise.reject(error);
+    }
+
+    // Try to refresh the token once
+    if (!refreshPromise) {
+      refreshPromise = tryRefreshToken().finally(() => {
+        refreshPromise = null;
+      });
+    }
+
+    const newToken = await refreshPromise;
+    if (newToken && error.config) {
+      // Retry the original request with the new token
+      error.config.headers.Authorization = `Bearer ${newToken}`;
+      return apiClient.request(error.config);
+    }
+
+    // Refresh failed — clear and redirect to login
+    clearTokens();
+    if (!window.location.pathname.startsWith('/login')) {
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   }

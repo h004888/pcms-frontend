@@ -4,7 +4,7 @@
 // =====================================================
 
 import Link from 'next/link';
-import { ArrowRight, Pill, Star } from 'lucide-react';
+import { Pill, Star } from 'lucide-react';
 import { getHomePage } from '@/features/shop';
 import type { ProductSummary } from '@/types/shop/catalog';
 
@@ -67,7 +67,7 @@ function FeaturedTopProduct({ product }: { product: ProductSummary }) {
   const discount = product.discountPercent ?? 0;
   return (
     <Link href={`/${product.slug}`}
-      className="group relative flex flex-col bg-white border border-ink-200 rounded-lg overflow-hidden hover:border-accent-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+      className="press group relative flex flex-col bg-white border border-ink-200 rounded-lg overflow-hidden hover:border-accent-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
     >
       <div className="aspect-[4/3] bg-ink-50 flex items-center justify-center">
         <Pill className="w-16 h-16 text-ink-300 group-hover:scale-110 transition-transform duration-300" aria-hidden="true" />
@@ -104,7 +104,7 @@ function RankedProductCard({ product }: { product: ProductSummary }) {
   const initial = product.name.charAt(0);
   return (
     <Link href={`/${product.slug}`}
-      className="group flex flex-col bg-white border border-ink-200 rounded-lg overflow-hidden hover:border-accent-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+      className="press group flex flex-col bg-white border border-ink-200 rounded-lg overflow-hidden hover:border-accent-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
     >
       <div className="aspect-square bg-ink-50 flex items-center justify-center relative">
         <span className="text-2xl font-bold text-ink-300">{initial}</span>
