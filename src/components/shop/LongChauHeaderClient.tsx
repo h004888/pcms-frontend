@@ -10,13 +10,14 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Search, MapPin, Phone, ChevronDown, Menu, X } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import { useRouter } from 'next/navigation';
 
 const NAV_ITEMS = [
   { label: 'Danh mục', href: '#' },
   { label: 'Hệ thống nhà thuốc', href: '/he-thong-cua-hang' },
   { label: 'Tra cứu', href: '/tra-cuu-thuoc' },
   { label: 'Thực phẩm chức năng', href: '#' },
-  { label: 'Sức khỏe', href: '/suc-khoe' },
+  { label: 'Sức khỏe', href: '/bai-viet' },
   { label: 'Thiết bị y tế', href: '#' },
   { label: 'Làm đẹp', href: '#' },
   { label: 'Voucher', href: '/voucher' },
@@ -27,6 +28,14 @@ export function LongChauHeaderClient() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { state } = useAuth();
   const isLoggedIn = state.hydrated && state.isAuthenticated;
+  const router = useRouter();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const input = e.currentTarget.querySelector('input');
+    const q = input?.value.trim();
+    if (q) router.push(`/tra-cuu-thuoc?q=${encodeURIComponent(q)}`);
+  };
 
   // Lock body scroll when drawer open
   useEffect(() => {
@@ -60,15 +69,17 @@ export function LongChauHeaderClient() {
 
           {/* Mobile: chỉ hamburger + search */}
           <div className="flex-1 flex items-center gap-2 md:hidden">
-            <div className="flex-1 flex items-center bg-white rounded-full px-3 py-2 gap-2">
-              <Search className="w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Tìm thuốc, hoạt chất..."
-                aria-label="Tìm kiếm"
-                className="flex-1 outline-none text-sm text-slate-700 placeholder:text-slate-400 bg-transparent min-w-0"
-              />
-            </div>
+            <form onSubmit={handleSearch} className="flex-1" role="search">
+              <div className="flex items-center bg-white rounded-full px-3 py-2 gap-2">
+                <Search className="w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Tìm thuốc, hoạt chất..."
+                  aria-label="Tìm kiếm"
+                  className="flex-1 outline-none text-sm text-slate-700 placeholder:text-slate-400 bg-transparent min-w-0"
+                />
+              </div>
+            </form>
             <button
               onClick={() => setMobileOpen(true)}
               aria-label="Mở menu"
@@ -80,14 +91,14 @@ export function LongChauHeaderClient() {
           </div>
 
           {/* Desktop: search + location + hotline + auth */}
-          <div className="hidden md:flex flex-1 items-center bg-white rounded-full px-4 py-2.5 gap-2 max-w-2xl">
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 items-center bg-white rounded-full px-4 py-2.5 gap-2 max-w-2xl" role="search">
             <Search className="w-4 h-4 text-slate-400" />
             <input
               type="text"
               placeholder="Tìm tên thuốc, hoạt chất, bệnh lý, sản phẩm..."
               className="flex-1 outline-none text-sm text-slate-700 placeholder:text-slate-400 bg-transparent"
             />
-          </div>
+          </form>
 
           {/* Desktop: location */}
           <div className="hidden lg:flex items-center gap-3 text-sm shrink-0">

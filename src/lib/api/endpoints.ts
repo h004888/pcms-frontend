@@ -112,6 +112,7 @@ export const API_ENDPOINTS = {
   // ============= Shop (customer-portal-service) =============
   SHOP_HOME: '/shop/home',
   SHOP_PDP: (id: string) => `/shop/pdp/${id}`,
+  SHOP_PDP_SLUG: (slug: string) => `/shop/pdp/slug/${slug}`,
   SHOP_SEARCH: '/shop/search',
   SHOP_LOOKUP_DRUG: '/shop/lookup/drug',
   SHOP_LOOKUP_INGREDIENT: '/shop/lookup/ingredient',
