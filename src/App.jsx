@@ -11,12 +11,31 @@ import { InventoryBatchDetailPage } from '@modules/inventory-service/pages/Inven
 import { InventoryHistoryPage } from '@modules/inventory-service/pages/InventoryHistoryPage.jsx'
 import { InventoryListPage } from '@modules/inventory-service/pages/InventoryListPage.jsx'
 import { InventoryOperationPage } from '@modules/inventory-service/pages/InventoryOperationPage.jsx'
+import { LoginPage } from '@modules/user-service/pages/LoginPage.jsx'
+import { RegisterPage } from '@modules/user-service/pages/RegisterPage.jsx'
+import { ForgotPasswordPage } from '@modules/user-service/pages/ForgotPasswordPage.jsx'
+import { ResetPasswordPage } from '@modules/user-service/pages/ResetPasswordPage.jsx'
+import { AuditLogPage } from '@modules/user-service/pages/AuditLogPage.jsx'
+import { UserDashboardPage } from '@modules/user-service/pages/UserDashboardPage.jsx'
+import { UserDetailPage } from '@modules/user-service/pages/UserDetailPage.jsx'
+import { UserFormPage } from '@modules/user-service/pages/UserFormPage.jsx'
+import { UserListPage } from '@modules/user-service/pages/UserListPage.jsx'
 
 function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Navigate to="/branches" replace />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/user-dashboard" element={<UserDashboardPage />} />
+        <Route path="/users" element={<UserListPage />} />
+        <Route path="/audit-logs" element={<AuditLogPage />} />
+        <Route path="/users/new" element={<UserFormPage mode="create" />} />
+        <Route path="/users/:userId" element={<UserDetailPage />} />
+        <Route path="/users/:userId/edit" element={<UserFormPage mode="edit" />} />
         <Route path="/branches" element={<BranchListPage />} />
         <Route path="/branches/new" element={<BranchFormPage mode="create" />} />
         <Route path="/branches/:branchId" element={<BranchDetailPage />} />
