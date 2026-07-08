@@ -1,40 +1,34 @@
 {
-  "name": "pcms-frontend",
-  "version": "2.0.0",
+  "name": "frontend-pcms",
   "private": true,
-  "description": "Pharmacy Chain Management System - Frontend (Next.js 16 + React 19)",
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "next dev -p 3000",
-    "build": "next build",
-    "start": "next start -p 3000",
-    "lint": "eslint .",
-    "type-check": "tsc --noEmit"
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "oxlint",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@hookform/resolvers": "3.9.0",
-    "@tailwindcss/typography": "^0.5.20",
-    "axios": "1.7.7",
-    "clsx": "2.1.1",
-    "date-fns": "3.6.0",
-    "lucide-react": "^0.460.0",
-    "next": "16.2.9",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "react-hook-form": "7.53.0",
-    "react-hot-toast": "2.4.1",
-    "tailwindcss-animate": "^1.0.7",
-    "zod": "3.23.8"
+    "@hookform/resolvers": "^5.4.0",
+    "@tanstack/react-query": "^5.101.2",
+    "axios": "^1.18.1",
+    "clsx": "^2.1.1",
+    "dayjs": "^1.11.21",
+    "lucide-react": "^1.23.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-hook-form": "^7.81.0",
+    "react-router-dom": "^7.18.1",
+    "sonner": "^2.0.7",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@types/node": "20.16.5",
-    "@types/react": "19.0.0",
-    "@types/react-dom": "19.0.0",
-    "autoprefixer": "10.4.20",
-    "eslint": "9.18.0",
-    "eslint-config-next": "16.2.9",
-    "postcss": "8.4.45",
-    "sharp": "^0.35.1",
-    "tailwindcss": "3.4.10",
-    "typescript": "5.5.4"
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "oxlint": "^1.71.0",
+    "vite": "^8.1.1"
   }
 }
