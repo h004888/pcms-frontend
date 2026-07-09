@@ -1,2 +1,306 @@
-429: Too Many Requests
-For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-16T00:00:00Z",
+  "title": "Design System: PCMS",
+  "extensions": {
+    "colorMeta": {
+      "ink-900": {
+        "role": "primary",
+        "displayName": "Ink-Indigo (Heading)",
+        "canonical": "#0f1d3d",
+        "tonalRamp": [
+          "#f1f3f9", "#e6e9f5", "#c5cce4", "#9aa3c8",
+          "#6b75a8", "#475089", "#2f3870", "#1e2a5e",
+          "#141d49", "#0f1d3d"
+        ]
+      },
+      "ink-100": {
+        "role": "neutral",
+        "displayName": "Ink-Mist",
+        "canonical": "#e6e9f5",
+        "tonalRamp": [
+          "#f1f3f9", "#e6e9f5", "#c5cce4", "#9aa3c8",
+          "#6b75a8", "#475089", "#2f3870", "#1e2a5e",
+          "#141d49", "#0f1d3d"
+        ]
+      },
+      "ink-200": {
+        "role": "neutral",
+        "displayName": "Ink-Haze (Card Border)",
+        "canonical": "#c5cce4",
+        "tonalRamp": [
+          "#f1f3f9", "#e6e9f5", "#c5cce4", "#9aa3c8",
+          "#6b75a8", "#475089", "#2f3870", "#1e2a5e",
+          "#141d49", "#0f1d3d"
+        ]
+      },
+      "accent-500": {
+        "role": "accent",
+        "displayName": "Pharmacy-Teal",
+        "canonical": "#14b8a6",
+        "tonalRamp": [
+          "#f0fdfa", "#ccfbf1", "#99f6e4", "#5eead4",
+          "#2dd4bf", "#14b8a6", "#0d9488", "#0d7a72",
+          "#115e59", "#134e4a"
+        ]
+      },
+      "accent-700": {
+        "role": "accent",
+        "displayName": "Deep-Teal",
+        "canonical": "#0d7a72",
+        "tonalRamp": [
+          "#f0fdfa", "#ccfbf1", "#99f6e4", "#5eead4",
+          "#2dd4bf", "#14b8a6", "#0d9488", "#0d7a72",
+          "#115e59", "#134e4a"
+        ]
+      },
+      "accent-50": {
+        "role": "accent",
+        "displayName": "Pale-Teal",
+        "canonical": "#f0fdfa",
+        "tonalRamp": [
+          "#f0fdfa", "#ccfbf1", "#99f6e4", "#5eead4",
+          "#2dd4bf", "#14b8a6", "#0d9488", "#0d7a72",
+          "#115e59", "#134e4a"
+        ]
+      },
+      "warning-500": {
+        "role": "status",
+        "displayName": "Warning-Yellow",
+        "canonical": "#eab308",
+        "tonalRamp": [
+          "#fefce8", "#fef9c3", "#fef08a", "#fde047",
+          "#facc15", "#eab308", "#ca8a04", "#a16207",
+          "#854d0e", "#713f12"
+        ]
+      },
+      "danger-500": {
+        "role": "status",
+        "displayName": "Danger-Red",
+        "canonical": "#ef4444",
+        "tonalRamp": [
+          "#fef2f2", "#fee2e2", "#fecaca", "#fca5a5",
+          "#f87171", "#ef4444", "#dc2626", "#b91c1c",
+          "#991b1b", "#7f1d1d"
+        ]
+      },
+      "info-500": {
+        "role": "status",
+        "displayName": "Info-Blue",
+        "canonical": "#3b82f6",
+        "tonalRamp": [
+          "#eff6ff", "#dbeafe", "#bfdbfe", "#93c5fd",
+          "#60a5fa", "#3b82f6", "#2563eb", "#1d4ed8",
+          "#1e40af", "#1e3a8a"
+        ]
+      },
+      "distinct-500": {
+        "role": "status",
+        "displayName": "Distinct-Purple",
+        "canonical": "#a855f7",
+        "tonalRamp": [
+          "#faf5ff", "#f3e8ff", "#e9d5ff", "#d8b4fe",
+          "#c084fc", "#a855f7", "#9333ea", "#7e22ce",
+          "#6b21a8", "#581c87"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "H1 hero, brand headlines. Chỉ 1 mỗi page."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page title (H1 ở dashboard), modal title."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card title, sub-section heading."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Nội dung chính, mô tả, helper text."
+      },
+      "body-strong": {
+        "displayName": "Body Strong",
+        "purpose": "Label trong form, link text, table cell value."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Eyebrow (khi mang brand), column header, badge."
+      },
+      "mono-data": {
+        "displayName": "Mono Data",
+        "purpose": "SKU, số lô, đơn giá, ID, version, code. tabular-nums."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-xl",
+        "value": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+        "purpose": "Modal only — depth cần tách khỏi page background."
+      },
+      {
+        "name": "shadow-lg",
+        "value": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)",
+        "purpose": "Dropdown/Popover only — auto-complete, search suggest, user menu."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-default",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Default easing for transition-colors. Tailwind default."
+      },
+      {
+        "name": "duration-state",
+        "value": "150ms",
+        "purpose": "Hover, focus, active state changes. 150–250ms."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }",
+        "purpose": "WCAG 2.3.3 — honor user motion preference."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary action — 'Đăng nhập', 'Lưu', 'Tạo đơn hàng'. Ink-900 fill, white text.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">Tạo đơn hàng</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 16px; background: #0f1d3d; color: #ffffff; font-family: Inter, system-ui, sans-serif; font-size: 14px; font-weight: 500; border: none; border-radius: 6px; cursor: pointer; transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-primary:hover { background: #141d49; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #14b8a6; } .ds-btn-primary:disabled { background: #9aa3c8; color: #e6e9f5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action — 'Quay lại', 'Xem chi tiết'. White fill, ink-300 border.",
+      "html": "<button class=\"ds-btn-outline\" type=\"button\">Xem chi tiết</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 16px; background: #ffffff; color: #1e2a5e; font-family: Inter, system-ui, sans-serif; font-size: 14px; font-weight: 500; border: 1px solid #9aa3c8; border-radius: 6px; cursor: pointer; transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-outline:hover { background: #f1f3f9; } .ds-btn-outline:focus-visible { outline: none; box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #14b8a6; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Standard text input. Ink-300 border, accent-500 focus.",
+      "html": "<div class=\"ds-input-wrap\"><label for=\"ds-input-1\" class=\"ds-input-label\">Email</label><input id=\"ds-input-1\" class=\"ds-input\" type=\"email\" placeholder=\"ban@pcms.vn\" /></div>",
+      "css": ".ds-input-wrap { display: flex; flex-direction: column; gap: 4px; width: 100%; } .ds-input-label { font-family: Inter, system-ui, sans-serif; font-size: 14px; font-weight: 500; color: #1e2a5e; } .ds-input { padding: 8px 12px; background: #ffffff; color: #0f1d3d; font-family: Inter, system-ui, sans-serif; font-size: 14px; border: 1px solid #9aa3c8; border-radius: 6px; transition: border-color 150ms, box-shadow 150ms; } .ds-input::placeholder { color: #6b75a8; } .ds-input:focus { outline: none; border-color: #14b8a6; box-shadow: 0 0 0 2px #99f6e4; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "Container card. Border only, no shadow.",
+      "html": "<div class=\"ds-card\" role=\"region\" aria-labelledby=\"ds-card-title\"><div class=\"ds-card-header\"><h3 id=\"ds-card-title\" class=\"ds-card-title\">Đơn hàng gần đây</h3><p class=\"ds-card-subtitle\">5 đơn mới nhất</p></div><div class=\"ds-card-body\"><p class=\"ds-card-content\">Nội dung card...</p></div></div>",
+      "css": ".ds-card { background: #ffffff; border: 1px solid #c5cce4; border-radius: 8px; } .ds-card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #c5cce4; } .ds-card-title { font-family: Inter, system-ui, sans-serif; font-size: 16px; font-weight: 600; color: #0f1d3d; } .ds-card-subtitle { font-family: Inter, system-ui, sans-serif; font-size: 14px; color: #475089; margin-top: 2px; } .ds-card-body { padding: 16px 20px; } .ds-card-content { font-family: Inter, system-ui, sans-serif; font-size: 14px; color: #1e2a5e; }"
+    },
+    {
+      "name": "Stat Card",
+      "kind": "card",
+      "refersTo": "statcard-default",
+      "description": "Dashboard metric card. Mono value with tabular-nums, semantic icon.",
+      "html": "<div class=\"ds-stat\"><div class=\"ds-stat-text\"><p class=\"ds-stat-title\">Doanh thu hôm nay</p><p class=\"ds-stat-value\">12.450.000 ₫</p></div><div class=\"ds-stat-icon ds-stat-icon--accent\">★</div></div>",
+      "css": ".ds-stat { display: flex; align-items: flex-start; justify-content: space-between; padding: 20px; background: #ffffff; border: 1px solid #c5cce4; border-radius: 8px; } .ds-stat-title { font-family: Inter, system-ui, sans-serif; font-size: 14px; font-weight: 500; color: #475089; } .ds-stat-value { font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace; font-size: 24px; font-weight: 600; color: #0f1d3d; font-variant-numeric: tabular-nums; margin-top: 8px; } .ds-stat-icon { padding: 12px; border-radius: 8px; } .ds-stat-icon--accent { background: #f0fdfa; color: #0d7a72; }"
+    },
+    {
+      "name": "Badge — Success (Teal)",
+      "kind": "chip",
+      "refersTo": "badge-success",
+      "description": "Status badge cho success/paid/active states. Teal semantic per Status-Accent Lock.",
+      "html": "<span class=\"ds-badge ds-badge--success\" role=\"status\">Đã thanh toán</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; padding: 2px 8px; font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 500; border-radius: 4px; } .ds-badge--success { background: #ccfbf1; color: #115e59; }"
+    },
+    {
+      "name": "Alert — Danger",
+      "kind": "card",
+      "refersTo": "alert-danger",
+      "description": "Error/danger alert with role='alert' for assistive tech.",
+      "html": "<div class=\"ds-alert ds-alert--danger\" role=\"alert\"><span class=\"ds-alert-icon\" aria-hidden=\"true\">⛔</span><div class=\"ds-alert-body\"><p class=\"ds-alert-title\">Không tải được dữ liệu dashboard</p><div class=\"ds-alert-text\">Vui lòng kiểm tra kết nối mạng.</div></div><button class=\"ds-alert-dismiss\" aria-label=\"Đóng\">✕</button></div>",
+      "css": ".ds-alert { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border-radius: 6px; border: 1px solid; } .ds-alert--danger { background: #fef2f2; border-color: #fecaca; color: #991b1b; } .ds-alert-icon { font-size: 20px; line-height: 1; } .ds-alert-body { flex: 1; } .ds-alert-title { font-family: Inter, system-ui, sans-serif; font-size: 14px; font-weight: 600; margin-bottom: 4px; } .ds-alert-text { font-family: Inter, system-ui, sans-serif; font-size: 14px; } .ds-alert-dismiss { background: transparent; border: none; color: currentColor; opacity: 0.6; cursor: pointer; padding: 8px; margin: -8px; border-radius: 6px; min-width: 44px; min-height: 44px; } .ds-alert-dismiss:hover { opacity: 1; } .ds-alert-dismiss:focus-visible { outline: none; box-shadow: 0 0 0 2px currentColor; }"
+    },
+    {
+      "name": "Quick Action — Primary (filled)",
+      "kind": "custom",
+      "refersTo": "quick-action-primary",
+      "description": "Dashboard dominant action tile. Ink-900 fill, accent-400 icon.",
+      "html": "<a class=\"ds-qa-primary\" href=\"/orders/new\"><span class=\"ds-qa-icon\" aria-hidden=\"true\">▣</span><span class=\"ds-qa-label\">Tạo đơn hàng</span></a>",
+      "css": ".ds-qa-primary { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; background: #0f1d3d; color: #ffffff; border-radius: 8px; text-decoration: none; font-family: Inter, system-ui, sans-serif; font-size: 14px; font-weight: 500; transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-qa-primary:hover { background: #141d49; } .ds-qa-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #14b8a6; } .ds-qa-icon { color: #2dd4bf; width: 24px; height: 24px; }"
+    },
+    {
+      "name": "Quick Action — Outline",
+      "kind": "custom",
+      "refersTo": "quick-action-outline",
+      "description": "Dashboard secondary action tile. White fill, ink-200 border, equal weight.",
+      "html": "<a class=\"ds-qa-outline\" href=\"/inventory/import\"><span class=\"ds-qa-icon\" aria-hidden=\"true\">▦</span><span class=\"ds-qa-label\">Nhập kho</span></a>",
+      "css": ".ds-qa-outline { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; background: #ffffff; color: #1e2a5e; border: 1px solid #c5cce4; border-radius: 8px; text-decoration: none; font-family: Inter, system-ui, sans-serif; font-size: 14px; font-weight: 500; transition: background 150ms, border-color 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-qa-outline:hover { background: #f1f3f9; border-color: #9aa3c8; } .ds-qa-outline:focus-visible { outline: none; box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #14b8a6; } .ds-qa-icon { color: #475089; width: 24px; height: 24px; }"
+    },
+    {
+      "name": "Sidebar — Active Item",
+      "kind": "nav",
+      "refersTo": "sidebar-active",
+      "description": "Active sidebar nav item. Pale-teal bg, deep-teal text, aria-current='page'.",
+      "html": "<a class=\"ds-nav-item ds-nav-item--active\" href=\"/orders\" aria-current=\"page\"><span class=\"ds-nav-icon\" aria-hidden=\"true\">▤</span><span class=\"ds-nav-label\">Đơn hàng</span></a>",
+      "css": ".ds-nav-item { display: flex; align-items: center; gap: 12px; padding: 8px 12px; font-family: Inter, system-ui, sans-serif; font-size: 14px; color: #1e2a5e; text-decoration: none; border-radius: 6px; transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-nav-item:hover { background: #f1f3f9; } .ds-nav-item:focus-visible { outline: none; box-shadow: 0 0 0 2px #14b8a6; } .ds-nav-item--active { background: #f0fdfa; color: #0d7a72; font-weight: 500; } .ds-nav-item--active .ds-nav-icon { color: #0d7a72; } .ds-nav-icon { width: 16px; height: 16px; color: #6b75a8; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Pharmacist's Workbench",
+    "overview": "PCMS là bàn làm việc của dược sĩ — không phải bệnh viện, không phải SaaS chung chung. Dược sĩ bán thuốc, kê đơn, tra cứu tương tác thuốc, in hóa đơn, cập nhật tồn kho theo lô — tất cả trong một ca làm việc. Giao diện phải đủ yên tĩnh để không cản ca, đủ chính xác để dược sĩ tin tưởng, đủ gọn để thông tin dày đặc vẫn đọc nhanh. Cảm giác người dùng khi ngồi vào: yên tâm, không choáng ngợp, mọi thứ đúng chỗ. Tính cách hiện đại — nhanh — gọn kéo mọi quyết định. Bốn vai màu có tên — Ink (navy/indigo trầm) cho brand surface và primary action, Teal (accent) cho highlight, semantic status cho warning/danger/info, ink ramp cho neutrals. Kiểu chữ sans cho UI, mono cho dữ liệu — Inter cho điều hướng, nhãn, hướng dẫn; JetBrains Mono cho SKU, số lô, đơn giá, định danh, version. Chuyển động tiết chế — chỉ state change 150–250ms, không page-load choreography; tôn trọng prefers-reduced-motion. Trang /login mang cảm giác thương hiệu nhiều hơn (split layout, ink-900 panel trái); toàn bộ authenticated app giữ giọng product. Một từ vựng component cho 5 vai trò (Admin/CEO/Quản lý/Dược sĩ/Khách hàng) — cùng shape nút, cùng form control, cùng cách phân trang.",
+    "keyCharacteristics": [
+      "Bốn vai màu có tên, mỗi vai dùng có chủ đích — không phải 'primary + tailwind gray'.",
+      "Sans cho UI, mono cho dữ liệu dạng số/mã — dược sĩ đọc SKU và số lô mỗi phút.",
+      "Mật độ cao nhưng có hệ thống: bảng nhiều dòng, panel nhiều nhãn, nhịp thị giác rõ ràng.",
+      "Bản sắc y tế tự tin — không minh họa hoạt hình, không pastel dễ thương.",
+      "Vietnamese-first copy, line-height ≥ 1.5 ở body cho dấu không chạm dòng kế."
+    ],
+    "rules": [
+      { "name": "The Four-Role Rule", "body": "Mỗi vai màu có một vai trò duy nhất. Status-danger không trang trí. Accent-teal không thay thế ink-900 cho primary action.", "section": "colors" },
+      { "name": "The Cool-Neutral Rule", "body": "Neutral ramp nghiêng cool (lạnh nhẹ), không warm. Tránh cream/sand/paper làm body bg.", "section": "colors" },
+      { "name": "The Status-Accent Lock", "body": "accent-500 (teal) đồng thời là success semantic. PAID/ACTIVE/SIGNED đều dùng teal. Không dùng green riêng.", "section": "colors" },
+      { "name": "The Mono Data Rule", "body": "Bất kỳ dữ liệu nào dạng mã (SKU, số lô, ID, đơn giá, version) phải dùng mono + tabular-nums.", "section": "typography" },
+      { "name": "The Single-Family Rule", "body": "Một sans family (Inter) cho toàn UI. Một mono family (JetBrains Mono) cho data. Hai family là đủ.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Bề mặt phẳng theo mặc định. Phân lớp bằng border 1px + tách surface nhẹ. Shadow chỉ cho UI cần tách khỏi content.", "section": "elevation" },
+      { "name": "The No-Ghost-Card Rule", "body": "Border HOẶC shadow, không cả hai. Pair border + shadow trên cùng element là anti-pattern.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do dùng font-mono tabular-nums cho mọi dữ liệu dạng mã (SKU, số lô, ID, đơn giá, version, code).",
+      "Do dùng Ink (navy) cho primary brand surface — primary button, login brand panel, h1. Dùng Teal (accent) cho highlight — focus ring, active link, identifier, success semantic.",
+      "Do dùng border 1px ink-200 để phân lớp card; shadow chỉ dành cho modal (shadow-xl) và dropdown/popover (shadow-lg).",
+      "Do giữ một từ vựng component cho 5 vai trò (Admin/CEO/Quản lý/Dược sĩ/Khách hàng). Cùng shape nút, cùng form control, cùng cách phân trang.",
+      "Do tuân thủ WCAG 2.1 AA: tương phản ≥ 4.5:1 cho body text, focus-visible ring trên mọi interactive, ARIA roles chính xác.",
+      "Do tôn trọng prefers-reduced-motion: 0 transition phức tạp dưới 0.01ms (global rule).",
+      "Do dùng tiếng Việt có dấu, line-height ≥ 1.5 cho body. Không cắt ký tự khi xuống dòng.",
+      "Do dùng 4 metric quan trọng cho dashboard dược sĩ (Doanh thu, Tồn kho, Đơn chờ, Lô sắp hết hạn) — không phải 8 metric tổng quát.",
+      "Do dùng <details> cho demo accounts thay vì card nổi bật.",
+      "Do viết error message ngay dưới input + Alert trên đầu form. Cho retry CTA trong error state."
+    ],
+    "donts": [
+      "Don't dùng border + box-shadow cùng lúc trên card thường (ghost-card anti-pattern). Border HOẶC shadow, không cả hai.",
+      "Don't dùng bg-clip-text gradient text.",
+      "Don't dùng backdrop-blur (glassmorphism) trừ khi có mục đích depth thật.",
+      "Don't bo góc > 16px trên card/section/input. Pill đầy đủ OK cho tag/button.",
+      "Don't dùng cream/sand/paper/parchment làm body background.",
+      "Don't dùng minh họa hoạt hình / sketchy SVG / feTurbulence 'paper grain'.",
+      "Don't lặp lại eyebrow uppercase tracked trên mỗi section / mỗi card — AI-slop grammar.",
+      "Don't dùng animation page-load choreography (staggered reveal, scroll-driven sequences).",
+      "Don't tạo 4-card grid icon+heading+text lặp lại vô tận.",
+      "Don't phụ thuộc vào màu đơn thuần để truyền tải trạng thái — luôn kèm icon hoặc text.",
+      "Don't tạo 5 phiên bản giao diện cho 5 vai trò.",
+      "Don't dùng emoji 👋 ✅ 🎉 🧪 làm decoration lặp lại. Một icon Lucide nhất quán.",
+      "Don't dùng gray- (Tailwind default) cho neutral — dùng ink- ramp.",
+      "Don't dùng primary- (Tailwind blue) cho brand — dùng ink- (navy).",
+      "Don't dùng green- cho success — dùng accent- (teal). PAID/ACTIVE/SIGNED đều dùng teal."
+    ]
+  }
+}
