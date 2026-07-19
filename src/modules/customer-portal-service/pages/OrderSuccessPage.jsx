@@ -3,10 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { CheckCircle2 } from 'lucide-react'
 import { ROUTES } from '@core/router/paths.js'
 import { getOrder } from '../services/orderStorage'
-
-function formatPrice(price) {
-  return new Intl.NumberFormat('vi-VN').format(price) + 'đ'
-}
+import { formatPrice } from '../utils/formatPrice'
 
 export function OrderSuccessPage() {
   const { orderNumber } = useParams()

@@ -9,12 +9,14 @@ export const ROUTES = {
   // ── B2C Shop (customer-facing) ──────────────────────────
   HOME: '/',
   SEARCH: '/search',
-  PRODUCT: (id) => `/product/${id}`,
+  PRODUCT: (slug) => `/product/${slug}`,
   CART: '/cart',
   CHECKOUT: '/checkout',
   ORDER_SUCCESS: (orderNumber) => `/order-success/${orderNumber}`,
   ORDER_TRACKING: '/order-tracking',
   STORES: '/stores',
+  MY_ACCOUNT: '/my-account',
+  MY_ORDERS: '/my-orders',
 
   // ── Auth ────────────────────────────────────────────────
   LOGIN: '/login',

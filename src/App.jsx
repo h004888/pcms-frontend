@@ -30,7 +30,10 @@ import { CartPage } from '@modules/customer-portal-service/pages/CartPage.jsx'
 import { CheckoutPage } from '@modules/customer-portal-service/pages/CheckoutPage.jsx'
 import { OrderSuccessPage } from '@modules/customer-portal-service/pages/OrderSuccessPage.jsx'
 import { OrderTrackingPage } from '@modules/customer-portal-service/pages/OrderTrackingPage.jsx'
+import { MyAccountPage } from '@modules/customer-portal-service/pages/MyAccountPage.jsx'
+import { MyOrdersPage } from '@modules/customer-portal-service/pages/MyOrdersPage.jsx'
 import { StoreLocatorPage } from '@modules/customer-portal-service/pages/StoreLocatorPage.jsx'
+
 
 function ShopRedirect({ to }) {
   const params = useParams()
@@ -88,17 +91,18 @@ function App() {
 
         {/* B2C Shop routes */}
         <Route path={ROUTES.SEARCH} element={<ShopLayout><SearchPage /></ShopLayout>} />
-        <Route path={ROUTES.PRODUCT(':id')} element={<ShopLayout><PdpPage /></ShopLayout>} />
+        <Route path={ROUTES.PRODUCT(':slug')} element={<ShopLayout><PdpPage /></ShopLayout>} />
         <Route path={ROUTES.CART} element={<ShopLayout><CartPage /></ShopLayout>} />
         <Route path={ROUTES.CHECKOUT} element={<ShopLayout><CheckoutPage /></ShopLayout>} />
         <Route path={ROUTES.ORDER_SUCCESS(':orderNumber')} element={<ShopLayout><OrderSuccessPage /></ShopLayout>} />
         <Route path={ROUTES.ORDER_TRACKING} element={<ShopLayout><OrderTrackingPage /></ShopLayout>} />
         <Route path={ROUTES.STORES} element={<ShopLayout><StoreLocatorPage /></ShopLayout>} />
+        <Route path={ROUTES.MY_ACCOUNT} element={<ShopLayout><MyAccountPage /></ShopLayout>} />
+        <Route path={ROUTES.MY_ORDERS} element={<ShopLayout><MyOrdersPage /></ShopLayout>} />
 
         {/* Backward-compat redirects from old /shop/* URLs */}
         <Route path="/shop" element={<Navigate to={ROUTES.HOME} replace />} />
         <Route path="/shop/search" element={<Navigate to={ROUTES.SEARCH} replace />} />
-        <Route path="/shop/product/:id" element={<ShopRedirect to={(params) => ROUTES.PRODUCT(params.id)} />} />
         <Route path="/shop/cart" element={<Navigate to={ROUTES.CART} replace />} />
         <Route path="/shop/checkout" element={<Navigate to={ROUTES.CHECKOUT} replace />} />
         <Route path="/shop/order-success/:orderNumber" element={<ShopRedirect to={(params) => ROUTES.ORDER_SUCCESS(params.orderNumber)} />} />

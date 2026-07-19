@@ -1,0 +1,264 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS — Nhà Thuốc PCMS
+   Pharmacy theme: teal-green + amber accent
+   Generated from design-taste-frontend | version: beta
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Brand Colors ── */
+  --brand-1: #0d9488;
+  --brand-2: #f59e0b;
+  --brand-3: #52c41a;
+
+  /* ── Primary (Long Châu Trustworthy Blue) Scale ── */
+  --blue-50:  #f0fbff;   /* primary-surface */
+  --blue-100: #eaeffa;   /* primary-light */
+  --blue-200: #d4dffc;
+  --blue-300: #a8c4fe;
+  --blue-400: #6f9bff;
+  --blue-500: #1250dc;   /* ★ PRIMARY — Trustworthy Blue */
+  --blue-600: #0037c1;   /* ★ BRAND — primary-hover / Deep Navy */
+  --blue-700: #002c9a;   /* ★ ACTIVE — primary-active */
+  --blue-800: #001e6e;
+  --blue-900: #001452;
+
+  /* ── Accent (Amber) Scale ── */
+  --amber-50:  #fffbeb;
+  --amber-100: #fef3c7;
+  --amber-200: #fde68a;
+  --amber-300: #fcd34d;
+  --amber-400: #fbbf24;
+  --amber-500: #f59e0b;   /* ★ ACCENT CTA */
+  --amber-600: #d97706;   /* ★ ACCENT HOVER */
+  --amber-700: #b45309;
+
+  /* ── Neutral (Gray) Scale ── */
+  --neutral-50:  #fafafa;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d4d4d4;
+  --neutral-400: #a3a3a3;
+  --neutral-500: #737373;
+  --neutral-600: #525252;
+  --neutral-700: #404040;
+  --neutral-800: #262626;
+  --neutral-900: #171717;
+
+  /* ── Green (Success) Scale ── */
+  --green-100: #f6fef9;
+  --green-200: #defcea;
+  --green-300: #d1fadf;
+  --green-400: #a6f4c5;
+  --green-500: #6ce9a6;
+  --green-600: #32d583;
+  --green-700: #12b76a;
+  --green-800: #039855;
+  --green-900: #027a48;
+  --green-1000: #05603a;
+
+  /* ── Red (Error / Discount) Scale ── */
+  --red-100: #fffbfa;
+  --red-200: #fef3f2;
+  --red-300: #fee4e2;
+  --red-400: #ffcdca;
+  --red-500: #fda29b;
+  --red-600: #fa7066;
+  --red-700: #f04438;
+  --red-800: #d92d20;
+  --red-900: #b42318;
+  --red-1000: #912018;
+
+  /* ── Yellow (Warning) Scale ── */
+  --yellow-100: #fffcf5;
+  --yellow-200: #fff3e1;
+  --yellow-300: #fef0c7;
+  --yellow-400: #fedf89;
+  --yellow-500: #fec84b;
+  --yellow-600: #fdb022;
+  --yellow-700: #f79009;
+  --yellow-800: #dc6803;
+  --yellow-900: #b54708;
+  --yellow-1000: #93370d;
+
+  /* ── Semantic Aliases ── */
+  --color-primary:         var(--blue-500);
+  --color-primary-hover:   var(--blue-600);
+  --color-primary-active:  var(--blue-700);
+  --color-primary-light:   var(--blue-100);
+  --color-primary-surface: var(--blue-50);
+
+  --color-accent:          var(--amber-500);
+  --color-accent-hover:    var(--amber-600);
+
+  --color-secondary:       var(--neutral-700);
+  --color-secondary-light: var(--neutral-600);
+
+  --color-text-primary:    var(--neutral-900);
+  --color-text-heading:    var(--neutral-800);
+  --color-text-secondary:  var(--neutral-700);
+  --color-text-muted:      var(--neutral-600);
+  --color-text-placeholder:var(--neutral-500);
+  --color-text-on-dark:    #ffffff;
+  --color-text-on-primary: #ffffff;
+
+  --color-surface:         #ffffff;
+  --color-surface-alt:     var(--neutral-50);
+  --color-page-bg:         var(--neutral-100);
+  --color-page-bg-alt:     var(--neutral-200);
+
+  --color-border-default:  var(--neutral-300);
+  --color-border-strong:   var(--neutral-400);
+  --color-divider:         var(--neutral-200);
+
+  --color-success:         var(--green-800);
+  --color-success-light:   var(--green-100);
+  --color-error:           var(--red-700);
+  --color-error-light:     var(--red-100);
+  --color-warning:         var(--amber-500);
+  --color-warning-light:   var(--amber-50);
+
+  /* ── Header (Long Châu Blue) ── */
+  --color-header-bg:       #2167dd;
+  --color-header-border:   var(--blue-700);
+  --color-header-text:     #ffffff;
+  --color-header-search-bg: var(--neutral-100);
+
+  /* ── Gradients (Long Châu Blue) ── */
+  --gradient-primary-1:  linear-gradient(135deg, #0037c1 0%, #1250dc 100%);
+  --gradient-primary-2:  linear-gradient(135deg, #1250dc 0%, #3b6dff 100%);
+  --gradient-primary-3:  linear-gradient(135deg, #3b6dff 0%, #6f9bff 100%);
+  --gradient-accent-1:   linear-gradient(315deg, #d97706 0%, #f59e0b 100%);
+  --gradient-green-1:    linear-gradient(315deg, #039855 0%, #12b76a 100%);
+  --gradient-red-1:      linear-gradient(315deg, #d92d20 0%, #f04438 100%);
+  --gradient-red-3:      linear-gradient(295deg, #CD1A0C 0%, #FF5246 98.45%);
+  --gradient-yellow-1:   linear-gradient(315deg, #f79009 0%, #fdb022 100%);
+
+  /* ── Legacy gradient aliases (backward compat during migration) ── */
+  --gradient-blue-1: var(--gradient-primary-1);
+  --gradient-blue-2: var(--gradient-primary-2);
+  --gradient-blue-3: var(--gradient-primary-3);
+
+  /* ── Typography ── */
+  --font-family:        'Inter', 'Inter Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:          'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+  --font-emoji:         'Noto Color Emoji', 'Noto Color Emoji Fallback';
+  --root-font-size:     16px;
+
+  --font-regular:  400;
+  --font-medium:   500;
+  --font-semibold: 600;
+  --font-bold:     700;
+  --font-extrabold:800;
+
+  /* ── Spacing Scale (4px base) ── */
+  --space-0:  0;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-base: 16px;
+  --space-lg: 20px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+
+  --container-max:    1280px;
+  --container-padding: 32px;
+
+  /* ── Border Radius ── */
+  --radius-none: 0px;
+  --radius-xs:   2px;
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-pill: 50px;
+  --radius-full: 9999px;
+
+  /* ── Shadows (Long Châu Blue-Tinted, rgba(0,39,102, X)) ── */
+  --shadow-xs:  0px 0px 8px -2px rgba(0, 39, 102, 0.10),
+                0px 0px 4px -2px rgba(0, 39, 102, 0.06);
+  --shadow-sm:  0px 0px 16px -4px rgba(0, 39, 102, 0.08),
+                0px 0px 6px -2px rgba(0, 39, 102, 0.04);
+  --shadow-md:  0px 0px 24px -4px rgba(0, 39, 102, 0.08),
+                0px 0px 8px -4px rgba(0, 39, 102, 0.03);
+  --shadow-lg:  0px 0px 48px -12px rgba(0, 39, 102, 0.18);
+  --shadow-xl:  0px 0px 64px -12px rgba(0, 39, 102, 0.14);
+  --shadow-2xl: 0px 0px 16px rgba(2, 11, 39, 0.04);
+  --shadow-3xl: 0px -4px 16px rgba(2, 11, 39, 0.08);
+
+  /* ── Transitions ── */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-sheet:    cubic-bezier(0, 0, 0.2, 1);
+  --duration-micro:    0.15s;
+  --duration-standard: 0.3s;
+  --duration-slow:     0.5s;
+
+  /* ── Legacy Teal Scale (kept for out-of-scope callsites: UserDashboard, etc.) ── */
+  /* The brand primary has moved to the Blue scale above; teal here is decorative legacy. */
+  --teal-50:  #f0fdfa;
+  --teal-100: #ccfbf1;
+  --teal-200: #99f6e4;
+  --teal-300: #5eead4;
+  --teal-400: #2dd4bf;
+  --teal-500: #14b8a6;
+  --teal-600: #0d9488;
+  --teal-700: #0f766e;
+  --teal-800: #115e59;
+  --teal-900: #134e4a;
+
+  /* ── Z-Index Layers ── */
+  --z-behind:      -1;
+  --z-base:         0;
+  --z-raised:       1;
+  --z-sticky:      10;
+  --z-dropdown:    20;
+  --z-popover:     50;
+  --z-overlay:    100;
+  --z-modal:      200;
+  --z-tooltip:   1000;
+  --z-toast:     9999;
+  --z-sheet:    99999;
+  --z-toast-container: 999999;
+}
+
+/* ── Dark Mode ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-surface:         var(--neutral-900);
+    --color-surface-alt:     #1f1f1f;
+    --color-page-bg:         #0f0f0f;
+    --color-page-bg-alt:     #1a1a1a;
+
+    --color-text-primary:    #f5f5f5;
+    --color-text-heading:    #fafafa;
+    --color-text-secondary:  #d4d4d4;
+    --color-text-muted:      #a3a3a3;
+    --color-text-placeholder:#737373;
+
+    --color-border-default:  var(--neutral-700);
+    --color-border-strong:   var(--neutral-600);
+    --color-divider:         var(--neutral-800);
+
+    --color-header-bg:       var(--neutral-900);
+    --color-header-border:   var(--neutral-800);
+    --color-header-text:     #f5f5f5;
+    --color-header-search-bg: #1f1f1f;
+
+    --shadow-xs:  0px 0px 8px -2px rgba(0, 39, 102, 0.30);
+    --shadow-sm:  0px 0px 16px -4px rgba(0, 39, 102, 0.30);
+    --shadow-md:  0px 0px 24px -4px rgba(0, 39, 102, 0.40);
+    --shadow-lg:  0px 0px 48px -12px rgba(0, 39, 102, 0.50);
+    --shadow-xl:  0px 0px 64px -12px rgba(0, 39, 102, 0.50);
+    --shadow-2xl: 0px 0px 16px rgba(2, 11, 39, 0.20);
+    --shadow-3xl: 0px -4px 16px rgba(2, 11, 39, 0.30);
+  }
+}
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-micro:    0ms;
+    --duration-standard: 0ms;
+    --duration-slow:     0ms;
+  }
+}

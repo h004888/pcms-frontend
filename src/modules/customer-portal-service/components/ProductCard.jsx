@@ -1,66 +1,131 @@
-import { ShoppingCart, AlertTriangle } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { ROUTES } from '@core/router/paths.js'
 import { useCart } from '../hooks/useCart'
+import { formatPrice } from '../utils/formatPrice'
+import './ProductCard.css'
 
-function formatPrice(price) {
-  return new Intl.NumberFormat('vi-VN').format(price) + 'đ'
+const COUNTRY_FLAGS = {
+  'việt nam': '🇻🇳',
+  'nhật bản': '🇯🇵',
+  'mỹ': '🇺🇸',
+  'hoa kỳ': '🇺🇸',
+  'anh': '🇬🇧',
+  'pháp': '🇫🇷',
+  'đức': '🇩🇪',
+  'úc': '🇦🇺',
+  'hàn quốc': '🇰🇷',
+  'trung quốc': '🇨🇳',
 }
 
-export function ProductCard({ product }) {
-  const navigate = useNavigate()
-  const { addToCart } = useCart()
+function getFlagEmoji(country) {
+  if (!country) return null
+  const key = country.toLowerCase().trim()
+  return COUNTRY_FLAGS[key] || null
+}
 
-  const handleClick = () => {
-    navigate(ROUTES.PRODUCT(product.id))
-  }
+function calcDiscountPct(originalPrice, currentPrice) {
+  if (!originalPrice || !currentPrice || originalPrice <= currentPrice) return null
+  return Math.round((1 - currentPrice / originalPrice) * 100)
+}
+
+export function ProductCard({ product, variant = 'default' }) {
+  const { addToCart } = useCart()
 
   const handleAddToCart = (e) => {
     e.stopPropagation()
+    e.preventDefault()
     addToCart({
       medicineId: product.id,
-      name: product.name,
-      price: product.price,
+      name: product.name || product.medicineName,
+      price: product.salePrice || product.price,
       imageUrl: product.imageUrl,
       qty: 1,
     })
   }
 
+  const currentPrice = product.salePrice || product.price
+  const originalPrice = product.originalPrice || (product.price && product.salePrice ? product.price : null)
+  const discountPct = product.discountPct != null ? product.discountPct : calcDiscountPct(originalPrice, currentPrice)
+  const flag = getFlagEmoji(product.origin || product.country)
+
   return (
-    <div className="product-card" onClick={handleClick} role="button" tabIndex={0}
-         onKeyDown={(e) => e.key === 'Enter' && handleClick()}>
-      <div className="product-card-image-wrap">
-        {product.imageUrl ? (
-          <img className="product-card-image" src={product.imageUrl} alt={product.name}
-               onError={(e) => { e.currentTarget.style.display = 'none' }} />
-        ) : (
-          <div className="product-card-initials">{product.name?.charAt(0)}</div>
-        )}
-        {product.prescriptionRequired && (
-          <span className="product-card-rx-badge">
-            <AlertTriangle size={10} /> KÊ ĐƠN
-          </span>
-        )}
-      </div>
-      <div className="product-card-body">
-        <div className="product-card-name">{product.name}</div>
-        <div className="product-card-meta">
-          <span className="product-card-price">{formatPrice(product.price)}</span>
-          {product.unit && <span className="product-card-unit">/ {product.unit}</span>}
+    <div className={`lc-product-card ${variant !== 'default' ? `lc-product-card--${variant}` : ''}`}>
+      {/* ── Clickable image + body area ── */}
+      <Link
+        to={ROUTES.PRODUCT(product.slug || product.id)}
+        className="lc-product-card-body-link"
+        style={{ flex: 1, color: 'inherit', textDecoration: 'none', display: 'block' }}
+      >
+        <div className="lc-product-card-image">
+          {product.imageUrl ? (
+            <img
+              src={product.imageUrl}
+              alt={product.name || product.medicineName}
+              loading="lazy"
+              onError={(e) => { e.currentTarget.style.display = 'none' }}
+            />
+          ) : (
+            <div className="lc-product-card-image-fallback">
+              {(product.name || product.medicineName || '?').charAt(0)}
+            </div>
+          )}
+
+          {discountPct != null && discountPct > 0 && (
+            <span className="lc-product-card-badge">
+              -{discountPct}%
+            </span>
+          )}
+
+          {flag && (
+            <span className="lc-product-card-flag" aria-hidden="true">{flag}</span>
+          )}
         </div>
-        {product.description && (
-          <p className="product-card-desc">{product.description}</p>
-        )}
-        {product.soldCount != null && (
-          <div className="product-card-sold">Đã bán {product.soldCount}</div>
-        )}
-        <div className="product-card-actions">
-          <button className="btn btn-primary" onClick={handleAddToCart}>
-            <ShoppingCart size={14} aria-hidden="true" />
-            Thêm vào giỏ
-          </button>
+
+        <div className="lc-product-card-body">
+          {product.origin && (
+            <span className="lc-product-card-origin">{product.origin}</span>
+          )}
+
+          <h3 className="lc-product-card-name">
+            {product.name || product.medicineName}
+          </h3>
+
+          <div className="lc-product-card-prices">
+            <span className="lc-product-card-price">
+              {formatPrice(currentPrice)}
+            </span>
+            {product.unit && (
+              <span className="lc-product-card-unit">/ {product.unit}</span>
+            )}
+          </div>
+
+          {originalPrice && (
+            <span className="lc-product-card-price-old">
+              {formatPrice(originalPrice)}
+            </span>
+          )}
+
+          {product.soldCount != null && discountPct == null && (
+            <span className="lc-product-card-sold">
+              Đã bán {product.soldCount} suất
+            </span>
+          )}
+          {discountPct != null && (
+            <span className="lc-product-card-promo">
+              Ưu đãi giá sốc
+            </span>
+          )}
         </div>
-      </div>
+      </Link>
+
+      {/* ── Separate CTA button (not inside clickable area) ── */}
+      <button
+        className="lc-product-card-cta"
+        onClick={handleAddToCart}
+        aria-label={`Chọn mua ${product.name || product.medicineName}`}
+      >
+        Chọn mua
+      </button>
     </div>
   )
 }

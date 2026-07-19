@@ -1,0 +1,250 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   ProductCard — Long Châu Design System
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.lc-product-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--shop-surface);
+  border: 1px solid var(--shop-border);
+  border-radius: var(--shop-radius-lg);       /* 12px */
+  padding: var(--space-md);                  /* 12px */
+  box-shadow: var(--shop-shadow-sm);
+  cursor: pointer;
+  transition:
+    box-shadow 0.2s var(--shop-ease),
+    transform 0.2s var(--shop-ease);
+  outline: none;
+}
+
+.lc-product-card:hover {
+  box-shadow: var(--shop-shadow-md);
+  transform: translateY(-4px);
+}
+
+.lc-product-card:focus-visible {
+  box-shadow: var(--shadow-xs), 0 0 0 2px var(--color-primary);
+}
+
+.lc-product-card-body-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+/* ── Image ── */
+
+.lc-product-card-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--radius-sm);           /* 4px */
+  background: var(--color-surface-alt);
+  margin-bottom: var(--space-sm);
+}
+
+.lc-product-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.lc-product-card-image-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  font-weight: var(--font-extrabold);
+  color: var(--color-text-muted);
+}
+
+/* ── Discount Badge (top-left) ── */
+
+.lc-product-card-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: var(--color-error);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: var(--font-bold);
+  border-radius: 0 var(--radius-lg) 0 0;     /* asymmetric: 0 12px 0 0 */
+  z-index: 1;
+  line-height: 1.5;
+}
+
+/* ── Country Flag (top-left, below discount) ── */
+
+.lc-product-card-flag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 20px;
+  line-height: 1;
+  z-index: 1;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+}
+
+/* Push flag below badge if both exist */
+.lc-product-card-badge ~ .lc-product-card-flag {
+  top: 26px;
+}
+
+/* ── Body ── */
+
+.lc-product-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+/* ── Country Origin Text ── */
+
+.lc-product-card-origin {
+  font-size: 11px;
+  font-weight: var(--font-medium);
+  color: var(--color-text-muted);
+}
+
+/* ── Product Name ── */
+
+.lc-product-card-name {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: var(--font-semibold);         /* 600 */
+  line-height: 1.43;                         /* 20px */
+  color: var(--color-text-heading);          /* #020b27 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Prices ── */
+
+.lc-product-card-prices {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.lc-product-card-price {
+  font-size: 16px;
+  font-weight: var(--font-bold);             /* 700 */
+  color: var(--color-text-primary);          /* #000000 */
+  line-height: 1.5;
+}
+
+.lc-product-card-unit {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.lc-product-card-price-old {
+  font-size: 14px;
+  font-weight: var(--font-regular);          /* 400 */
+  color: var(--color-text-muted);            /* #657384 */
+  text-decoration: line-through;
+  line-height: 1.43;
+}
+
+/* ── Meta (sold count, promo label) ── */
+
+.lc-product-card-sold {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.lc-product-card-promo {
+  font-size: 12px;
+  font-weight: var(--font-medium);
+  color: var(--color-error);                 /* #d92d20 */
+}
+
+/* ── CTA Button ("Chọn mua") ── */
+
+.lc-product-card-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 36px;
+  margin-top: var(--space-sm);
+  padding: 0 12px;
+  background: var(--shop-primary);
+  color: #ffffff;
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: var(--font-medium);           /* 500 */
+  border: none;
+  border-radius: var(--shop-radius-pill);    /* 9999px */
+  cursor: pointer;
+  transition:
+    background 0.15s var(--shop-ease),
+    transform 0.15s var(--shop-ease);
+}
+
+.lc-product-card-cta:hover {
+  background: var(--shop-primary-hover);
+  transform: scale(1.02);
+}
+
+.lc-product-card-cta:active {
+  background: var(--shop-primary-hover);
+  transform: scale(0.98);
+}
+
+.lc-product-card-cta:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--shop-primary);
+}
+
+/* ── Variants ── */
+
+/* Horizontal card (for lists/rows) */
+.lc-product-card--horizontal {
+  flex-direction: row;
+  gap: var(--space-md);
+  padding: var(--space-sm);
+}
+
+.lc-product-card--horizontal .lc-product-card-image {
+  width: 80px;
+  height: 80px;
+  aspect-ratio: auto;
+  flex-shrink: 0;
+  margin-bottom: 0;
+}
+
+.lc-product-card--horizontal .lc-product-card-body {
+  flex: 1;
+}
+
+.lc-product-card--horizontal .lc-product-card-cta {
+  width: auto;
+  margin-top: 0;
+  align-self: center;
+}
+
+/* Compact card (for small grids) */
+.lc-product-card--compact {
+  padding: var(--space-sm);
+}
+
+.lc-product-card--compact .lc-product-card-name {
+  font-size: 13px;
+}
+
+.lc-product-card--compact .lc-product-card-cta {
+  height: 30px;
+  font-size: 13px;
+}

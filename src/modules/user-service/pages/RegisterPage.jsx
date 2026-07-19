@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { AlertCircle, ArrowLeft, CheckCircle2, Eye, EyeOff, UserPlus } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '@core/http/apiClient.js'
 import { register } from '../api/authApi.js'
 
 export function RegisterPage() {
+  const [searchParams] = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || ''
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -88,7 +90,7 @@ export function RegisterPage() {
 
       <div className="auth-form-panel">
         <div className="auth-form-container">
-          <Link to="/login" className="btn btn-ghost" style={{ padding: '8px 0', marginBottom: '16px' }}>
+          <Link to={`/login${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="btn btn-ghost" style={{ padding: '8px 0', marginBottom: '16px' }}>
             <ArrowLeft size={16} aria-hidden="true" /> Quay lại đăng nhập
           </Link>
           
@@ -104,7 +106,7 @@ export function RegisterPage() {
                 <strong>Đăng ký thành công!</strong>
                 <p style={{ margin: '4px 0 0' }}>Tài khoản của bạn đã được tạo. Vui lòng đăng nhập để tiếp tục.</p>
                 <div style={{ marginTop: '16px' }}>
-                  <Link to="/login" className="btn btn-primary">
+                  <Link to={`/login${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="btn btn-primary">
                     Đến trang đăng nhập
                   </Link>
                 </div>

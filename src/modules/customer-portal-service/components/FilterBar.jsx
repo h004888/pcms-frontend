@@ -10,10 +10,10 @@ const SORT_OPTIONS = [
   { value: 'name_desc', label: 'Tên Z → A' },
 ]
 
-export function FilterBar({ onFilter, onSort, totalResults }) {
+export function FilterBar({ onFilter, onSort, totalResults, initialCategory }) {
   const [open, setOpen] = useState(false)
   const [categories, setCategories] = useState([])
-  const [category, setCategory] = useState(null)
+  const [category, setCategory] = useState(initialCategory || null)
   const [rxOnly, setRxOnly] = useState(false)
   const [sort, setSort] = useState('default')
 

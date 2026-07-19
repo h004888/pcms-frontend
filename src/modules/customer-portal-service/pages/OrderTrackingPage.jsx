@@ -2,10 +2,7 @@ import { useState } from 'react'
 import { Search, Package } from 'lucide-react'
 import { findOrdersByPhone } from '../services/orderStorage'
 import { OrderTimeline } from '../components/OrderTimeline'
-
-function formatPrice(price) {
-  return new Intl.NumberFormat('vi-VN').format(price) + 'đ'
-}
+import { formatPrice } from '../utils/formatPrice'
 
 const STATUS_ORDER = ['confirmed', 'verified', 'packing', 'handover', 'shipping', 'delivered']
 

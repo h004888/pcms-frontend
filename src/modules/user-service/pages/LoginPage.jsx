@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { AlertCircle, Eye, EyeOff, LogIn } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '@core/http/apiClient.js'
 import { login } from '../api/authApi.js'
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || ''
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -21,11 +23,11 @@ export function LoginPage() {
       localStorage.setItem('pcms_user', JSON.stringify(data.user))
       toast.success(`Chào mừng ${data.user.fullName}!`)
 
-      // Redirect based on role (for admin testing, go to /user-dashboard or /users)
-      if (data.user.role === 'ADMIN' || data.user.role === 'CEO') {
+      if (redirectTo) {
+        navigate(redirectTo)
+      } else if (data.user.role === 'ADMIN' || data.user.role === 'CEO') {
         navigate('/user-dashboard')
       } else {
-        // Fallback for other roles for now
         navigate('/branches')
       }
     },
@@ -175,7 +177,7 @@ export function LoginPage() {
               <Link className="auth-link" to="/forgot-password">
                 Quên mật khẩu?
               </Link>
-              <Link className="auth-link" to="/register">
+              <Link className="auth-link" to={`/register${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}>
                 Đăng ký tài khoản
               </Link>
             </div>
