@@ -29,6 +29,7 @@ import { PdpPage } from '@modules/customer-portal-service/pages/PdpPage.jsx'
 import { CartPage } from '@modules/customer-portal-service/pages/CartPage.jsx'
 import { CheckoutPage } from '@modules/customer-portal-service/pages/CheckoutPage.jsx'
 import { OrderSuccessPage } from '@modules/customer-portal-service/pages/OrderSuccessPage.jsx'
+import { PaymentPendingPage } from '@modules/customer-portal-service/pages/PaymentPendingPage.jsx'
 import { OrderTrackingPage } from '@modules/customer-portal-service/pages/OrderTrackingPage.jsx'
 import { MyAccountPage } from '@modules/customer-portal-service/pages/MyAccountPage.jsx'
 import { MyOrdersPage } from '@modules/customer-portal-service/pages/MyOrdersPage.jsx'
@@ -96,6 +97,7 @@ function App() {
         <Route path={ROUTES.CART} element={<ShopLayout><CartPage /></ShopLayout>} />
         <Route path={ROUTES.CHECKOUT} element={<ShopLayout><CheckoutPage /></ShopLayout>} />
         <Route path={ROUTES.ORDER_SUCCESS(':orderNumber')} element={<ShopLayout><OrderSuccessPage /></ShopLayout>} />
+        <Route path="/payment/pending/:orderNumber" element={<ShopLayout><PaymentPendingPage /></ShopLayout>} />
         <Route path={ROUTES.ORDER_TRACKING} element={<ShopLayout><OrderTrackingPage /></ShopLayout>} />
         <Route path={ROUTES.STORES} element={<ShopLayout><StoreLocatorPage /></ShopLayout>} />
         <Route path={ROUTES.MY_ACCOUNT} element={<ShopLayout><MyAccountPage /></ShopLayout>} />
@@ -111,7 +113,7 @@ function App() {
         <Route path="/shop/order-tracking" element={<Navigate to={ROUTES.ORDER_TRACKING} replace />} />
         <Route path="/shop/stores" element={<Navigate to={ROUTES.STORES} replace />} />
       </Routes>
-      <Toaster richColors position="top-right" />
+      <Toaster richColors position="bottom-right" />
     </>
   )
 }

@@ -13,6 +13,7 @@ export const ROUTES = {
   CART: '/cart',
   CHECKOUT: '/checkout',
   ORDER_SUCCESS: (orderNumber) => `/order-success/${orderNumber}`,
+  PAYMENT_PENDING: (orderNumber) => `/payment/pending/${orderNumber}`,
   ORDER_TRACKING: '/order-tracking',
   STORES: '/stores',
   MY_ACCOUNT: '/my-account',

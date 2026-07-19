@@ -41,16 +41,26 @@ export function CheckoutPage() {
           localStorage.setItem('pcms_cart', JSON.stringify(frontendItems))
           window.dispatchEvent(new CustomEvent('pcms-cart-changed'))
         }
-      }).catch(() => {})
-
-      const cart = JSON.parse(localStorage.getItem('pcms_cart') || '[]')
-      ;(async () => {
-        for (const item of cart) {
-          if (!item.backendId) {
-            try { await addCartItem({ medicineId: item.medicineId, qty: item.qty }) } catch {}
-          }
+      }).catch(() => {
+        // Backend cart doesn't exist or is not ACTIVE — clear backendId
+        // so the sync below will create a new ACTIVE cart
+        const raw = localStorage.getItem('pcms_cart')
+        if (raw) {
+          const cart = JSON.parse(raw)
+          const cleared = cart.map(item => ({ ...item, backendId: undefined }))
+          localStorage.setItem('pcms_cart', JSON.stringify(cleared))
         }
-      })()
+      }).finally(() => {
+        // Sync runs AFTER backend cart check completes
+        const cart = JSON.parse(localStorage.getItem('pcms_cart') || '[]')
+        ;(async () => {
+          for (const item of cart) {
+            if (!item.backendId) {
+              try { await addCartItem({ medicineId: item.medicineId, qty: item.qty }) } catch {}
+            }
+          }
+        })()
+      })
     }
   }, [isAuthenticated])
 
@@ -132,11 +142,13 @@ export function CheckoutPage() {
   const confirmMutation = useMutation({
     mutationFn: confirmCheckout,
     onSuccess: (data) => {
-      clearCart()
-      if (paymentMethod === 'vnpay' && data.paymentUrl) {
-        window.location.href = data.paymentUrl
+      if (paymentMethod === 'vietqr') {
+        navigate(ROUTES.PAYMENT_PENDING(data.orderNumber), {
+          state: { total },
+        })
         return
       }
+      clearCart()
       navigate(ROUTES.ORDER_SUCCESS(data.orderNumber))
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),
@@ -161,7 +173,7 @@ export function CheckoutPage() {
       addressId: selectedAddressId,
       branchId: pickupBranch,
       shippingMethod: 'pickup',
-      paymentMethod: paymentMethod === 'cod' ? 'COD' : 'VNPAY',
+      paymentMethod: paymentMethod === 'cod' ? 'COD' : 'VIETQR',
     })
   }
 
@@ -393,11 +405,11 @@ export function CheckoutPage() {
               <div className="checkout-radio-title">COD</div>
               <div className="checkout-radio-desc">Thanh toán khi nhận hàng</div>
             </label>
-            <label className={`checkout-radio-card checkout-radio-card--payment ${paymentMethod === 'vnpay' ? 'checkout-radio-card--active' : ''}`}>
-              <input type="radio" name="payment" checked={paymentMethod === 'vnpay'} onChange={() => setPaymentMethod('vnpay')} />
+            <label className={`checkout-radio-card checkout-radio-card--payment ${paymentMethod === 'vietqr' ? 'checkout-radio-card--active' : ''}`}>
+              <input type="radio" name="payment" checked={paymentMethod === 'vietqr'} onChange={() => setPaymentMethod('vietqr')} />
               <span style={{ fontSize: 24 }}>📱</span>
-              <div className="checkout-radio-title">VNPay</div>
-              <div className="checkout-radio-desc">Quét mã QR thanh toán</div>
+              <div className="checkout-radio-title">Chuyển khoản QR</div>
+              <div className="checkout-radio-desc">Quét mã VietQR thanh toán</div>
             </label>
           </div>
         </div>

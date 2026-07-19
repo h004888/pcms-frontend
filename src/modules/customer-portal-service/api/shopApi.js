@@ -176,3 +176,8 @@ export const getOrderByNumber = wrap(async (orderNumber) => {
   const { data } = await apiClient.get(`/orders/number/${orderNumber}`)
   return data
 })
+
+export const getPaymentStatus = wrap(async (orderNumber) => {
+  const { data } = await apiClient.get(`/cart/payment-status/${orderNumber}`)
+  return data
+})

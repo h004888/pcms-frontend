@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { toast } from 'sonner'
 import { ROUTES } from '@core/router/paths.js'
 import { useCart } from '../hooks/useCart'
 import { formatPrice } from '../utils/formatPrice'
@@ -41,6 +42,7 @@ export function ProductCard({ product, variant = 'default' }) {
       imageUrl: product.imageUrl,
       qty: 1,
     })
+    toast.success('Đã thêm vào giỏ hàng')
   }
 
   const currentPrice = product.salePrice || product.price

@@ -55,7 +55,20 @@ export function addToCart(item) {
 
   writeCart(cart)
 
-  addCartItem({ medicineId: item.medicineId, qty: existing ? existing.qty : (item.qty || 1) }).catch(() => {})
+  addCartItem({ medicineId: item.medicineId, qty: existing ? existing.qty : (item.qty || 1) })
+    .then((backendCart) => {
+      if (backendCart && backendCart.items) {
+        const currentCart = readCart()
+        for (const bi of backendCart.items) {
+          const local = currentCart.find((c) => c.medicineId === bi.medicineId)
+          if (local && !local.backendId) {
+            local.backendId = bi.id
+          }
+        }
+        writeCartSilent(currentCart)
+      }
+    })
+    .catch(() => {})
 }
 
 export function updateQty(medicineId, delta) {
