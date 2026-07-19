@@ -49,33 +49,6 @@ function buildTimeline(orderStatus) {
   })
 }
 
-export function saveOrder(orderData) {
-  const orderNumber = 'ORD-' + Date.now().toString(36).toUpperCase()
-
-  const order = {
-    orderNumber,
-    customerName: orderData.customerName,
-    phone: orderData.phone,
-    address: orderData.address,
-    note: orderData.note || '',
-    items: orderData.items,
-    subtotal: orderData.subtotal,
-    shippingFee: orderData.shippingFee || 0,
-    total: orderData.total,
-    shippingMethod: orderData.shippingMethod,
-    paymentMethod: orderData.paymentMethod,
-    createdAt: new Date().toISOString(),
-    status: 'confirmed',
-    timeline: buildTimeline('confirmed'),
-  }
-
-  const orders = readOrders()
-  orders.unshift(order)
-  writeOrders(orders)
-
-  return order
-}
-
 export function getOrder(orderNumber) {
   const orders = readOrders()
   return orders.find((o) => o.orderNumber === orderNumber) || null

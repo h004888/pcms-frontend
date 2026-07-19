@@ -27,6 +27,8 @@ export function LoginPage() {
         navigate(redirectTo)
       } else if (data.user.role === 'ADMIN' || data.user.role === 'CEO') {
         navigate('/user-dashboard')
+      } else if (data.user.role === 'CUSTOMER') {
+        navigate('/')
       } else {
         navigate('/branches')
       }

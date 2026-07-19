@@ -21,7 +21,16 @@ export function RegisterPage() {
 
   const registerMutation = useMutation({
     mutationFn: () => register(formData),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data?.accessToken) {
+        localStorage.setItem('pcms_access_token', data.accessToken)
+      }
+      if (data?.refreshToken) {
+        localStorage.setItem('pcms_refresh_token', data.refreshToken)
+      }
+      if (data?.user) {
+        localStorage.setItem('pcms_user', JSON.stringify(data.user))
+      }
       setIsSuccess(true)
       toast.success('Đăng ký tài khoản thành công!')
     },

@@ -1,3 +1,5 @@
+import { addCartItem, updateCartItem, removeCartItem, getBackendCart, clearBackendCart } from '../api/shopApi'
+
 const CART_KEY = 'pcms_cart'
 
 function readCart() {
@@ -12,6 +14,22 @@ function readCart() {
 function writeCart(cart) {
   localStorage.setItem(CART_KEY, JSON.stringify(cart))
   window.dispatchEvent(new CustomEvent('pcms-cart-changed'))
+}
+
+function writeCartSilent(cart) {
+  localStorage.setItem(CART_KEY, JSON.stringify(cart))
+}
+
+function toFrontendItem(backendItem) {
+  return {
+    medicineId: backendItem.medicineId,
+    backendId: backendItem.id,
+    name: backendItem.medicineName,
+    price: backendItem.unitPrice,
+    qty: backendItem.qty,
+    imageUrl: backendItem.imageUrl || '',
+    prescriptionRequired: false,
+  }
 }
 
 export function getCart() {
@@ -36,6 +54,8 @@ export function addToCart(item) {
   }
 
   writeCart(cart)
+
+  addCartItem({ medicineId: item.medicineId, qty: existing ? existing.qty : (item.qty || 1) }).catch(() => {})
 }
 
 export function updateQty(medicineId, delta) {
@@ -50,16 +70,30 @@ export function updateQty(medicineId, delta) {
 
   item.qty = Math.min(newQty, 99)
   writeCart(cart)
+
+  if (item.backendId) {
+    updateCartItem(item.backendId, { qty: item.qty }).catch(() => {})
+  } else {
+    addCartItem({ medicineId: item.medicineId, qty: item.qty }).catch(() => {})
+  }
 }
 
 export function removeItem(medicineId) {
-  const cart = readCart().filter((i) => i.medicineId !== medicineId)
-  writeCart(cart)
+  const cart = readCart()
+  const item = cart.find((i) => i.medicineId === medicineId)
+
+  const newCart = cart.filter((i) => i.medicineId !== medicineId)
+  writeCart(newCart)
+
+  if (item && item.backendId) {
+    removeCartItem(item.backendId).catch(() => {})
+  }
 }
 
 export function clearCart() {
   localStorage.removeItem(CART_KEY)
   window.dispatchEvent(new CustomEvent('pcms-cart-changed'))
+  clearBackendCart().catch(() => {})
 }
 
 export function getCartCount() {
@@ -68,4 +102,17 @@ export function getCartCount() {
 
 export function getCartTotal() {
   return readCart().reduce((sum, item) => sum + item.price * item.qty, 0)
+}
+
+export async function syncFromBackend() {
+  try {
+    const backendCart = await getBackendCart()
+    if (backendCart && backendCart.items) {
+      const frontendItems = backendCart.items.map(toFrontendItem)
+      writeCartSilent(frontendItems)
+      window.dispatchEvent(new CustomEvent('pcms-cart-changed'))
+    }
+  } catch {
+    // silent fail
+  }
 }

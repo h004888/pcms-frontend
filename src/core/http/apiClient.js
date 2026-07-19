@@ -20,6 +20,100 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
+const REFRESH_URL = '/auth/refresh'
+const EXCLUDED_URLS = ['/auth/login', '/auth/register', REFRESH_URL]
+
+let isRefreshing = false
+let failedQueue = []
+
+function processQueue(error, token = null) {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error)
+    } else {
+      resolve(token)
+    }
+  })
+  failedQueue = []
+}
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config
+
+    if (!error.response || error.response.status !== 401) {
+      return Promise.reject(error)
+    }
+
+    const errorData = error.response.data
+    if (errorData?.code !== 'MSG01') {
+      return Promise.reject(error)
+    }
+
+    if (EXCLUDED_URLS.some((url) => originalRequest.url?.includes(url))) {
+      return Promise.reject(error)
+    }
+
+    if (originalRequest._retry) {
+      return Promise.reject(error)
+    }
+
+    const refreshTokenValue = localStorage.getItem('pcms_refresh_token')
+    if (!refreshTokenValue) {
+      clearAuthAndRedirect()
+      return Promise.reject(error)
+    }
+
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject })
+      })
+        .then(() => {
+          originalRequest.headers.Authorization =
+            `Bearer ${localStorage.getItem('pcms_access_token')}`
+          return apiClient(originalRequest)
+        })
+        .catch((err) => Promise.reject(err))
+    }
+
+    originalRequest._retry = true
+    isRefreshing = true
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}${REFRESH_URL}`,
+        { refreshToken: refreshTokenValue },
+        { headers: { 'Content-Type': 'application/json' } },
+      )
+
+      const { accessToken, refreshToken: newRefreshToken } = response.data
+      localStorage.setItem('pcms_access_token', accessToken)
+      if (newRefreshToken) {
+        localStorage.setItem('pcms_refresh_token', newRefreshToken)
+      }
+
+      processQueue(null, accessToken)
+
+      originalRequest.headers.Authorization = `Bearer ${accessToken}`
+      return apiClient(originalRequest)
+    } catch (refreshError) {
+      processQueue(refreshError)
+      clearAuthAndRedirect()
+      return Promise.reject(refreshError)
+    } finally {
+      isRefreshing = false
+    }
+  },
+)
+
+function clearAuthAndRedirect() {
+  localStorage.removeItem('pcms_access_token')
+  localStorage.removeItem('pcms_refresh_token')
+  localStorage.removeItem('pcms_user')
+  window.location.href = '/login'
+}
+
 export function getApiErrorMessage(error) {
   const data = error?.response?.data
 

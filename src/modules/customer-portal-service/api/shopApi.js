@@ -55,3 +55,110 @@ export const getCustomerOrders = wrap(async ({ page = 0, size = 20 } = {}) => {
   const { data } = await apiClient.get('/orders', { params: { page, size } })
   return data
 })
+
+export const getCustomerProfile = wrap(async () => {
+  const { data } = await apiClient.get('/customers/me')
+  return data
+})
+
+export const updateCustomerProfile = wrap(async (payload) => {
+  const { data } = await apiClient.put('/customers/me', payload)
+  return data
+})
+
+export const listAddresses = wrap(async () => {
+  const { data } = await apiClient.get('/addresses')
+  return data
+})
+
+export const createAddress = wrap(async (payload) => {
+  const { data } = await apiClient.post('/addresses', payload)
+  return data
+})
+
+export const updateAddress = wrap(async (id, payload) => {
+  const { data } = await apiClient.put(`/addresses/${id}`, payload)
+  return data
+})
+
+export const deleteAddress = wrap(async (id) => {
+  await apiClient.delete(`/addresses/${id}`)
+})
+
+export const setDefaultAddress = wrap(async (id) => {
+  const { data } = await apiClient.put(`/addresses/${id}/default`)
+  return data
+})
+
+export const listFamilyMembers = wrap(async () => {
+  const { data } = await apiClient.get('/family')
+  return data
+})
+
+export const getFamilyMember = wrap(async (id) => {
+  const { data } = await apiClient.get(`/family/${id}`)
+  return data
+})
+
+export const createFamilyMember = wrap(async (payload) => {
+  const { data } = await apiClient.post('/family', payload)
+  return data
+})
+
+export const updateFamilyMember = wrap(async (id, payload) => {
+  const { data } = await apiClient.put(`/family/${id}`, payload)
+  return data
+})
+
+export const deleteFamilyMember = wrap(async (id) => {
+  await apiClient.delete(`/family/${id}`)
+})
+
+export const getNotificationSettings = wrap(async () => {
+  const { data } = await apiClient.get('/notif-settings')
+  return data
+})
+
+export const updateNotificationSettings = wrap(async (payload) => {
+  const { data } = await apiClient.put('/notif-settings', payload)
+  return data
+})
+
+export const previewCheckout = wrap(async (payload) => {
+  const { data } = await apiClient.post('/cart/checkout/preview', payload)
+  return data
+})
+
+export const confirmCheckout = wrap(async (payload) => {
+  const { data } = await apiClient.post('/cart/checkout/confirm', payload)
+  return data
+})
+
+export const addCartItem = wrap(async (payload) => {
+  const { data } = await apiClient.post('/cart/items', payload)
+  return data
+})
+
+export const updateCartItem = wrap(async (itemId, payload) => {
+  const { data } = await apiClient.put(`/cart/items/${itemId}`, payload)
+  return data
+})
+
+export const removeCartItem = wrap(async (itemId) => {
+  const { data } = await apiClient.delete(`/cart/items/${itemId}`)
+  return data
+})
+
+export const getBackendCart = wrap(async () => {
+  const { data } = await apiClient.get('/cart')
+  return data
+})
+
+export const clearBackendCart = wrap(async () => {
+  await apiClient.delete('/cart')
+})
+
+export const getOrderByNumber = wrap(async (orderNumber) => {
+  const { data } = await apiClient.get(`/orders/number/${orderNumber}`)
+  return data
+})
