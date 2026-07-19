@@ -51,8 +51,22 @@ export const getCategories = wrap(async () => {
   return data
 })
 
-export const getCustomerOrders = wrap(async ({ page = 0, size = 20 } = {}) => {
-  const { data } = await apiClient.get('/orders', { params: { page, size } })
+export const getCustomerOrders = wrap(async ({ status, dateFrom, dateTo, page = 0, size = 20 } = {}) => {
+  const params = { status, dateFrom, dateTo, page, size }
+  Object.keys(params).forEach((key) => {
+    if (params[key] === undefined || params[key] === '') delete params[key]
+  })
+  const { data } = await apiClient.get('/orders/history', { params })
+  return data
+})
+
+export const getCustomerOrderDetail = wrap(async (id) => {
+  const { data } = await apiClient.get(`/orders/${id}/detail`)
+  return data
+})
+
+export const getCustomerOrderTracking = wrap(async (id) => {
+  const { data } = await apiClient.get(`/orders/${id}/track`)
   return data
 })
 

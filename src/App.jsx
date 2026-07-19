@@ -32,6 +32,7 @@ import { OrderSuccessPage } from '@modules/customer-portal-service/pages/OrderSu
 import { OrderTrackingPage } from '@modules/customer-portal-service/pages/OrderTrackingPage.jsx'
 import { MyAccountPage } from '@modules/customer-portal-service/pages/MyAccountPage.jsx'
 import { MyOrdersPage } from '@modules/customer-portal-service/pages/MyOrdersPage.jsx'
+import { OrderDetailPage } from '@modules/customer-portal-service/pages/OrderDetailPage.jsx'
 import { StoreLocatorPage } from '@modules/customer-portal-service/pages/StoreLocatorPage.jsx'
 
 
@@ -98,7 +99,8 @@ function App() {
         <Route path={ROUTES.ORDER_TRACKING} element={<ShopLayout><OrderTrackingPage /></ShopLayout>} />
         <Route path={ROUTES.STORES} element={<ShopLayout><StoreLocatorPage /></ShopLayout>} />
         <Route path={ROUTES.MY_ACCOUNT} element={<ShopLayout><MyAccountPage /></ShopLayout>} />
-        <Route path={ROUTES.MY_ORDERS} element={<ShopLayout><MyOrdersPage /></ShopLayout>} />
+         <Route path={ROUTES.MY_ORDERS} element={<ShopLayout><MyOrdersPage /></ShopLayout>} />
+         <Route path={ROUTES.ORDER_DETAIL(':orderId')} element={<ShopLayout><OrderDetailPage /></ShopLayout>} />
 
         {/* Backward-compat redirects from old /shop/* URLs */}
         <Route path="/shop" element={<Navigate to={ROUTES.HOME} replace />} />

@@ -17,6 +17,7 @@ export const ROUTES = {
   STORES: '/stores',
   MY_ACCOUNT: '/my-account',
   MY_ORDERS: '/my-orders',
+  ORDER_DETAIL: (id) => `/my-orders/${id}`,
 
   // ── Auth ────────────────────────────────────────────────
   LOGIN: '/login',
