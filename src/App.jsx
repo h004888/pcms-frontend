@@ -1,6 +1,8 @@
 import { Route, Routes, Navigate, useParams } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { ROUTES } from '@core/router/paths.js'
+import { GuestRoute } from '@core/router/GuestRoute.jsx'
+import { ProtectedRoute } from '@core/router/ProtectedRoute.jsx'
 import { BranchDetailPage } from '@modules/branch-service/pages/BranchDetailPage.jsx'
 import { BranchFormPage } from '@modules/branch-service/pages/BranchFormPage.jsx'
 import { BranchListPage } from '@modules/branch-service/pages/BranchListPage.jsx'
@@ -47,48 +49,48 @@ function App() {
     <>
       <Routes>
         <Route path={ROUTES.HOME} element={<ShopLayout><ShopHomePage /></ShopLayout>} />
-        <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-        <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
-        <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
-        <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
-        <Route path={ROUTES.DASHBOARD} element={<UserDashboardPage />} />
-        <Route path={ROUTES.USERS} element={<UserListPage />} />
-        <Route path={ROUTES.AUDIT_LOGS} element={<AuditLogPage />} />
-        <Route path={ROUTES.USER_NEW} element={<UserFormPage mode="create" />} />
-        <Route path={ROUTES.USER_DETAIL(':userId')} element={<UserDetailPage />} />
-        <Route path={ROUTES.USER_EDIT(':userId')} element={<UserFormPage mode="edit" />} />
-        <Route path={ROUTES.BRANCHES} element={<BranchListPage />} />
-        <Route path={ROUTES.BRANCH_NEW} element={<BranchFormPage mode="create" />} />
-        <Route path={ROUTES.BRANCH_DETAIL(':branchId')} element={<BranchDetailPage />} />
+        <Route path={ROUTES.LOGIN} element={<GuestRoute><LoginPage /></GuestRoute>} />
+        <Route path={ROUTES.REGISTER} element={<GuestRoute><RegisterPage /></GuestRoute>} />
+        <Route path={ROUTES.FORGOT_PASSWORD} element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} />
+        <Route path={ROUTES.RESET_PASSWORD} element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
+        <Route path={ROUTES.DASHBOARD} element={<ProtectedRoute><UserDashboardPage /></ProtectedRoute>} />
+        <Route path={ROUTES.USERS} element={<ProtectedRoute><UserListPage /></ProtectedRoute>} />
+        <Route path={ROUTES.AUDIT_LOGS} element={<ProtectedRoute><AuditLogPage /></ProtectedRoute>} />
+        <Route path={ROUTES.USER_NEW} element={<ProtectedRoute><UserFormPage mode="create" /></ProtectedRoute>} />
+        <Route path={ROUTES.USER_DETAIL(':userId')} element={<ProtectedRoute><UserDetailPage /></ProtectedRoute>} />
+        <Route path={ROUTES.USER_EDIT(':userId')} element={<ProtectedRoute><UserFormPage mode="edit" /></ProtectedRoute>} />
+        <Route path={ROUTES.BRANCHES} element={<ProtectedRoute><BranchListPage /></ProtectedRoute>} />
+        <Route path={ROUTES.BRANCH_NEW} element={<ProtectedRoute><BranchFormPage mode="create" /></ProtectedRoute>} />
+        <Route path={ROUTES.BRANCH_DETAIL(':branchId')} element={<ProtectedRoute><BranchDetailPage /></ProtectedRoute>} />
         <Route
           path={ROUTES.BRANCH_EDIT(':branchId')}
-          element={<BranchFormPage mode="edit" />}
+          element={<ProtectedRoute><BranchFormPage mode="edit" /></ProtectedRoute>}
         />
-        <Route path={ROUTES.MEDICINES} element={<MedicineListPage />} />
-        <Route path={ROUTES.MEDICINE_NEW} element={<MedicineFormPage mode="create" />} />
-        <Route path={ROUTES.MEDICINE_DETAIL(':medicineId')} element={<MedicineDetailPage />} />
+        <Route path={ROUTES.MEDICINES} element={<ProtectedRoute><MedicineListPage /></ProtectedRoute>} />
+        <Route path={ROUTES.MEDICINE_NEW} element={<ProtectedRoute><MedicineFormPage mode="create" /></ProtectedRoute>} />
+        <Route path={ROUTES.MEDICINE_DETAIL(':medicineId')} element={<ProtectedRoute><MedicineDetailPage /></ProtectedRoute>} />
         <Route
           path={ROUTES.MEDICINE_EDIT(':medicineId')}
-          element={<MedicineFormPage mode="edit" />}
+          element={<ProtectedRoute><MedicineFormPage mode="edit" /></ProtectedRoute>}
         />
-        <Route path={ROUTES.INVENTORY} element={<InventoryListPage />} />
+        <Route path={ROUTES.INVENTORY} element={<ProtectedRoute><InventoryListPage /></ProtectedRoute>} />
         <Route
           path={ROUTES.INVENTORY_IMPORT}
-          element={<InventoryOperationPage mode="import" />}
+          element={<ProtectedRoute><InventoryOperationPage mode="import" /></ProtectedRoute>}
         />
         <Route
           path={ROUTES.INVENTORY_EXPORT}
-          element={<InventoryOperationPage mode="export" />}
+          element={<ProtectedRoute><InventoryOperationPage mode="export" /></ProtectedRoute>}
         />
         <Route
           path={ROUTES.INVENTORY_TRANSFER}
-          element={<InventoryOperationPage mode="transfer" />}
+          element={<ProtectedRoute><InventoryOperationPage mode="transfer" /></ProtectedRoute>}
         />
-        <Route path={ROUTES.INVENTORY_ALERTS} element={<InventoryAlertsPage />} />
-        <Route path={ROUTES.INVENTORY_HISTORY} element={<InventoryHistoryPage />} />
+        <Route path={ROUTES.INVENTORY_ALERTS} element={<ProtectedRoute><InventoryAlertsPage /></ProtectedRoute>} />
+        <Route path={ROUTES.INVENTORY_HISTORY} element={<ProtectedRoute><InventoryHistoryPage /></ProtectedRoute>} />
         <Route
           path={ROUTES.INVENTORY_BATCH(':batchId')}
-          element={<InventoryBatchDetailPage />}
+          element={<ProtectedRoute><InventoryBatchDetailPage /></ProtectedRoute>}
         />
 
         {/* B2C Shop routes */}
@@ -100,9 +102,9 @@ function App() {
         <Route path="/payment/pending/:orderNumber" element={<ShopLayout><PaymentPendingPage /></ShopLayout>} />
         <Route path={ROUTES.ORDER_TRACKING} element={<ShopLayout><OrderTrackingPage /></ShopLayout>} />
         <Route path={ROUTES.STORES} element={<ShopLayout><StoreLocatorPage /></ShopLayout>} />
-        <Route path={ROUTES.MY_ACCOUNT} element={<ShopLayout><MyAccountPage /></ShopLayout>} />
-         <Route path={ROUTES.MY_ORDERS} element={<ShopLayout><MyOrdersPage /></ShopLayout>} />
-         <Route path={ROUTES.ORDER_DETAIL(':orderId')} element={<ShopLayout><OrderDetailPage /></ShopLayout>} />
+        <Route path={ROUTES.MY_ACCOUNT} element={<ShopLayout><ProtectedRoute><MyAccountPage /></ProtectedRoute></ShopLayout>} />
+        <Route path={ROUTES.MY_ORDERS} element={<ShopLayout><ProtectedRoute><MyOrdersPage /></ProtectedRoute></ShopLayout>} />
+        <Route path={ROUTES.ORDER_DETAIL(':orderId')} element={<ShopLayout><ProtectedRoute><OrderDetailPage /></ProtectedRoute></ShopLayout>} />
 
         {/* Backward-compat redirects from old /shop/* URLs */}
         <Route path="/shop" element={<Navigate to={ROUTES.HOME} replace />} />
