@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Building2, LayoutDashboard, LogOut, PackageCheck, Pill, User } from 'lucide-react'
+import { Building2, LayoutDashboard, LogOut, PackageCheck, Pill, ShoppingCart, User, Users } from 'lucide-react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { logout } from '../../modules/user-service/api/authApi'
 
@@ -50,6 +50,10 @@ export function DashboardLayout({ children }) {
             <Building2 size={16} aria-hidden="true" />
             Chi nhánh
           </NavLink>
+          <NavLink className="app-nav-link" to="/customers">
+            <Users size={16} aria-hidden="true" />
+            Khách hàng
+          </NavLink>
           <NavLink className="app-nav-link" to="/medicines">
             <Pill size={16} aria-hidden="true" />
             Thuốc
@@ -57,6 +61,10 @@ export function DashboardLayout({ children }) {
           <NavLink className="app-nav-link" to="/inventory">
             <PackageCheck size={16} aria-hidden="true" />
             Tồn kho
+          </NavLink>
+          <NavLink className="app-nav-link" to="/orders">
+            <ShoppingCart size={16} aria-hidden="true" />
+            Đơn hàng
           </NavLink>
           {user && (user.role === 'ADMIN' || user.role === 'CEO') ? (
             <NavLink className="app-nav-link" to="/user-dashboard">

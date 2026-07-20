@@ -46,6 +46,15 @@ export const ROUTES = {
   MEDICINE_DETAIL: (id) => `/medicines/${id}`,
   MEDICINE_EDIT: (id) => `/medicines/${id}/edit`,
 
+  // ── Customer Management ─────────────────────────────────
+  CUSTOMERS: '/customers',
+  CUSTOMER_DETAIL: (id) => `/customers/${id}`,
+
+  // ── Order Management ────────────────────────────────────
+  ORDERS: '/orders',
+  ORDER_NEW: '/orders/new',
+  ADMIN_ORDER_DETAIL: (id) => `/orders/${id}`,
+
   // ── Inventory ───────────────────────────────────────────
   INVENTORY: '/inventory',
   INVENTORY_IMPORT: '/inventory/import',
