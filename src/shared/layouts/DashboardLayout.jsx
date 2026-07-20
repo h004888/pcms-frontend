@@ -1,31 +1,65 @@
-import { useState, useEffect } from 'react'
-import { Building2, LayoutDashboard, LogOut, PackageCheck, Pill, User, BarChart2, Truck, FileText, Bell } from 'lucide-react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import {
+  BarChart3,
+  Bell,
+  Building2,
+  ChevronDown,
+  ChevronRight,
+  CircleUserRound,
+  LayoutDashboard,
+  List,
+  LogOut,
+  PackageCheck,
+  Pill,
+  Plus,
+  Settings,
+  ShoppingCart,
+  UsersRound,
+} from 'lucide-react'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { logout } from '../../modules/user-service/api/authApi'
 
 export function DashboardLayout({ children }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const [user, setUser] = useState(null)
+  const isBranchSection = location.pathname.startsWith('/branches')
+  const isMedicineSection = location.pathname.startsWith('/medicines')
+  const isInventorySection = location.pathname.startsWith('/inventory')
+  const [branchMenuOpen, setBranchMenuOpen] = useState(isBranchSection)
+  const [medicineMenuOpen, setMedicineMenuOpen] = useState(isMedicineSection)
+  const [inventoryMenuOpen, setInventoryMenuOpen] = useState(isInventorySection)
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'CEO'
 
   useEffect(() => {
     const userStr = localStorage.getItem('pcms_user')
-    if (userStr) {
-      try {
-        setUser(JSON.parse(userStr))
-      } catch (e) {
-        // Ignore
-      }
+    if (!userStr) return
+
+    try {
+      setUser(JSON.parse(userStr))
+    } catch {
+      // A malformed local value should not block navigation.
     }
   }, [])
+
+  useEffect(() => {
+    if (isBranchSection) setBranchMenuOpen(true)
+  }, [isBranchSection])
+
+  useEffect(() => {
+    if (isMedicineSection) setMedicineMenuOpen(true)
+  }, [isMedicineSection])
+
+  useEffect(() => {
+    if (isInventorySection) setInventoryMenuOpen(true)
+  }, [isInventorySection])
 
   async function handleLogout() {
     try {
       const refreshToken = localStorage.getItem('pcms_refresh_token')
-      if (refreshToken) {
-        await logout(refreshToken)
-      }
-    } catch (e) {
-      // Ignore API errors on logout
+      if (refreshToken) await logout(refreshToken)
+    } catch {
+      // Complete local logout even if the session API is unavailable.
     } finally {
       localStorage.removeItem('pcms_access_token')
       localStorage.removeItem('pcms_refresh_token')
@@ -36,45 +70,17 @@ export function DashboardLayout({ children }) {
 
   return (
     <div className="app-shell">
-      <aside className="app-sidebar" aria-label="Điều hướng chính" style={{ display: 'flex', flexDirection: 'column' }}>
+      <aside className="app-sidebar is-open" aria-label="Điều hướng chính">
         <div className="app-brand">
           <span className="app-brand-mark">P</span>
           <span className="app-brand-text">
             <span className="app-brand-title">PCMS</span>
-            <span className="app-brand-subtitle">Pharmacy Console</span>
+            <span className="app-brand-subtitle">Hệ thống quản lý chuỗi nhà thuốc</span>
           </span>
         </div>
 
-        <nav className="app-nav" style={{ flex: 1 }}>
-          <NavLink className="app-nav-link" to="/branches">
-            <Building2 size={16} aria-hidden="true" />
-            Chi nhánh
-          </NavLink>
-          <NavLink className="app-nav-link" to="/medicines">
-            <Pill size={16} aria-hidden="true" />
-            Thuốc
-          </NavLink>
-          <NavLink className="app-nav-link" to="/inventory">
-            <PackageCheck size={16} aria-hidden="true" />
-            Tồn kho
-          </NavLink>
-          <NavLink className="app-nav-link" to="/dashboard/suppliers">
-            <Truck size={16} aria-hidden="true" />
-            Nhà cung cấp
-          </NavLink>
-          <NavLink className="app-nav-link" to="/dashboard/prescriptions">
-            <FileText size={16} aria-hidden="true" />
-            Đơn thuốc
-          </NavLink>
-          <NavLink className="app-nav-link" to="/dashboard/notifications">
-            <Bell size={16} aria-hidden="true" />
-            Thông báo
-          </NavLink>
-          <NavLink className="app-nav-link" to="/dashboard/reports">
-            <BarChart2 size={16} aria-hidden="true" />
-            Báo cáo
-          </NavLink>
-          {user && (user.role === 'ADMIN' || user.role === 'CEO') ? (
+        <nav className="app-nav">
+          {isAdmin ? (
             <NavLink className="app-nav-link" to="/user-dashboard">
               <LayoutDashboard size={16} aria-hidden="true" />
               Tổng quan
@@ -86,56 +92,191 @@ export function DashboardLayout({ children }) {
             </span>
           )}
 
-          {user && (user.role === 'ADMIN' || user.role === 'CEO') && (
-            <>
-              <NavLink className="app-nav-link" to="/users">
-                <User size={16} aria-hidden="true" />
-                Người dùng
-              </NavLink>
-              <NavLink className="app-nav-link" to="/audit-logs">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="m16 13-3.5 3.5-2-2"></path></svg>
-                Nhật ký
-              </NavLink>
-            </>
+          {isAdmin && (
+            <NavLink className="app-nav-link" to="/users">
+              <UsersRound size={16} aria-hidden="true" />
+              Quản lý người dùng
+              <ChevronRight className="app-nav-chevron" size={15} aria-hidden="true" />
+            </NavLink>
           )}
+
+          <div className="app-nav-group">
+            <button
+              className={`app-nav-link app-nav-disclosure ${isBranchSection ? 'is-active' : ''}`}
+              type="button"
+              aria-expanded={branchMenuOpen}
+              aria-controls="branch-navigation"
+              onClick={() => setBranchMenuOpen((current) => !current)}
+            >
+              <Building2 size={16} aria-hidden="true" />
+              Quản lý chi nhánh
+              {branchMenuOpen ? (
+                <ChevronDown className="app-nav-chevron" size={15} aria-hidden="true" />
+              ) : (
+                <ChevronRight className="app-nav-chevron" size={15} aria-hidden="true" />
+              )}
+            </button>
+            {branchMenuOpen ? (
+              <div className="app-nav-children" id="branch-navigation">
+                <NavLink className="app-nav-child" end to="/branches">
+                  <List size={14} aria-hidden="true" />
+                  Danh sách chi nhánh
+                </NavLink>
+                <NavLink className="app-nav-child" to="/branches/new">
+                  <Plus size={14} aria-hidden="true" />
+                  Thêm chi nhánh
+                </NavLink>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="app-nav-group">
+            <button
+              className={`app-nav-link app-nav-disclosure ${isMedicineSection ? 'is-active' : ''}`}
+              type="button"
+              aria-expanded={medicineMenuOpen}
+              aria-controls="medicine-navigation"
+              onClick={() => setMedicineMenuOpen((current) => !current)}
+            >
+              <Pill size={16} aria-hidden="true" />
+              Quản lý thuốc
+              {medicineMenuOpen ? (
+                <ChevronDown className="app-nav-chevron" size={15} aria-hidden="true" />
+              ) : (
+                <ChevronRight className="app-nav-chevron" size={15} aria-hidden="true" />
+              )}
+            </button>
+            {medicineMenuOpen ? (
+              <div className="app-nav-children" id="medicine-navigation">
+                <NavLink className="app-nav-child" end to="/medicines">
+                  <List size={14} aria-hidden="true" />
+                  Danh sách thuốc
+                </NavLink>
+                <NavLink className="app-nav-child" to="/medicines/new">
+                  <Plus size={14} aria-hidden="true" />
+                  Thêm thuốc
+                </NavLink>
+              </div>
+            ) : null}
+          </div>
+          <div className="app-nav-group">
+            <button
+              className={`app-nav-link app-nav-disclosure ${isInventorySection ? 'is-active' : ''}`}
+              type="button"
+              aria-expanded={inventoryMenuOpen}
+              aria-controls="inventory-navigation"
+              onClick={() => setInventoryMenuOpen((current) => !current)}
+            >
+              <PackageCheck size={16} aria-hidden="true" />
+              Quản lý kho
+              {inventoryMenuOpen ? (
+                <ChevronDown className="app-nav-chevron" size={15} aria-hidden="true" />
+              ) : (
+                <ChevronRight className="app-nav-chevron" size={15} aria-hidden="true" />
+              )}
+            </button>
+            {inventoryMenuOpen ? (
+              <div className="app-nav-children" id="inventory-navigation">
+                <NavLink className="app-nav-child" end to="/inventory">
+                  <LayoutDashboard size={14} aria-hidden="true" />
+                  Tổng quan kho
+                </NavLink>
+                <NavLink className="app-nav-child" to="/inventory/stocks">
+                  <List size={14} aria-hidden="true" />
+                  Danh sách tồn kho
+                </NavLink>
+                <NavLink className="app-nav-child" to="/inventory/import">
+                  <Plus size={14} aria-hidden="true" />
+                  Nhập kho
+                </NavLink>
+                <NavLink className="app-nav-child" to="/inventory/export">
+                  <Plus size={14} aria-hidden="true" />
+                  Xuất kho
+                </NavLink>
+                <NavLink className="app-nav-child" to="/inventory/transfer">
+                  <Plus size={14} aria-hidden="true" />
+                  Chuyển kho
+                </NavLink>
+                <NavLink className="app-nav-child" to="/inventory/transfer-approval">
+                  <List size={14} aria-hidden="true" />
+                  Phê duyệt chuyển kho
+                </NavLink>
+                <NavLink className="app-nav-child" to="/inventory/history">
+                  <List size={14} aria-hidden="true" />
+                  Lịch sử giao dịch
+                </NavLink>
+                <NavLink className="app-nav-child" to="/inventory/alerts">
+                  <List size={14} aria-hidden="true" />
+                  Cảnh báo tồn kho
+                </NavLink>
+              </div>
+            ) : null}
+          </div>
+          <span className="app-nav-link" aria-disabled="true">
+            <ShoppingCart size={16} aria-hidden="true" />
+            Quản lý đơn hàng
+            <ChevronRight className="app-nav-chevron" size={15} aria-hidden="true" />
+          </span>
+          <span className="app-nav-link" aria-disabled="true">
+            <CircleUserRound size={16} aria-hidden="true" />
+            Quản lý khách hàng
+            <ChevronRight className="app-nav-chevron" size={15} aria-hidden="true" />
+          </span>
+          <span className="app-nav-link" aria-disabled="true">
+            <BarChart3 size={16} aria-hidden="true" />
+            Báo cáo
+            <ChevronRight className="app-nav-chevron" size={15} aria-hidden="true" />
+          </span>
+          <span className="app-nav-link" aria-disabled="true">
+            <Settings size={16} aria-hidden="true" />
+            Cài đặt
+            <ChevronRight className="app-nav-chevron" size={15} aria-hidden="true" />
+          </span>
         </nav>
 
-        {user && (
-          <div style={{ padding: '16px 20px', borderTop: '1px solid var(--ink-200)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <NavLink 
-                to={`/users/${user.id}`} 
-                style={{ 
-                  display: 'block', 
-                  fontSize: '14px', 
-                  fontWeight: 600, 
-                  color: 'var(--ink-900)', 
-                  textDecoration: 'none',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
-                }}
-              >
-                {user.fullName}
-              </NavLink>
-              <div style={{ fontSize: '13px', color: 'var(--ink-500)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user.role}
-              </div>
-            </div>
-            <button 
-              className="btn btn-ghost btn-icon" 
-              onClick={handleLogout}
-              title="Đăng xuất"
-              style={{ color: 'var(--ink-500)', flexShrink: 0 }}
-            >
-              <LogOut size={18} aria-hidden="true" />
-            </button>
-          </div>
+        {isAdmin && (
+          <nav className="app-admin-nav" aria-label="Quản trị hệ thống">
+            <NavLink className="app-nav-link" to="/audit-logs">
+              <BarChart3 size={16} aria-hidden="true" />
+              Nhật ký hệ thống
+            </NavLink>
+          </nav>
         )}
       </aside>
 
-      <main className="app-main">{children}</main>
+      <div className="app-content">
+        <header className="app-topbar">
+          <div className="app-topbar-spacer" />
+          <button className="app-topbar-icon" type="button" aria-label="Thông báo">
+            <Bell size={19} aria-hidden="true" />
+            <span className="app-notification-dot" aria-hidden="true" />
+          </button>
+          {user ? (
+            <NavLink className="app-user-menu" to={`/users/${user.id}`}>
+              <CircleUserRound size={27} aria-hidden="true" />
+              <span>{user.fullName || 'Admin'}</span>
+              <ChevronDown size={15} aria-hidden="true" />
+            </NavLink>
+          ) : (
+            <span className="app-user-menu" aria-label="Current user">
+              <CircleUserRound size={27} aria-hidden="true" />
+              <span>Quản trị viên</span>
+              <ChevronDown size={15} aria-hidden="true" />
+            </span>
+          )}
+          <button
+            className="app-topbar-icon"
+            type="button"
+            title="Đăng xuất"
+            aria-label="Đăng xuất"
+            onClick={handleLogout}
+          >
+            <LogOut size={18} aria-hidden="true" />
+          </button>
+        </header>
+
+        <main className="app-main">{children}</main>
+      </div>
     </div>
   )
 }
-

@@ -1,20 +1,18 @@
 ﻿import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  ChevronLeft,
+  ChevronRight,
   Eye,
   Pencil,
   Plus,
-  RefreshCcw,
-  RotateCcw,
+  Power,
   Search,
-  ShieldCheck,
-  ToggleLeft,
-  ToggleRight,
+  UserRoundPlus,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { DashboardLayout } from '@shared/layouts/DashboardLayout.jsx'
-import { StatusBadge } from '@shared/ui/StatusBadge.jsx'
 import { getApiErrorMessage } from '@core/http/apiClient.js'
 import {
   assignBranchManager,
@@ -25,13 +23,9 @@ import {
 } from '../api/branchApi.js'
 import { AssignManagerDialog } from '../components/AssignManagerDialog.jsx'
 import { BranchStatusDialog } from '../components/BranchStatusDialog.jsx'
-import {
-  formatDateTime,
-  getManagerName,
-  normalizeSearch,
-} from '../services/branchFormatters.js'
+import { getManagerName, normalizeSearch } from '../services/branchFormatters.js'
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 5
 
 export function BranchListPage() {
   const queryClient = useQueryClient()
@@ -107,6 +101,17 @@ export function BranchListPage() {
     (safePage - 1) * PAGE_SIZE,
     safePage * PAGE_SIZE,
   )
+  const visiblePages = useMemo(() => {
+    const first = Math.min(
+      Math.max(1, safePage - 2),
+      Math.max(1, totalPages - 4),
+    )
+    const last = Math.min(totalPages, first + 4)
+
+    return Array.from({ length: last - first + 1 }, (_, index) => first + index)
+  }, [safePage, totalPages])
+  const firstItem = filteredBranches.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1
+  const lastItem = Math.min(safePage * PAGE_SIZE, filteredBranches.length)
 
   function handleSearch(event) {
     event.preventDefault()
@@ -123,52 +128,34 @@ export function BranchListPage() {
 
   return (
     <DashboardLayout>
-      <div className="page-stack">
-        <header className="page-header">
+      <div className="branch-list-page">
+        <header className="branch-list-header">
           <div>
-            <h1 className="page-title">Quản lý chi nhánh</h1>
-            <p className="page-description">
-              Theo dõi danh sách chi nhánh, tạo mới, chỉnh sửa thông tin,
-              phân công quản lý và cập nhật trạng thái hoạt động.
+            <h1 className="branch-list-title">Danh sách chi nhánh</h1>
+            <p className="branch-list-breadcrumb" aria-label="Breadcrumb">
+              Quản lý chi nhánh <span aria-hidden="true">›</span> Danh sách chi nhánh
             </p>
           </div>
-
-          <Link className="btn btn-primary" to="/branches/new">
-            <Plus size={16} aria-hidden="true" />
-            Thêm chi nhánh
-          </Link>
         </header>
 
-        <section className="card" aria-labelledby="branch-filter-title">
-          <div className="card-header">
-            <div>
-              <h2 className="card-title" id="branch-filter-title">
-                Bộ lọc
-              </h2>
-              <p className="card-subtitle">
-                Tìm theo mã, tên, địa chỉ hoặc số điện thoại.
-              </p>
-            </div>
-            <button className="btn btn-outline" type="button" onClick={handleReset}>
-              <RotateCcw size={16} aria-hidden="true" />
-              Đặt lại
-            </button>
-          </div>
-
-          <form className="card-body toolbar" onSubmit={handleSearch}>
-            <label className="field">
-              <span className="field-label">Tìm chi nhánh</span>
-              <input
-                className="input"
-                maxLength={100}
-                value={searchInput}
-                placeholder="VD: CN001, Hà Nội, 090..."
-                onChange={(event) => setSearchInput(event.target.value)}
-              />
+        <section className="branch-filter-panel" aria-label="Bộ lọc chi nhánh">
+          <form className="branch-list-toolbar" onSubmit={handleSearch}>
+            <label className="branch-list-field branch-list-search-field">
+              <span>Tìm kiếm chi nhánh</span>
+              <div className="input-with-icon">
+                <Search size={16} aria-hidden="true" />
+                <input
+                  className="input"
+                  maxLength={100}
+                  value={searchInput}
+                  placeholder="Tìm theo tên chi nhánh..."
+                  onChange={(event) => setSearchInput(event.target.value)}
+                />
+              </div>
             </label>
 
-            <label className="field">
-              <span className="field-label">Trạng thái</span>
+            <label className="branch-list-field">
+              <span>Trạng thái</span>
               <select
                 className="select"
                 value={statusFilter}
@@ -183,76 +170,67 @@ export function BranchListPage() {
               </select>
             </label>
 
-            <button className="btn btn-primary" type="submit">
-              <Search size={16} aria-hidden="true" />
+            <button className="btn btn-primary branch-list-search-button" type="submit">
               Tìm kiếm
             </button>
 
             <button
               className="btn btn-outline"
               type="button"
-              onClick={() => branchesQuery.refetch()}
+              onClick={handleReset}
             >
-              <RefreshCcw size={16} aria-hidden="true" />
-              Tải lại
+              Đặt lại bộ lọc
             </button>
+
+            <Link className="btn btn-primary branch-list-add-button" to="/branches/new">
+              <Plus size={16} aria-hidden="true" />
+              Thêm chi nhánh
+            </Link>
           </form>
         </section>
 
-        <section className="card" aria-labelledby="branch-list-title">
-          <div className="card-header">
-            <div>
-              <h2 className="card-title" id="branch-list-title">
-                Danh sách chi nhánh
-              </h2>
-              <p className="card-subtitle">
-                {filteredBranches.length} chi nhánh phù hợp.
-              </p>
-            </div>
-          </div>
-
+        <section className="branch-list-table-panel" aria-labelledby="branch-list-title">
+          <h2 className="sr-only" id="branch-list-title">Danh sách chi nhánh</h2>
           {branchesQuery.isLoading ? (
             <div className="empty-state">Đang tải danh sách chi nhánh...</div>
           ) : branchesQuery.isError ? (
-            <div className="card-body">
+            <div className="branch-list-panel-body">
               <div className="error-state" role="alert">
                 {getApiErrorMessage(branchesQuery.error)}
               </div>
             </div>
           ) : pageRows.length === 0 ? (
-            <div className="empty-state">Không tìm thấy chi nhánh.</div>
+            <div className="empty-state">Không tìm thấy chi nhánh phù hợp.</div>
           ) : (
             <>
               <div className="table-wrap">
-                <table className="table">
+                <table className="table branch-list-table">
                   <thead>
                     <tr>
-                      <th>Mã</th>
                       <th>Tên chi nhánh</th>
                       <th>Địa chỉ</th>
                       <th>Quản lý</th>
                       <th>Số điện thoại</th>
                       <th>Trạng thái</th>
-                      <th>Cập nhật</th>
-                      <th aria-label="Thao tác" />
+                      <th className="branch-list-actions-heading">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
                     {pageRows.map((branch) => (
                       <tr key={branch.id}>
-                        <td className="mono">{branch.code}</td>
-                        <td>
+                        <td className="branch-list-name">
                           <strong>{branch.name}</strong>
                         </td>
-                        <td>{branch.address}</td>
+                        <td className="branch-list-address">{branch.address}</td>
                         <td>{getManagerName(branch, managersById)}</td>
                         <td className="mono">{branch.phone}</td>
                         <td>
-                          <StatusBadge status={branch.status} />
+                          <span className={`branch-status-pill ${branch.status === 'ACTIVE' ? 'is-active' : 'is-inactive'}`}>
+                            {branch.status === 'ACTIVE' ? 'Đang hoạt động' : 'Ngưng hoạt động'}
+                          </span>
                         </td>
-                        <td>{formatDateTime(branch.updatedAt)}</td>
-                        <td>
-                          <div className="table-actions">
+                        <td className="branch-list-actions-cell">
+                          <div className="table-actions branch-list-actions">
                             <Link
                               className="btn btn-outline btn-icon"
                               to={`/branches/${branch.id}`}
@@ -277,7 +255,7 @@ export function BranchListPage() {
                               disabled={branch.status !== 'ACTIVE'}
                               onClick={() => setManagerBranch(branch)}
                             >
-                              <ShieldCheck size={16} aria-hidden="true" />
+                              <UserRoundPlus size={16} aria-hidden="true" />
                             </button>
                             <button
                               className="btn btn-outline btn-icon"
@@ -294,11 +272,7 @@ export function BranchListPage() {
                               }
                               onClick={() => setStatusBranch(branch)}
                             >
-                              {branch.status === 'ACTIVE' ? (
-                                <ToggleRight size={16} aria-hidden="true" />
-                              ) : (
-                                <ToggleLeft size={16} aria-hidden="true" />
-                              )}
+                              <Power size={16} aria-hidden="true" />
                             </button>
                           </div>
                         </td>
@@ -308,28 +282,55 @@ export function BranchListPage() {
                 </table>
               </div>
 
-              <div className="pagination">
-                <span className="card-subtitle">
-                  Trang {safePage}/{totalPages}
+              <div className="pagination branch-list-pagination">
+                <span className="branch-list-pagination-summary">
+                  Hiển thị {firstItem}–{lastItem} trong tổng số {filteredBranches.length} chi nhánh
                 </span>
                 <div className="pagination-actions">
                   <button
-                    className="btn btn-outline"
+                    className="btn btn-outline branch-page-button"
                     type="button"
+                    disabled={safePage === 1}
+                    onClick={() => setPage(1)}
+                  >
+                    Đầu
+                  </button>
+                  <button
+                    className="btn btn-outline btn-icon branch-page-button"
+                    type="button"
+                    aria-label="Trang trước"
                     disabled={safePage === 1}
                     onClick={() => setPage((current) => Math.max(1, current - 1))}
                   >
-                    Trước
+                    <ChevronLeft size={16} aria-hidden="true" />
+                  </button>
+                  {visiblePages.map((pageNumber) => (
+                    <button
+                      className={`btn btn-outline btn-icon branch-page-button ${pageNumber === safePage ? 'is-current' : ''}`}
+                      key={pageNumber}
+                      type="button"
+                      aria-current={pageNumber === safePage ? 'page' : undefined}
+                      onClick={() => setPage(pageNumber)}
+                    >
+                      {pageNumber}
+                    </button>
+                  ))}
+                  <button
+                    className="btn btn-outline btn-icon branch-page-button"
+                    type="button"
+                    aria-label="Trang sau"
+                    disabled={safePage === totalPages}
+                    onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                  >
+                    <ChevronRight size={16} aria-hidden="true" />
                   </button>
                   <button
-                    className="btn btn-outline"
+                    className="btn btn-outline branch-page-button"
                     type="button"
                     disabled={safePage === totalPages}
-                    onClick={() =>
-                      setPage((current) => Math.min(totalPages, current + 1))
-                    }
+                    onClick={() => setPage(totalPages)}
                   >
-                    Sau
+                    Cuối
                   </button>
                 </div>
               </div>

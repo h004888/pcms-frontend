@@ -14,6 +14,7 @@ import { InventoryBatchDetailPage } from '@modules/inventory-service/pages/Inven
 import { InventoryHistoryPage } from '@modules/inventory-service/pages/InventoryHistoryPage.jsx'
 import { InventoryListPage } from '@modules/inventory-service/pages/InventoryListPage.jsx'
 import { InventoryOperationPage } from '@modules/inventory-service/pages/InventoryOperationPage.jsx'
+import { InventoryTransferApprovalPage } from '@modules/inventory-service/pages/InventoryTransferApprovalPage.jsx'
 import { LoginPage } from '@modules/user-service/pages/LoginPage.jsx'
 import { RegisterPage } from '@modules/user-service/pages/RegisterPage.jsx'
 import { ForgotPasswordPage } from '@modules/user-service/pages/ForgotPasswordPage.jsx'
@@ -37,11 +38,6 @@ import { MyAccountPage } from '@modules/customer-portal-service/pages/MyAccountP
 import { MyOrdersPage } from '@modules/customer-portal-service/pages/MyOrdersPage.jsx'
 import { OrderDetailPage } from '@modules/customer-portal-service/pages/OrderDetailPage.jsx'
 import { StoreLocatorPage } from '@modules/customer-portal-service/pages/StoreLocatorPage.jsx'
-// New modules
-import { ReportPage } from '@modules/report-service/pages/ReportPage.jsx'
-import { SupplierListPage } from '@modules/supplier-service/pages/SupplierListPage.jsx'
-import { PrescriptionListPage } from '@modules/prescription-service/pages/PrescriptionListPage.jsx'
-import { NotificationPage } from '@modules/notification-service/pages/NotificationPage.jsx'
 
 
 function ShopRedirect({ to }) {
@@ -79,6 +75,7 @@ function App() {
           element={<ProtectedRoute><MedicineFormPage mode="edit" /></ProtectedRoute>}
         />
         <Route path={ROUTES.INVENTORY} element={<ProtectedRoute><InventoryListPage /></ProtectedRoute>} />
+        <Route path={ROUTES.INVENTORY_STOCKS} element={<ProtectedRoute><InventoryListPage variant="stock-list" /></ProtectedRoute>} />
         <Route
           path={ROUTES.INVENTORY_IMPORT}
           element={<ProtectedRoute><InventoryOperationPage mode="import" /></ProtectedRoute>}
@@ -91,19 +88,13 @@ function App() {
           path={ROUTES.INVENTORY_TRANSFER}
           element={<ProtectedRoute><InventoryOperationPage mode="transfer" /></ProtectedRoute>}
         />
+        <Route path={ROUTES.INVENTORY_TRANSFER_APPROVAL} element={<ProtectedRoute><InventoryTransferApprovalPage /></ProtectedRoute>} />
         <Route path={ROUTES.INVENTORY_ALERTS} element={<ProtectedRoute><InventoryAlertsPage /></ProtectedRoute>} />
         <Route path={ROUTES.INVENTORY_HISTORY} element={<ProtectedRoute><InventoryHistoryPage /></ProtectedRoute>} />
         <Route
           path={ROUTES.INVENTORY_BATCH(':batchId')}
           element={<ProtectedRoute><InventoryBatchDetailPage /></ProtectedRoute>}
         />
-
-        {/* ── New modules ───────────────────────────────────────────── */}
-        <Route path={ROUTES.REPORTS} element={<ProtectedRoute><ReportPage /></ProtectedRoute>} />
-        <Route path={ROUTES.SUPPLIERS} element={<ProtectedRoute><SupplierListPage /></ProtectedRoute>} />
-        <Route path={ROUTES.PRESCRIPTIONS} element={<ProtectedRoute><PrescriptionListPage /></ProtectedRoute>} />
-        <Route path={ROUTES.NOTIFICATIONS} element={<ProtectedRoute><NotificationPage /></ProtectedRoute>} />
-        <Route path={ROUTES.NOTIFICATIONS_COMPOSE} element={<ProtectedRoute><NotificationPage /></ProtectedRoute>} />
 
         {/* B2C Shop routes */}
         <Route path={ROUTES.SEARCH} element={<ShopLayout><SearchPage /></ShopLayout>} />

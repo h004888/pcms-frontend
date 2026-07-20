@@ -2,14 +2,10 @@
 import { useQuery } from '@tanstack/react-query'
 import {
   ArrowDownToLine,
-  ArrowRightLeft,
-  ArrowUpFromLine,
   Bell,
   Eye,
   History,
   PackageCheck,
-  RefreshCcw,
-  RotateCcw,
   Search,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -51,12 +47,14 @@ function getBranchName(row, branchesById) {
   return row.branchName || branchesById.get(row.branchId)?.name || shortId(row.branchId)
 }
 
-export function InventoryListPage() {
+export function InventoryListPage({ variant = 'dashboard' }) {
+  const isStockList = variant === 'stock-list'
   const [searchInput, setSearchInput] = useState('')
   const [appliedSearch, setAppliedSearch] = useState('')
   const [branchId, setBranchId] = useState('ALL')
   const [categoryId, setCategoryId] = useState('ALL')
   const [statusFilter, setStatusFilter] = useState('ALL')
+  const [expiryFilter, setExpiryFilter] = useState('ALL')
   const [page, setPage] = useState(1)
 
   const inventoryQuery = useQuery({
@@ -133,10 +131,14 @@ export function InventoryListPage() {
         statusFilter === 'ALL' ||
         status === statusFilter ||
         (statusFilter === STOCK_STATUS.LOW && row.status === 'LOW')
+      const matchesExpiry =
+        expiryFilter === 'ALL' ||
+        (expiryFilter === 'EXPIRING' && status === STOCK_STATUS.EXPIRING) ||
+        (expiryFilter === 'EXPIRED' && status === STOCK_STATUS.EXPIRED)
 
-      return matchesSearch && matchesCategory && matchesStatus
+      return matchesSearch && matchesCategory && matchesStatus && matchesExpiry
     })
-  }, [appliedSearch, branchesById, categoryId, medicinesById, rows, statusFilter])
+  }, [appliedSearch, branchesById, categoryId, expiryFilter, medicinesById, rows, statusFilter])
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE))
   const safePage = Math.min(page, totalPages)
   const pageRows = filteredRows.slice(
@@ -158,6 +160,7 @@ export function InventoryListPage() {
       lowOrOut: rows.filter((row) =>
         [STOCK_STATUS.LOW, STOCK_STATUS.OUT].includes(getStockStatus(row)),
       ).length,
+      outOfStock: rows.filter((row) => getStockStatus(row) === STOCK_STATUS.OUT).length,
       expiring: rows.filter((row) =>
         [STOCK_STATUS.EXPIRING, STOCK_STATUS.EXPIRED].includes(getStockStatus(row)),
       ).length,
@@ -176,52 +179,41 @@ export function InventoryListPage() {
     setBranchId('ALL')
     setCategoryId('ALL')
     setStatusFilter('ALL')
+    setExpiryFilter('ALL')
     setPage(1)
   }
 
   return (
     <DashboardLayout>
-      <div className="page-stack">
+      <div className="page-stack inventory-dashboard-page">
         <header className="page-header">
           <div>
-            <h1 className="page-title">Quản lý tồn kho</h1>
-            <p className="page-description">
-              Theo dõi tồn theo lô, chi nhánh, hạn dùng và mức tồn tối thiểu.
-              Các thao tác xuất và chuyển kho được xử lý theo nguyên tắc FIFO.
-            </p>
-          </div>
-
-          <div className="table-actions">
-            <Link className="btn btn-outline" to="/inventory/history">
-              <History size={16} aria-hidden="true" />
-              Lịch sử
-            </Link>
-            <Link className="btn btn-primary" to="/inventory/import">
-              <ArrowDownToLine size={16} aria-hidden="true" />
-              Nhập kho
-            </Link>
+            <h1 className="page-title">
+              {isStockList ? 'Danh sách tồn kho' : 'Tổng quan tồn kho'}
+            </h1>
           </div>
         </header>
 
+        {!isStockList ? <>
         <section className="inventory-stat-grid" aria-label="Tổng quan tồn kho">
           <div className="stat-card">
             <div>
-              <p className="stat-title">Lô đang theo dõi</p>
-              <p className="stat-value mono">{stats.totalBatches}</p>
+              <p className="stat-title">Tồn thấp</p>
+              <p className="stat-value mono">{Math.max(0, stats.lowOrOut - stats.outOfStock)}</p>
             </div>
             <PackageCheck color="var(--accent-700)" size={22} aria-hidden="true" />
           </div>
           <div className="stat-card">
             <div>
-              <p className="stat-title">Tổng số lượng</p>
-              <p className="stat-value mono">{stats.totalQuantity}</p>
+              <p className="stat-title">Sắp hết hạn</p>
+              <p className="stat-value mono">{stats.expiring}</p>
             </div>
             <PackageCheck color="var(--ink-500)" size={22} aria-hidden="true" />
           </div>
           <div className="stat-card">
             <div>
-              <p className="stat-title">Tồn dưới ngưỡng</p>
-              <p className="stat-value mono">{stats.lowOrOut}</p>
+              <p className="stat-title">Hết hàng</p>
+              <p className="stat-value mono">{stats.outOfStock}</p>
             </div>
             <Bell color="var(--warning-700)" size={22} aria-hidden="true" />
           </div>
@@ -234,54 +226,13 @@ export function InventoryListPage() {
           </div>
         </section>
 
-        <section className="card" aria-labelledby="inventory-action-title">
-          <div className="card-header">
-            <div>
-              <h2 className="card-title" id="inventory-action-title">
-                Thao tác nhanh
-              </h2>
-              <p className="card-subtitle">
-                Truy cập nhanh các thao tác kho thường dùng.
-              </p>
-            </div>
-          </div>
-          <div className="card-body inventory-action-grid">
-            <Link className="quick-action quick-action-primary" to="/inventory/import">
-              <ArrowDownToLine size={22} aria-hidden="true" />
-              <span>Nhập kho</span>
-            </Link>
-            <Link className="quick-action" to="/inventory/export">
-              <ArrowUpFromLine size={22} aria-hidden="true" />
-              <span>Xuất kho</span>
-            </Link>
-            <Link className="quick-action" to="/inventory/transfer">
-              <ArrowRightLeft size={22} aria-hidden="true" />
-              <span>Chuyển kho</span>
-            </Link>
-            <Link className="quick-action" to="/inventory/alerts">
-              <Bell size={22} aria-hidden="true" />
-              <span>Cảnh báo</span>
-            </Link>
-          </div>
-        </section>
+        </> : null}
 
-        <section className="card" aria-labelledby="inventory-filter-title">
-          <div className="card-header">
-            <div>
-              <h2 className="card-title" id="inventory-filter-title">
-                Bộ lọc
-              </h2>
-              <p className="card-subtitle">
-                Tìm theo thuốc, số lô, mã vạch, chi nhánh hoặc ID.
-              </p>
-            </div>
-            <button className="btn btn-outline" type="button" onClick={handleReset}>
-              <RotateCcw size={16} aria-hidden="true" />
-              Đặt lại
-            </button>
-          </div>
-
-          <form className="card-body toolbar inventory-toolbar" onSubmit={handleSearch}>
+        <section className="card inventory-filter-card" aria-label="Bộ lọc tồn kho">
+          <form
+            className={`card-body toolbar inventory-toolbar${isStockList ? ' inventory-toolbar-stock-list' : ''}`}
+            onSubmit={handleSearch}
+          >
             <label className="field">
               <span className="field-label">Tìm tồn kho</span>
               <input
@@ -350,31 +301,41 @@ export function InventoryListPage() {
               </select>
             </label>
 
+            {isStockList ? <label className="field">
+              <span className="field-label">Hạn dùng</span>
+              <select className="select" value={expiryFilter} onChange={(event) => { setExpiryFilter(event.target.value); setPage(1) }}>
+                <option value="ALL">Tất cả</option>
+                <option value="EXPIRING">Sắp hết hạn</option>
+                <option value="EXPIRED">Quá hạn</option>
+              </select>
+            </label> : null}
+
             <button className="btn btn-primary" type="submit">
               <Search size={16} aria-hidden="true" />
               Tìm
-            </button>
-            <button
-              className="btn btn-outline"
-              type="button"
-              onClick={() => inventoryQuery.refetch()}
-            >
-              <RefreshCcw size={16} aria-hidden="true" />
-              Tải lại
             </button>
           </form>
         </section>
 
         <section className="card" aria-labelledby="inventory-list-title">
-          <div className="card-header">
-            <div>
-              <h2 className="card-title" id="inventory-list-title">
-                Danh sách lô tồn kho
-              </h2>
-              <p className="card-subtitle">
-                {filteredRows.length} lô phù hợp, {stats.expiring} lô cần chú ý hạn dùng.
-              </p>
-            </div>
+          <div className="inventory-table-toolbar">
+            <span className="inventory-result-count" id="inventory-list-title">
+              Hiển thị {pageRows.length} trên {filteredRows.length} kết quả
+            </span>
+            {!isStockList ? <div className="table-actions">
+              <Link className="btn btn-outline btn-compact" to="/inventory/history">
+                <History size={15} aria-hidden="true" />
+                Lịch sử giao dịch
+              </Link>
+              <Link className="btn btn-outline btn-compact" to="/inventory/alerts">
+                <Bell size={15} aria-hidden="true" />
+                Cảnh báo
+              </Link>
+              <Link className="btn btn-primary btn-compact" to="/inventory/import">
+                <ArrowDownToLine size={15} aria-hidden="true" />
+                Nhập kho
+              </Link>
+            </div> : null}
           </div>
 
           {inventoryQuery.isLoading ? (
@@ -395,11 +356,11 @@ export function InventoryListPage() {
                     <tr>
                       <th>Thuốc</th>
                       <th>Chi nhánh</th>
-                      <th>Số lô</th>
-                      <th>Mã vạch</th>
-                      <th>Tồn</th>
+                      <th>Tổng tồn</th>
+                      <th>Khả dụng</th>
+                      {isStockList ? <th>Đã giữ</th> : null}
                       <th>Tối thiểu</th>
-                      <th>Hạn dùng</th>
+                      <th>Hạn gần nhất</th>
                       <th>Trạng thái</th>
                       <th aria-label="Thao tác" />
                     </tr>
@@ -409,27 +370,30 @@ export function InventoryListPage() {
                       <tr key={getBatchId(row)}>
                         <td>
                           <strong>{getMedicineName(row, medicinesById)}</strong>
-                          <div className="card-subtitle mono">{shortId(row.medicineId)}</div>
+                          <div className="card-subtitle mono">{row.batchNo || shortId(row.medicineId)}</div>
                         </td>
                         <td>{getBranchName(row, branchesById)}</td>
-                        <td className="mono">{row.batchNo}</td>
-                        <td className="mono">{row.barcode || '--'}</td>
                         <td className="mono">{getBatchQuantity(row)}</td>
+                        <td className="mono">{getBatchQuantity(row)}</td>
+                        {isStockList ? <td className="mono">0</td> : null}
                         <td className="mono">{getMinimumStock(row)}</td>
                         <td className="mono">{formatDate(row.expiryDate)}</td>
                         <td>
                           <StockStatusBadge row={row} />
                         </td>
                         <td>
-                          <div className="table-actions">
+                          <div className="table-actions inventory-row-actions">
                             <Link
-                              className="btn btn-outline btn-icon"
+                              className="btn btn-outline btn-compact"
                               to={`/inventory/batches/${getBatchId(row)}`}
-                              title="Xem chi tiết"
-                              aria-label={`Xem chi tiết lô ${row.batchNo}`}
+                              title="Xem chi tiết tồn kho"
                             >
                               <Eye size={16} aria-hidden="true" />
+                              Xem
                             </Link>
+                            {!isStockList ? <Link className="btn btn-outline btn-compact" to="/inventory/import">Nhập</Link> : null}
+                            <Link className="btn btn-outline btn-compact" to="/inventory/export">Xuất</Link>
+                            <Link className="btn btn-outline btn-compact" to="/inventory/transfer">Chuyển</Link>
                           </div>
                         </td>
                       </tr>
