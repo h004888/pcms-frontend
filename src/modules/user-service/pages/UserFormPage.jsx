@@ -143,124 +143,100 @@ export function UserFormPage({ mode = 'create' }) {
 
   return (
     <DashboardLayout>
-      <div className="page-stack">
-        <header className="page-header">
-          <div>
-            <p className="page-kicker">
-              <Link to="/users" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <ArrowLeft size={14} /> Danh sách người dùng
-              </Link>
-            </p>
-            <h1 className="page-title">
-              {mode === 'create' ? 'Thêm người dùng mới' : 'Chỉnh sửa thông tin'}
-            </h1>
-          </div>
-        </header>
-
-        <form className="card" onSubmit={handleSubmit} noValidate>
-          <div className="card-header">
-            <h2 className="card-title">Thông tin cơ bản</h2>
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 20px' }}>
+        <form className="card" onSubmit={handleSubmit} noValidate style={{ width: '100%', maxWidth: '600px', margin: '0 auto', border: '1px solid var(--ink-200)', borderRadius: '8px', overflow: 'hidden' }}>
+          
+          <div style={{ padding: '24px', borderBottom: '1px solid var(--ink-200)', textAlign: 'center', background: 'var(--surface)' }}>
+            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--ink-900)' }}>
+              {mode === 'create' ? 'Tạo người dùng' : 'Sửa người dùng'}
+            </h2>
           </div>
 
-          <div className="card-body form-grid">
-            {mode === 'create' && (
-              <label className="field form-grid-full">
-                <span className="field-label">Email đăng nhập <span style={{ color: 'var(--danger-700)' }}>*</span></span>
+          <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
+              <label className="field-label" style={{ margin: 0 }}>Họ và tên</label>
+              <div>
+                <input
+                  name="fullName"
+                  className="input"
+                  type="text"
+                  placeholder="Họ và tên"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  aria-invalid={!!errors.fullName}
+                />
+                {errors.fullName && <p className="field-error" style={{ marginTop: '6px' }}>{errors.fullName}</p>}
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
+              <label className="field-label" style={{ margin: 0 }}>Email</label>
+              <div>
                 <input
                   name="email"
                   className="input"
                   type="email"
-                  placeholder="user@pcms.vn"
-                  autoComplete="email"
+                  placeholder="Email"
                   value={formData.email}
                   onChange={handleChange}
+                  disabled={mode === 'edit'}
+                  readOnly={mode === 'edit'}
                   aria-invalid={!!errors.email}
                 />
-                <p className="field-hint">Email sẽ được dùng để đăng nhập. Hệ thống sẽ tự động tạo một mật khẩu tạm thời cho người dùng mới.</p>
-                {errors.email && <p className="field-error">{errors.email}</p>}
-              </label>
-            )}
+                {errors.email && <p className="field-error" style={{ marginTop: '6px' }}>{errors.email}</p>}
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
+              <label className="field-label" style={{ margin: 0 }}>Mật khẩu</label>
+              <input
+                className="input"
+                type="password"
+                value="********"
+                disabled
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
+              <label className="field-label" style={{ margin: 0 }}>Vai trò</label>
+              <div>
+                <select
+                  name="role"
+                  className="select"
+                  value={formData.role}
+                  onChange={handleChange}
+                >
+                  {ROLE_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                {errors.role && <p className="field-error" style={{ marginTop: '6px' }}>{errors.role}</p>}
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
+              <label className="field-label" style={{ margin: 0 }}>Chi nhánh</label>
+              <div>
+                <select
+                  name="branchId"
+                  className="select"
+                  value={formData.branchId || ''}
+                  onChange={handleChange}
+                >
+                  <option value="">-- Toàn hệ thống --</option>
+                  {branches.map(branch => (
+                    <option key={branch.id} value={branch.id}>
+                      {branch.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
             {mode === 'edit' && (
-              <label className="field form-grid-full">
-                <span className="field-label">Email đăng nhập</span>
-                <input
-                  className="input"
-                  type="email"
-                  value={formData.email}
-                  disabled
-                  readOnly
-                />
-                <p className="field-hint">Không thể thay đổi email sau khi tạo.</p>
-              </label>
-            )}
-
-            <label className="field">
-              <span className="field-label">Họ và tên <span style={{ color: 'var(--danger-700)' }}>*</span></span>
-              <input
-                name="fullName"
-                className="input"
-                type="text"
-                placeholder="Nguyễn Văn A"
-                autoComplete="name"
-                value={formData.fullName}
-                onChange={handleChange}
-                aria-invalid={!!errors.fullName}
-              />
-              {errors.fullName && <p className="field-error">{errors.fullName}</p>}
-            </label>
-
-            <label className="field">
-              <span className="field-label">Số điện thoại</span>
-              <input
-                name="phone"
-                className="input"
-                type="tel"
-                placeholder="0912345678"
-                autoComplete="tel"
-                value={formData.phone}
-                onChange={handleChange}
-                aria-invalid={!!errors.phone}
-              />
-              {errors.phone && <p className="field-error">{errors.phone}</p>}
-            </label>
-            
-            <label className="field">
-              <span className="field-label">Vai trò <span style={{ color: 'var(--danger-700)' }}>*</span></span>
-              <select
-                name="role"
-                className="select"
-                value={formData.role}
-                onChange={handleChange}
-              >
-                {ROLE_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-              {errors.role && <p className="field-error">{errors.role}</p>}
-            </label>
-
-            <label className="field">
-              <span className="field-label">Gắn chi nhánh</span>
-              <select
-                name="branchId"
-                className="select"
-                value={formData.branchId}
-                onChange={handleChange}
-              >
-                <option value="">-- Toàn hệ thống (Admin/CEO) --</option>
-                {branches.map(branch => (
-                  <option key={branch.id} value={branch.id}>
-                    {branch.name} ({branch.code})
-                  </option>
-                ))}
-              </select>
-              <p className="field-hint">Bắt buộc cho Dược sĩ và Quản lý chi nhánh.</p>
-            </label>
-
-            {mode === 'edit' && (
-              <label className="field form-grid-full">
-                <span className="field-label">Trạng thái hoạt động <span style={{ color: 'var(--danger-700)' }}>*</span></span>
+              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
+                <label className="field-label" style={{ margin: 0 }}>Trạng thái</label>
                 <select
                   name="status"
                   className="select"
@@ -271,18 +247,18 @@ export function UserFormPage({ mode = 'create' }) {
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
-              </label>
+              </div>
             )}
-          </div>
 
-          <div className="form-actions">
-            <Link className="btn btn-outline" to={mode === 'edit' ? `/users/${userId}` : '/users'}>
-              Hủy
-            </Link>
-            <button className="btn btn-primary" type="submit" disabled={isPending}>
-              <Save size={16} aria-hidden="true" />
-              {isPending ? 'Đang lưu...' : (mode === 'create' ? 'Tạo người dùng' : 'Lưu thay đổi')}
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '24px' }}>
+              <button className="btn btn-primary" type="submit" disabled={isPending} style={{ width: '140px' }}>
+                {isPending ? 'Đang lưu...' : 'Lưu người dùng'}
+              </button>
+              <Link className="btn btn-outline" to={mode === 'edit' ? `/users/${userId}` : '/users'} style={{ width: '140px' }}>
+                Hủy
+              </Link>
+            </div>
+
           </div>
         </form>
       </div>

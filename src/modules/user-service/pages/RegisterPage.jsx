@@ -87,52 +87,44 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="auth-shell">
-      <div className="auth-brand">
-        <div className="auth-brand-mark" aria-hidden="true">P</div>
-        <h1 className="auth-brand-title">PCMS</h1>
-        <p className="auth-brand-subtitle">
-          <span className="auth-brand-accent">Cổng thông tin khách hàng</span>. Đăng ký để 
-          theo dõi đơn hàng, đơn thuốc và lịch sử mua sắm của bạn.
-        </p>
-      </div>
-
-      <div className="auth-form-panel">
-        <div className="auth-form-container">
-          <Link to={`/login${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="btn btn-ghost" style={{ padding: '8px 0', marginBottom: '16px' }}>
-            <ArrowLeft size={16} aria-hidden="true" /> Quay lại đăng nhập
-          </Link>
-          
-          <h2 className="auth-form-title">Đăng ký tài khoản</h2>
-          <p className="auth-form-subtitle">
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--ink-900)', padding: '20px' }}>
+      <div className="card" style={{ width: '100%', maxWidth: '600px', padding: '48px 40px', background: 'var(--surface)', borderRadius: '12px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)' }}>
+        
+        <Link to={`/login${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="btn btn-ghost" style={{ padding: '8px 0', marginBottom: '16px', color: 'var(--ink-600)' }}>
+          <ArrowLeft size={16} aria-hidden="true" /> Quay lại đăng nhập
+        </Link>
+        
+        <div style={{ marginBottom: '32px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 8px 0', color: 'var(--ink-900)' }}>Đăng ký tài khoản</h2>
+          <p style={{ margin: 0, color: 'var(--ink-500)' }}>
             Tạo tài khoản khách hàng mới.
           </p>
+        </div>
 
-          {isSuccess ? (
-            <div className="auth-success" role="alert">
-              <CheckCircle2 size={18} style={{ flexShrink: 0, marginTop: '2px' }} aria-hidden="true" />
-              <div>
-                <strong>Đăng ký thành công!</strong>
-                <p style={{ margin: '4px 0 0' }}>Tài khoản của bạn đã được tạo. Vui lòng đăng nhập để tiếp tục.</p>
-                <div style={{ marginTop: '16px' }}>
-                  <Link to={`/login${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="btn btn-primary">
-                    Đến trang đăng nhập
-                  </Link>
-                </div>
-              </div>
+        {isSuccess ? (
+          <div className="auth-success" role="alert" style={{ background: 'var(--success-50)', padding: '16px', borderRadius: '8px', display: 'flex', gap: '12px', color: 'var(--success-800)' }}>
+            <CheckCircle2 size={24} style={{ flexShrink: 0 }} aria-hidden="true" />
+            <div>
+              <strong style={{ fontSize: '16px', display: 'block', marginBottom: '4px' }}>Đăng ký thành công!</strong>
+              <p style={{ margin: '0 0 16px 0' }}>Tài khoản của bạn đã được tạo. Vui lòng đăng nhập để tiếp tục.</p>
+              <Link to={`/login${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="btn btn-primary">
+                Đến trang đăng nhập
+              </Link>
             </div>
-          ) : (
-            <>
-              {errors.form && (
-                <div className="alert alert-danger" role="alert" style={{ marginBottom: '16px' }}>
-                  <AlertCircle size={18} className="alert-icon" aria-hidden="true" />
-                  <div className="alert-body">{errors.form}</div>
-                </div>
-              )}
+          </div>
+        ) : (
+          <>
+            {errors.form && (
+              <div className="alert alert-danger" role="alert" style={{ marginBottom: '24px' }}>
+                <AlertCircle size={18} className="alert-icon" aria-hidden="true" />
+                <div className="alert-body">{errors.form}</div>
+              </div>
+            )}
 
-              <form className="auth-form" onSubmit={handleSubmit} noValidate>
-                <label className="field">
-                  <span className="field-label">Họ và tên</span>
+            <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label className="field-label" style={{ margin: 0 }}>Họ và tên</label>
+                <div>
                   <input
                     name="fullName"
                     className="input"
@@ -142,13 +134,14 @@ export function RegisterPage() {
                     value={formData.fullName}
                     onChange={handleChange}
                     aria-invalid={!!errors.fullName}
-                    aria-describedby={errors.fullName ? 'register-name-error' : undefined}
                   />
-                  {errors.fullName && <p className="field-error" id="register-name-error">{errors.fullName}</p>}
-                </label>
+                  {errors.fullName && <p className="field-error" style={{ marginTop: '6px' }}>{errors.fullName}</p>}
+                </div>
+              </div>
 
-                <label className="field">
-                  <span className="field-label">Email</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label className="field-label" style={{ margin: 0 }}>Email</label>
+                <div>
                   <input
                     name="email"
                     className="input"
@@ -158,13 +151,14 @@ export function RegisterPage() {
                     value={formData.email}
                     onChange={handleChange}
                     aria-invalid={!!errors.email}
-                    aria-describedby={errors.email ? 'register-email-error' : undefined}
                   />
-                  {errors.email && <p className="field-error" id="register-email-error">{errors.email}</p>}
-                </label>
+                  {errors.email && <p className="field-error" style={{ marginTop: '6px' }}>{errors.email}</p>}
+                </div>
+              </div>
 
-                <label className="field">
-                  <span className="field-label">Số điện thoại</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label className="field-label" style={{ margin: 0 }}>Số điện thoại</label>
+                <div>
                   <input
                     name="phone"
                     className="input"
@@ -174,13 +168,14 @@ export function RegisterPage() {
                     value={formData.phone}
                     onChange={handleChange}
                     aria-invalid={!!errors.phone}
-                    aria-describedby={errors.phone ? 'register-phone-error' : undefined}
                   />
-                  {errors.phone && <p className="field-error" id="register-phone-error">{errors.phone}</p>}
-                </label>
+                  {errors.phone && <p className="field-error" style={{ marginTop: '6px' }}>{errors.phone}</p>}
+                </div>
+              </div>
 
-                <label className="field">
-                  <span className="field-label">Mật khẩu</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label className="field-label" style={{ margin: 0 }}>Mật khẩu</label>
+                <div>
                   <div className="input-with-icon" style={{ position: 'relative' }}>
                     <input
                       name="password"
@@ -192,7 +187,6 @@ export function RegisterPage() {
                       onChange={handleChange}
                       style={{ paddingRight: '44px' }}
                       aria-invalid={!!errors.password}
-                      aria-describedby={errors.password ? 'register-password-error' : undefined}
                     />
                     <button
                       type="button"
@@ -201,17 +195,19 @@ export function RegisterPage() {
                       onClick={() => setShowPassword((prev) => !prev)}
                       aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                     >
-                      {showPassword ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
+                      {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
                     </button>
                   </div>
-                  {errors.password && <p className="field-error" id="register-password-error">{errors.password}</p>}
-                </label>
+                  {errors.password && <p className="field-error" style={{ marginTop: '6px' }}>{errors.password}</p>}
+                </div>
+              </div>
 
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px' }}>
                 <button
                   className="btn btn-primary"
                   type="submit"
                   disabled={registerMutation.isPending}
-                  style={{ width: '100%', marginTop: '4px' }}
+                  style={{ minWidth: '200px' }}
                 >
                   {registerMutation.isPending ? (
                     'Đang xử lý...'
@@ -222,10 +218,10 @@ export function RegisterPage() {
                     </>
                   )}
                 </button>
-              </form>
-            </>
-          )}
-        </div>
+              </div>
+            </form>
+          </>
+        )}
       </div>
     </div>
   )
