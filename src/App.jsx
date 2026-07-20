@@ -37,6 +37,11 @@ import { MyAccountPage } from '@modules/customer-portal-service/pages/MyAccountP
 import { MyOrdersPage } from '@modules/customer-portal-service/pages/MyOrdersPage.jsx'
 import { OrderDetailPage } from '@modules/customer-portal-service/pages/OrderDetailPage.jsx'
 import { StoreLocatorPage } from '@modules/customer-portal-service/pages/StoreLocatorPage.jsx'
+// New modules
+import { ReportPage } from '@modules/report-service/pages/ReportPage.jsx'
+import { SupplierListPage } from '@modules/supplier-service/pages/SupplierListPage.jsx'
+import { PrescriptionListPage } from '@modules/prescription-service/pages/PrescriptionListPage.jsx'
+import { NotificationPage } from '@modules/notification-service/pages/NotificationPage.jsx'
 
 
 function ShopRedirect({ to }) {
@@ -92,6 +97,13 @@ function App() {
           path={ROUTES.INVENTORY_BATCH(':batchId')}
           element={<ProtectedRoute><InventoryBatchDetailPage /></ProtectedRoute>}
         />
+
+        {/* ── New modules ───────────────────────────────────────────── */}
+        <Route path={ROUTES.REPORTS} element={<ProtectedRoute><ReportPage /></ProtectedRoute>} />
+        <Route path={ROUTES.SUPPLIERS} element={<ProtectedRoute><SupplierListPage /></ProtectedRoute>} />
+        <Route path={ROUTES.PRESCRIPTIONS} element={<ProtectedRoute><PrescriptionListPage /></ProtectedRoute>} />
+        <Route path={ROUTES.NOTIFICATIONS} element={<ProtectedRoute><NotificationPage /></ProtectedRoute>} />
+        <Route path={ROUTES.NOTIFICATIONS_COMPOSE} element={<ProtectedRoute><NotificationPage /></ProtectedRoute>} />
 
         {/* B2C Shop routes */}
         <Route path={ROUTES.SEARCH} element={<ShopLayout><SearchPage /></ShopLayout>} />

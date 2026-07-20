@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Building2, LayoutDashboard, LogOut, PackageCheck, Pill, User } from 'lucide-react'
+import { Building2, LayoutDashboard, LogOut, PackageCheck, Pill, User, BarChart2, Truck, FileText, Bell } from 'lucide-react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { logout } from '../../modules/user-service/api/authApi'
 
@@ -57,6 +57,22 @@ export function DashboardLayout({ children }) {
           <NavLink className="app-nav-link" to="/inventory">
             <PackageCheck size={16} aria-hidden="true" />
             Tồn kho
+          </NavLink>
+          <NavLink className="app-nav-link" to="/dashboard/suppliers">
+            <Truck size={16} aria-hidden="true" />
+            Nhà cung cấp
+          </NavLink>
+          <NavLink className="app-nav-link" to="/dashboard/prescriptions">
+            <FileText size={16} aria-hidden="true" />
+            Đơn thuốc
+          </NavLink>
+          <NavLink className="app-nav-link" to="/dashboard/notifications">
+            <Bell size={16} aria-hidden="true" />
+            Thông báo
+          </NavLink>
+          <NavLink className="app-nav-link" to="/dashboard/reports">
+            <BarChart2 size={16} aria-hidden="true" />
+            Báo cáo
           </NavLink>
           {user && (user.role === 'ADMIN' || user.role === 'CEO') ? (
             <NavLink className="app-nav-link" to="/user-dashboard">
