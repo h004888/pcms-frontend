@@ -5,8 +5,11 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { DashboardLayout } from '@shared/layouts/DashboardLayout.jsx'
 import { getApiErrorMessage } from '@core/http/apiClient.js'
+import { listBranches } from '@modules/branch-service/api/branchApi.js'
+import { importStock } from '@modules/inventory-service/api/inventoryApi.js'
 import {
   createMedicine,
+  getMedicineImageUrl,
   getMedicine,
   listCategories,
   listSuppliers,
@@ -29,6 +32,7 @@ const EMPTY_FORM = {
   status: 'ACTIVE',
   stockQuantity: '',
   expiryDate: '',
+  initialBranchId: '',
 }
 
 function optionalText(value) {
@@ -117,6 +121,8 @@ export function MedicineFormPage({ mode }) {
   const queryClient = useQueryClient()
   const [form, setForm] = useState(EMPTY_FORM)
   const [errors, setErrors] = useState({})
+  const [imageFile, setImageFile] = useState(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState('')
 
   const medicineQuery = useQuery({
     queryKey: ['medicines', medicineId],
@@ -131,6 +137,11 @@ export function MedicineFormPage({ mode }) {
     queryKey: ['suppliers'],
     queryFn: () => listSuppliers({ page: 0, size: 100 }),
   })
+  const branchesQuery = useQuery({
+    queryKey: ['branches'],
+    queryFn: () => listBranches({ page: 0, size: 100 }),
+    enabled: !isEdit,
+  })
 
   const categories = useMemo(
     () => categoriesQuery.data?.data || [],
@@ -139,6 +150,10 @@ export function MedicineFormPage({ mode }) {
   const suppliers = useMemo(
     () => suppliersQuery.data?.data || [],
     [suppliersQuery.data?.data],
+  )
+  const branches = useMemo(
+    () => branchesQuery.data?.data || branchesQuery.data || [],
+    [branchesQuery.data],
   )
 
   useEffect(() => {
@@ -160,9 +175,18 @@ export function MedicineFormPage({ mode }) {
         status: medicineQuery.data.status || 'ACTIVE',
         stockQuantity: '',
         expiryDate: '',
+        initialBranchId: '',
       })
+      setImagePreviewUrl(getMedicineImageUrl(medicineQuery.data))
+      setImageFile(null)
     }
   }, [medicineQuery.data])
+
+  useEffect(() => () => {
+    if (imagePreviewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreviewUrl)
+    }
+  }, [imagePreviewUrl])
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -170,10 +194,19 @@ export function MedicineFormPage({ mode }) {
         return updateMedicine(medicineId, {
           ...buildPayload(form),
           status: form.status,
-        })
+        }, imageFile)
       }
 
-      const created = await createMedicine(buildPayload(form, true))
+      const created = await createMedicine(buildPayload(form, true), imageFile)
+
+      await importStock({
+        medicineId: created.id,
+        branchId: form.initialBranchId,
+        batchNo: `MED-${created.sku || created.id.slice(0, 8)}-${Date.now().toString().slice(-6)}`,
+        qty: Number(form.stockQuantity),
+        expiryDate: form.expiryDate,
+        minStockLevel: 10,
+      })
 
       if (form.status === 'INACTIVE') {
         return updateMedicine(created.id, { status: 'INACTIVE' })
@@ -231,6 +264,19 @@ export function MedicineFormPage({ mode }) {
       nextErrors.unit = 'Đơn vị tính tối đa 20 ký tự.'
     }
 
+    if (!isEdit) {
+      const stockQuantity = Number(form.stockQuantity)
+      if (!Number.isInteger(stockQuantity) || stockQuantity <= 0) {
+        nextErrors.stockQuantity = 'Số lượng tồn phải là số nguyên lớn hơn 0.'
+      }
+      if (!form.initialBranchId) {
+        nextErrors.initialBranchId = 'Vui lòng chọn chi nhánh lưu tồn ban đầu.'
+      }
+      if (!form.expiryDate) {
+        nextErrors.expiryDate = 'Ngày hết hạn là bắt buộc.'
+      }
+    }
+
     setErrors(nextErrors)
     return Object.keys(nextErrors).length === 0
   }
@@ -243,6 +289,20 @@ export function MedicineFormPage({ mode }) {
     }
 
     saveMutation.mutate()
+  }
+
+  function handleImageChange(event) {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setErrors((current) => ({ ...current, image: 'Vui lòng chọn một tệp ảnh hợp lệ.' }))
+      return
+    }
+
+    setImageFile(file)
+    setImagePreviewUrl(URL.createObjectURL(file))
+    setErrors((current) => ({ ...current, image: undefined }))
   }
 
   if (medicineQuery.isLoading) {
@@ -379,7 +439,7 @@ export function MedicineFormPage({ mode }) {
                 <option value="">Chưa chọn</option>
                 {suppliers.map((supplier) => (
                   <option key={supplier.id} value={supplier.id}>
-                    {supplier.name}
+                    {supplier.name}{supplier.status === 'INACTIVE' ? ' (Ngừng hoạt động)' : ''}
                   </option>
                 ))}
               </select>
@@ -429,20 +489,38 @@ export function MedicineFormPage({ mode }) {
               </select>
             </label>
 
-            <label className="field">
-              <span className="field-label">Số lượng tồn *</span>
-              <input className="input mono" inputMode="numeric" value={form.stockQuantity} placeholder="Nhập số lượng tồn" onChange={(event) => setField('stockQuantity', event.target.value)} />
-            </label>
+            {!isEdit ? <>
+              <label className="field">
+                <span className="field-label">Chi nhánh lưu tồn *</span>
+                <select className="select" value={form.initialBranchId} onChange={(event) => setField('initialBranchId', event.target.value)}>
+                  <option value="">Chọn chi nhánh</option>
+                  {branches.map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}
+                </select>
+                {errors.initialBranchId ? <span className="field-error">{errors.initialBranchId}</span> : null}
+              </label>
 
-            <label className="field">
-              <span className="field-label">Ngày hết hạn</span>
-              <input className="input mono" type="date" value={form.expiryDate} onChange={(event) => setField('expiryDate', event.target.value)} />
-            </label>
+              <label className="field">
+                <span className="field-label">Số lượng tồn ban đầu *</span>
+                <input className="input mono" inputMode="numeric" value={form.stockQuantity} placeholder="Nhập số lượng tồn" onChange={(event) => setField('stockQuantity', event.target.value)} />
+                {errors.stockQuantity ? <span className="field-error">{errors.stockQuantity}</span> : null}
+              </label>
 
-            <label className="field form-grid-full medicine-image-upload">
+              <label className="field">
+                <span className="field-label">Ngày hết hạn *</span>
+                <input className="input mono" type="date" value={form.expiryDate} onChange={(event) => setField('expiryDate', event.target.value)} />
+                {errors.expiryDate ? <span className="field-error">{errors.expiryDate}</span> : null}
+              </label>
+            </> : null}
+
+            <div className="field form-grid-full medicine-image-upload">
               <span className="field-label">Ảnh thuốc</span>
-              <span className="medicine-upload-box"><ImagePlus size={28} aria-hidden="true" />Nhấn để tải ảnh lên<br />hoặc kéo thả ảnh<input type="file" accept="image/*" aria-label="Tải ảnh thuốc" /></span>
-            </label>
+              <label className="medicine-upload-box" htmlFor="medicine-image-file">
+                {imagePreviewUrl ? <img src={imagePreviewUrl} alt="Xem trước ảnh thuốc" className="medicine-upload-preview" /> : <ImagePlus size={28} aria-hidden="true" />}
+                {imageFile ? imageFile.name : 'Nhấn để tải ảnh lên hoặc kéo thả ảnh'}
+              </label>
+              <input id="medicine-image-file" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Tải ảnh thuốc" onChange={handleImageChange} />
+              {errors.image ? <span className="field-error">{errors.image}</span> : null}
+            </div>
 
             <label className="field form-grid-full medicine-hidden-field">
               <span className="field-label">Mô tả</span>

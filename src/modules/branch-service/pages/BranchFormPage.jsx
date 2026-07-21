@@ -8,6 +8,7 @@ import { getApiErrorMessage } from '@core/http/apiClient.js'
 import {
   createBranch,
   getBranch,
+  getBranchImageUrl,
   getUser,
   updateBranch,
 } from '../api/branchApi.js'
@@ -37,6 +38,8 @@ export function BranchFormPage({ mode }) {
   }))
   const [errors, setErrors] = useState({})
   const [selectedImageName, setSelectedImageName] = useState('')
+  const [selectedImageFile, setSelectedImageFile] = useState(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState('')
 
   const branchQuery = useQuery({
     queryKey: ['branches', branchId],
@@ -58,8 +61,15 @@ export function BranchFormPage({ mode }) {
         phone: branchQuery.data.phone || '',
         status: branchQuery.data.status || 'ACTIVE',
       })
+      setImagePreviewUrl(getBranchImageUrl(branchQuery.data))
+      setSelectedImageFile(null)
+      setSelectedImageName('')
     }
   }, [branchQuery.data])
+
+  useEffect(() => () => {
+    if (imagePreviewUrl.startsWith('blob:')) URL.revokeObjectURL(imagePreviewUrl)
+  }, [imagePreviewUrl])
 
   const saveMutation = useMutation({
     mutationFn: async (payload) => {
@@ -69,7 +79,7 @@ export function BranchFormPage({ mode }) {
           address: payload.address,
           phone: payload.phone,
           status: payload.status,
-        })
+        }, selectedImageFile)
       }
 
       const created = await createBranch({
@@ -77,7 +87,7 @@ export function BranchFormPage({ mode }) {
         name: payload.name,
         address: payload.address,
         phone: payload.phone,
-      })
+      }, selectedImageFile)
 
       if (payload.status === 'INACTIVE') {
         return updateBranch(created.id, { status: 'INACTIVE' })
@@ -140,7 +150,16 @@ export function BranchFormPage({ mode }) {
   }
 
   function handleImageSelect(event) {
-    setSelectedImageName(event.target.files?.[0]?.name || '')
+    const file = event.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setErrors((current) => ({ ...current, image: 'Vui lòng chọn một tệp ảnh hợp lệ.' }))
+      return
+    }
+    setSelectedImageFile(file)
+    setSelectedImageName(file.name)
+    setImagePreviewUrl(URL.createObjectURL(file))
+    setErrors((current) => ({ ...current, image: undefined }))
   }
 
   if (branchQuery.isLoading) {
@@ -250,12 +269,14 @@ export function BranchFormPage({ mode }) {
                 <span className="btn btn-outline branch-image-button">
                   {isEdit ? 'Thay đổi ảnh' : 'Chọn tệp'}
                 </span>
-                {!isEdit ? (
+                {imagePreviewUrl ? <img src={imagePreviewUrl} alt="Xem trước ảnh chi nhánh" className="branch-image-preview" /> : null}
+                {(!isEdit || selectedImageName) ? (
                   <span className="branch-image-file-name">
                     {selectedImageName || 'Chưa chọn tệp'}
                   </span>
                 ) : null}
               </label>
+              {errors.image ? <span className="field-error">{errors.image}</span> : null}
             </div>
 
             <fieldset className="field form-grid-full branch-status-field">

@@ -6,7 +6,7 @@ import { DashboardLayout } from '@shared/layouts/DashboardLayout.jsx'
 import { StatusBadge } from '@shared/ui/StatusBadge.jsx'
 import { getApiErrorMessage } from '@core/http/apiClient.js'
 import { listInventoryBatches, listMovementReport } from '@modules/inventory-service/api/inventoryApi.js'
-import { getMedicine, listCategories, listSuppliers } from '../api/medicineApi.js'
+import { getMedicine, getMedicineImageUrl, listCategories, listSuppliers } from '../api/medicineApi.js'
 import { formatCurrency, formatDateTime, getCategoryName, getSupplierName, shortId } from '../services/medicineFormatters.js'
 
 function DetailRow({ label, value, mono = false }) {
@@ -47,7 +47,7 @@ export function MedicineDetailPage() {
     <header className="page-header medicine-detail-heading"><h1 className="page-title">Chi tiết thuốc</h1><Link className="btn btn-outline" to="/medicines"><ArrowLeft size={16} aria-hidden="true" />Danh sách</Link></header>
     <section className="medicine-detail-frame">
       <div className="medicine-detail-top">
-        <div className="medicine-detail-photo">{medicine.imageUrl ? <img src={medicine.imageUrl} alt={medicine.name} /> : <span>Ảnh thuốc</span>}<strong>{medicine.name}</strong></div>
+        <div className="medicine-detail-photo">{medicine.imageUrl ? <img src={getMedicineImageUrl(medicine)} alt={medicine.name} /> : <span>Ảnh thuốc</span>}<strong>{medicine.name}</strong></div>
         <div className="medicine-detail-info">
           <DetailRow label="Danh mục" value={categoryName} />
           <DetailRow label="Nhà cung cấp" value={supplierName} />

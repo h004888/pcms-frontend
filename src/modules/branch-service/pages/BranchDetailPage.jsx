@@ -8,6 +8,7 @@ import { getApiErrorMessage } from '@core/http/apiClient.js'
 import {
   assignBranchManager,
   getBranch,
+  getBranchImageUrl,
   getBranchStaff,
   getUser,
   listBranchManagers,
@@ -181,8 +182,8 @@ export function BranchDetailPage() {
           </header>
 
           <div className="branch-detail-information">
-            <div className="branch-detail-image" role="img" aria-label="Branch image placeholder">
-              <span>Hình ảnh chi nhánh</span>
+            <div className="branch-detail-image" role="img" aria-label="Hình ảnh chi nhánh">
+              {branch.imageUrl ? <img src={getBranchImageUrl(branch)} alt={branch.name} /> : <span>Hình ảnh chi nhánh</span>}
             </div>
 
             <dl className="branch-detail-fields">

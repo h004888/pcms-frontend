@@ -1875,6 +1875,7 @@ a {
   min-height: 112px;
   place-content: center;
   justify-items: center;
+  cursor: pointer;
   color: var(--ink-600);
   text-align: center;
   border: 1px dashed var(--ink-300);
@@ -1882,8 +1883,23 @@ a {
   line-height: 1.5;
 }
 
-.medicine-form-card .medicine-upload-box input {
+.medicine-form-card .medicine-image-upload > input[type='file'] {
   display: none;
+}
+
+.branch-image-preview,
+.branch-detail-image img {
+  width: 96px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.medicine-form-card .medicine-upload-preview {
+  max-width: 140px;
+  max-height: 84px;
+  object-fit: contain;
+  border-radius: 6px;
 }
 
 .medicine-status-radios {

@@ -37,7 +37,7 @@ export function AssignBranchDialog({ user, branches, isPending, onClose, onConfi
                 onChange={(e) => setBranchId(e.target.value)}
               >
                 <option value="">-- Không gán chi nhánh (Toàn hệ thống) --</option>
-                {branches.map(branch => (
+                {branches.filter((branch) => branch.status === 'ACTIVE').map(branch => (
                   <option key={branch.id} value={branch.id}>
                     {branch.name} ({branch.code})
                   </option>
