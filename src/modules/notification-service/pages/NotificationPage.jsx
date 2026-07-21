@@ -31,6 +31,7 @@ import {
   triggerExpiryAlertNotification,
   triggerOrderPaidNotification,
 } from '../api/notificationApi.js'
+import { listUsers } from '../../user-service/api/userApi.js'
 
 const TAB_INBOX = 'inbox'
 const TAB_COMPOSE = 'compose'
@@ -222,21 +223,38 @@ function ComposeTab() {
 
   async function handleBroadcast(e) {
     e.preventDefault()
-    if (!form.title.trim() || !form.body.trim()) {
-      toast.error('Tiêu đề và nội dung là bắt buộc.')
-      return
-    }
+    if (!form.channel) { toast.error('Vui lòng chọn kênh gửi.'); return }
+    if (!form.template) { toast.error('Vui lòng chọn Template.'); return }
+    if (!form.title.trim()) { toast.error('Vui lòng nhập tiêu đề thông báo.'); return }
+    if (!form.body.trim()) { toast.error('Vui lòng nhập nội dung thông báo.'); return }
+    
     setSending(true)
     try {
+      // Backend (NotificationSenderServiceImpl) currently ignores audience.roles 
+      // and only resolves audience.users. So we must fetch users first.
+      const userParams = form.targetRole ? { role: form.targetRole, size: 500 } : { size: 500 }
+      const usersRes = await listUsers(userParams)
+      const userList = Array.isArray(usersRes?.content) ? usersRes.content : (Array.isArray(usersRes?.data) ? usersRes.data : [])
+      const userIds = userList.map(u => u.id).filter(Boolean)
+
+      if (userIds.length === 0) {
+        toast.error('Không tìm thấy người dùng nào trong nhóm này.')
+        setSending(false)
+        return
+      }
+
       const payload = {
         title: form.title,
         body: form.body,
-        channel: form.channel,
+        channels: [form.channel],
         template: form.template,
-        targetRole: form.targetRole || undefined,
+        audience: {
+          roles: form.targetRole ? [form.targetRole] : [],
+          users: userIds,
+        }
       }
       await broadcastNotification(payload)
-      toast.success('Đã gửi thông báo broadcast thành công! (@Async thread pool đang xử lý)')
+      toast.success(`Đã gửi thông báo broadcast thành công đến ${userIds.length} người!`)
       setForm(f => ({ ...f, title: '', body: '' }))
     } catch (e) { toast.error(getApiErrorMessage(e)) }
     finally { setSending(false) }
@@ -244,17 +262,24 @@ function ComposeTab() {
 
   async function handleCompose(e) {
     e.preventDefault()
+    if (!form.channel) { toast.error('Vui lòng chọn kênh gửi.'); return }
+    if (!form.template) { toast.error('Vui lòng chọn Template.'); return }
+    if (!form.title.trim()) { toast.error('Vui lòng nhập tiêu đề thông báo.'); return }
+    if (!form.body.trim()) { toast.error('Vui lòng nhập nội dung thông báo.'); return }
+
     setSending(true)
     try {
       const payload = {
         title: form.title,
         body: form.body,
         channel: form.channel,
+        channels: [form.channel],
         template: form.template,
-        targetRole: form.targetRole || undefined,
+        recipientIds: [], // Provide empty if not specific
       }
       await composeNotification(payload)
       toast.success('Đã soạn và gửi thông báo qua template!')
+      setForm(f => ({ ...f, title: '', body: '' }))
     } catch (e) { toast.error(getApiErrorMessage(e)) }
     finally { setSending(false) }
   }
@@ -526,7 +551,7 @@ export function NotificationPage() {
   const tabs = [
     { id: TAB_INBOX, label: 'Hộp thư', icon: Bell },
     { id: TAB_COMPOSE, label: 'Soạn thông báo', icon: Megaphone },
-    { id: TAB_OUTBOX, label: 'Demo Outbox', icon: Zap },
+    // { id: TAB_OUTBOX, label: 'Demo Outbox', icon: Zap }, // Tạm thời ẩn theo yêu cầu
   ]
 
   return (
