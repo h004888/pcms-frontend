@@ -55,6 +55,14 @@ export const ROUTES = {
   ORDER_NEW: '/orders/new',
   ADMIN_ORDER_DETAIL: (id) => `/orders/${id}`,
 
+  // ── Payment Management ───────────────────────────────────
+  PAYMENTS: '/payments',
+  PAYMENT_DETAIL: (id) => `/payments/${id}`,
+
+  // ── Notifications & Analytics ────────────────────────────
+  NOTIFICATIONS: '/notifications',
+  ANALYTICS: '/analytics',
+
   // ── Inventory ───────────────────────────────────────────
   INVENTORY: '/inventory',
   INVENTORY_IMPORT: '/inventory/import',

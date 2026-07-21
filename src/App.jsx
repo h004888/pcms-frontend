@@ -27,6 +27,11 @@ import { CustomerListPage } from '@modules/customer-service/pages/CustomerListPa
 import { CustomerDetailPage } from '@modules/customer-service/pages/CustomerDetailPage.jsx'
 import { CreateOrderPage } from '@modules/order-service/pages/CreateOrderPage.jsx'
 import { OrderListPage } from '@modules/order-service/pages/OrderListPage.jsx'
+import { OrderDetailPage as AdminOrderDetailPage } from '@modules/order-service/pages/OrderDetailPage.jsx'
+import { PaymentListPage } from '@modules/order-service/pages/PaymentListPage.jsx'
+import { PaymentDetailPage } from '@modules/order-service/pages/PaymentDetailPage.jsx'
+import { NotificationListPage } from '@modules/notification-service/pages/NotificationListPage.jsx'
+import { AnalyticsPage } from '@modules/analytics-service/pages/AnalyticsPage.jsx'
 // B2C Shop pages
 import { ShopLayout } from '@modules/customer-portal-service/layouts/ShopLayout.jsx'
 import { ShopHomePage } from '@modules/customer-portal-service/pages/ShopHomePage.jsx'
@@ -67,6 +72,11 @@ function App() {
         <Route path={ROUTES.CUSTOMER_DETAIL(':customerId')} element={<ProtectedRoute><CustomerDetailPage /></ProtectedRoute>} />
         <Route path={ROUTES.ORDERS} element={<ProtectedRoute><OrderListPage /></ProtectedRoute>} />
         <Route path={ROUTES.ORDER_NEW} element={<ProtectedRoute><CreateOrderPage /></ProtectedRoute>} />
+        <Route path={ROUTES.ADMIN_ORDER_DETAIL(':id')} element={<ProtectedRoute><AdminOrderDetailPage /></ProtectedRoute>} />
+        <Route path={ROUTES.PAYMENTS} element={<ProtectedRoute><PaymentListPage /></ProtectedRoute>} />
+        <Route path={ROUTES.PAYMENT_DETAIL(':id')} element={<ProtectedRoute><PaymentDetailPage /></ProtectedRoute>} />
+        <Route path={ROUTES.NOTIFICATIONS} element={<ProtectedRoute><NotificationListPage /></ProtectedRoute>} />
+        <Route path={ROUTES.ANALYTICS} element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
         <Route path={ROUTES.BRANCHES} element={<ProtectedRoute><BranchListPage /></ProtectedRoute>} />
         <Route path={ROUTES.BRANCH_NEW} element={<ProtectedRoute><BranchFormPage mode="create" /></ProtectedRoute>} />
         <Route path={ROUTES.BRANCH_DETAIL(':branchId')} element={<ProtectedRoute><BranchDetailPage /></ProtectedRoute>} />
