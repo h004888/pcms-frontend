@@ -53,6 +53,7 @@ export function PdpPage() {
     queryKey: ['shop-reviews', product?.id],
     queryFn: () => getMedicineReviews(product.id),
     enabled: !!product?.id,
+    retry: false,
   })
 
   const { data: flashSalesData } = useQuery({
@@ -368,9 +369,13 @@ export function PdpPage() {
                 <div className="pdp-meta-row">
                   <dt className="pdp-meta-label">{t('Danh mục')}:</dt>
                   <dd className="pdp-meta-value">
-                    <Link to={`${ROUTES.SEARCH}?category=${encodeURIComponent(product.category?.slug)}`} className="pdp-meta-link">
-                      {product.category?.name}
-                    </Link>
+                    {product.category?.slug && product.category?.name ? (
+                      <Link to={`${ROUTES.SEARCH}?category=${encodeURIComponent(product.category.slug)}`} className="pdp-meta-link">
+                        {product.category.name}
+                      </Link>
+                    ) : (
+                      <span className="pdp-thumb-caption">—</span>
+                    )}
                   </dd>
                 </div>
                 <div className="pdp-meta-row">

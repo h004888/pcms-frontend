@@ -8,7 +8,7 @@ import 'dayjs/locale/vi'
 import { CheckCheck, RefreshCcw } from 'lucide-react'
 import { DashboardLayout } from '@shared/layouts/DashboardLayout.jsx'
 import { getApiErrorMessage } from '@core/http/apiClient.js'
-import { getNotifications, markAllRead, markRead } from '../api/notificationApi.js'
+import { listNotifications, markAllNotificationsRead, markNotificationRead } from '../api/notificationApi.js'
 
 dayjs.extend(relativeTime)
 dayjs.locale('vi')
@@ -87,7 +87,7 @@ export function NotificationListPage() {
 
   const query = useQuery({
     queryKey: ['notifications', recipientId],
-    queryFn: () => getNotifications(recipientId),
+    queryFn: () => listNotifications({ recipientId, status: 'all', page: 0, size: 100 }),
     enabled: Boolean(recipientId),
   })
 
@@ -99,13 +99,13 @@ export function NotificationListPage() {
   const unreadCount = notifications.filter((n) => n.status !== 'READ').length
 
   const markReadMutation = useMutation({
-    mutationFn: markRead,
+    mutationFn: markNotificationRead,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
     onError: (e) => toast.error(getApiErrorMessage(e)),
   })
 
   const markAllMutation = useMutation({
-    mutationFn: () => markAllRead(recipientId),
+    mutationFn: () => markAllNotificationsRead(recipientId),
     onSuccess: () => {
       toast.success('Đã đánh dấu tất cả đã đọc.')
       queryClient.invalidateQueries({ queryKey: ['notifications'] })

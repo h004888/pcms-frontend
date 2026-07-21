@@ -55,6 +55,9 @@ export function addToCart(item) {
 
   writeCart(cart)
 
+  const hasToken = !!localStorage.getItem('pcms_access_token')
+  if (!hasToken) return
+
   addCartItem({ medicineId: item.medicineId, qty: existing ? existing.qty : (item.qty || 1) })
     .then((backendCart) => {
       if (backendCart && backendCart.items) {
@@ -83,6 +86,9 @@ export function updateQty(medicineId, delta) {
 
   item.qty = Math.min(newQty, 99)
   writeCart(cart)
+
+  const hasToken = !!localStorage.getItem('pcms_access_token')
+  if (!hasToken) return
 
   if (item.backendId) {
     updateCartItem(item.backendId, { qty: item.qty }).catch(() => {})

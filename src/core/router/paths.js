@@ -59,10 +59,6 @@ export const ROUTES = {
   PAYMENTS: '/payments',
   PAYMENT_DETAIL: (id) => `/payments/${id}`,
 
-  // ── Notifications & Analytics ────────────────────────────
-  NOTIFICATIONS: '/notifications',
-  ANALYTICS: '/analytics',
-
   // ── Inventory ───────────────────────────────────────────
   INVENTORY: '/inventory',
   INVENTORY_IMPORT: '/inventory/import',
@@ -71,4 +67,21 @@ export const ROUTES = {
   INVENTORY_ALERTS: '/inventory/alerts',
   INVENTORY_HISTORY: '/inventory/history',
   INVENTORY_BATCH: (id) => `/inventory/batches/${id}`,
+
+  // ── Notifications ───────────────────────────────────────
+  NOTIFICATIONS: '/notifications',              // user inbox (NotificationListPage)
+  NOTIFICATION_ADMIN: '/dashboard/notifications',  // admin compose/manage (NotificationPage)
+  NOTIFICATIONS_COMPOSE: '/dashboard/notifications/compose',
+
+  // ── Analytics ───────────────────────────────────────────
+  ANALYTICS: '/analytics',
+
+  // ── Reports ─────────────────────────────────────────────
+  REPORTS: '/dashboard/reports',
+
+  // ── Supplier Management ─────────────────────────────────
+  SUPPLIERS: '/dashboard/suppliers',
+
+  // ── Prescription ────────────────────────────────────────
+  PRESCRIPTIONS: '/dashboard/prescriptions',
 }
