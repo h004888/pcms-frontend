@@ -33,6 +33,10 @@ import { PaymentListPage } from '@modules/order-service/pages/PaymentListPage.js
 import { PaymentDetailPage } from '@modules/order-service/pages/PaymentDetailPage.jsx'
 import { NotificationListPage } from '@modules/notification-service/pages/NotificationListPage.jsx'
 import { AnalyticsPage } from '@modules/analytics-service/pages/AnalyticsPage.jsx'
+import { ReportPage } from '@modules/report-service/pages/ReportPage.jsx'
+import { SupplierListPage } from '@modules/supplier-service/pages/SupplierListPage.jsx'
+import { PrescriptionListPage } from '@modules/prescription-service/pages/PrescriptionListPage.jsx'
+import { NotificationPage } from '@modules/notification-service/pages/NotificationPage.jsx'
 // B2C Shop pages
 import { ShopLayout } from '@modules/customer-portal-service/layouts/ShopLayout.jsx'
 import { ShopHomePage } from '@modules/customer-portal-service/pages/ShopHomePage.jsx'
