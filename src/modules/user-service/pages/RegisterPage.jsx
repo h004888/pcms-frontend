@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { AlertCircle, ArrowLeft, CheckCircle2, Eye, EyeOff, UserPlus } from 'lucide-react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '@core/http/apiClient.js'
 import { register } from '../api/authApi.js'
 
 export function RegisterPage() {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const redirectTo = searchParams.get('redirect') || ''
   const [formData, setFormData] = useState({
     fullName: '',
@@ -21,18 +22,13 @@ export function RegisterPage() {
 
   const registerMutation = useMutation({
     mutationFn: () => register(formData),
-    onSuccess: (data) => {
-      if (data?.accessToken) {
-        localStorage.setItem('pcms_access_token', data.accessToken)
-      }
-      if (data?.refreshToken) {
-        localStorage.setItem('pcms_refresh_token', data.refreshToken)
-      }
-      if (data?.user) {
-        localStorage.setItem('pcms_user', JSON.stringify(data.user))
-      }
+    onSuccess: () => {
       setIsSuccess(true)
-      toast.success('Đăng ký tài khoản thành công!')
+      toast.success('Đăng ký tài khoản thành công! Vui lòng đăng nhập.')
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        navigate(`/login${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`)
+      }, 2000)
     },
     onError: (error) => {
       const message = getApiErrorMessage(error)

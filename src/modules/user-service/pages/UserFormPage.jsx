@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff, Save } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { DashboardLayout } from '@shared/layouts/DashboardLayout.jsx'
@@ -18,11 +18,13 @@ export function UserFormPage({ mode = 'create' }) {
     email: '',
     fullName: '',
     phone: '',
+    password: '',
     role: 'PHARMACIST',
     branchId: '',
     status: 'ACTIVE',
   })
   const [errors, setErrors] = useState({})
+  const [showPassword, setShowPassword] = useState(false)
 
   // Queries
   const branchesQuery = useQuery({
@@ -94,6 +96,18 @@ export function UserFormPage({ mode = 'create' }) {
       newErrors.phone = 'Số điện thoại không được vượt quá 20 ký tự'
     }
 
+    if (mode === 'create') {
+      if (!formData.password.trim()) {
+        newErrors.password = 'Mật khẩu không được để trống'
+      } else if (formData.password.length < 6 || formData.password.length > 100) {
+        newErrors.password = 'Mật khẩu phải từ 6 đến 100 ký tự'
+      }
+    } else {
+      if (formData.password && (formData.password.length < 6 || formData.password.length > 100)) {
+        newErrors.password = 'Mật khẩu phải từ 6 đến 100 ký tự'
+      }
+    }
+
     if (!formData.role) {
       newErrors.role = 'Vui lòng chọn vai trò'
     }
@@ -118,6 +132,7 @@ export function UserFormPage({ mode = 'create' }) {
 
     if (mode === 'create') {
       payload.email = formData.email
+      payload.password = formData.password
       createMutation.mutate(payload)
     } else {
       payload.status = formData.status
@@ -188,15 +203,48 @@ export function UserFormPage({ mode = 'create' }) {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
-              <label className="field-label" style={{ margin: 0 }}>Mật khẩu</label>
-              <input
-                className="input"
-                type="password"
-                value="********"
-                disabled
-              />
-            </div>
+            {mode === 'create' ? (
+              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
+                <label className="field-label" style={{ margin: 0 }}>
+                  Mật khẩu <span style={{ color: 'var(--danger-600)' }}>*</span>
+                </label>
+                <div>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      name="password"
+                      className="input"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Ít nhất 6 ký tự"
+                      value={formData.password}
+                      onChange={handleChange}
+                      autoComplete="new-password"
+                      style={{ paddingRight: '44px' }}
+                      aria-invalid={!!errors.password}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-icon"
+                      style={{ position: 'absolute', right: 0, top: 0, height: '100%', border: 'none', minHeight: 'auto' }}
+                      onClick={() => setShowPassword(prev => !prev)}
+                      aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    >
+                      {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="field-error" style={{ marginTop: '6px' }}>{errors.password}</p>}
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
+                <label className="field-label" style={{ margin: 0 }}>Mật khẩu</label>
+                <input
+                  className="input"
+                  type="password"
+                  value="********"
+                  disabled
+                />
+              </div>
+            )}
 
             <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
               <label className="field-label" style={{ margin: 0 }}>Vai trò</label>

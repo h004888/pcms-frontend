@@ -4,6 +4,7 @@ import {
   Download,
   Eye,
   Lock,
+  LockOpen,
   Pencil,
   Plus,
   RefreshCcw,
@@ -47,7 +48,7 @@ const PAGE_SIZE = 10
 
 export function UserListPage() {
   const queryClient = useQueryClient()
-  
+
   // Filters
   const [searchInput, setSearchInput] = useState('')
   const [appliedSearch, setAppliedSearch] = useState('')
@@ -59,6 +60,7 @@ export function UserListPage() {
   const [roleUser, setRoleUser] = useState(null)
   const [statusUser, setStatusUser] = useState(null)
   const [branchUser, setBranchUser] = useState(null)
+  const [lockUserTarget, setLockUserTarget] = useState(null)
   const [unlockUserTarget, setUnlockUserTarget] = useState(null)
   const [deleteUserTarget, setDeleteUserTarget] = useState(null)
 
@@ -78,7 +80,7 @@ export function UserListPage() {
     queryKey: ['branches'],
     queryFn: () => listBranches({ page: 0, size: 500 }),
   })
-  
+
   const branches = useMemo(() => branchesQuery.data?.data || [], [branchesQuery.data?.data])
   const branchesById = useMemo(() => new Map(branches.map(b => [b.id, b])), [branches])
 
@@ -113,10 +115,20 @@ export function UserListPage() {
     onError: (error) => toast.error(getApiErrorMessage(error)),
   })
 
-  const unlockMutation = useMutation({
-    mutationFn: () => unlockUser(unlockUserTarget.id),
+  const lockMutation = useMutation({
+    mutationFn: () => changeUserStatus(lockUserTarget.id, 'INACTIVE'),
     onSuccess: () => {
-      toast.success('Đã mở khóa tài khoản thành công.')
+      toast.success('Đã khóa tài khoản thành công.')
+      setLockUserTarget(null)
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error)),
+  })
+
+  const unlockMutation = useMutation({
+    mutationFn: () => changeUserStatus(unlockUserTarget.id, 'ACTIVE'),
+    onSuccess: () => {
+      toast.success('Đã kích hoạt tài khoản thành công.')
       setUnlockUserTarget(null)
       queryClient.invalidateQueries({ queryKey: ['users'] })
     },
@@ -136,18 +148,18 @@ export function UserListPage() {
   // Local filtering & pagination based on the 500 loaded items
   // Since search params are sent to backend, local filtering is mostly for robustness
   const users = useMemo(() => usersQuery.data?.data || [], [usersQuery.data?.data])
-  
+
   const filteredUsers = useMemo(() => {
     const keyword = normalizeSearch(appliedSearch)
     return users.filter(user => {
-      const matchSearch = !keyword || 
+      const matchSearch = !keyword ||
         [user.email, user.fullName, user.phone]
           .filter(Boolean)
           .some(v => normalizeSearch(String(v)).includes(keyword))
-      
+
       const matchRole = roleFilter === 'ALL' || user.role === roleFilter
       const matchStatus = statusFilter === 'ALL' || user.status === statusFilter
-      
+
       return matchSearch && matchRole && matchStatus
     })
   }, [users, appliedSearch, roleFilter, statusFilter])
@@ -176,7 +188,7 @@ export function UserListPage() {
       if (appliedSearch) params.search = appliedSearch
       if (roleFilter !== 'ALL') params.role = roleFilter
       if (statusFilter !== 'ALL') params.status = statusFilter
-      
+
       const blob = await exportUsers(params)
       const url = window.URL.createObjectURL(new Blob([blob]))
       const link = document.createElement('a')
@@ -233,7 +245,7 @@ export function UserListPage() {
                         <td>{user.email}</td>
                         <td><RoleBadge role={user.role} /></td>
                         <td>
-                          {user.branchId && branchesById.has(user.branchId) 
+                          {user.branchId && branchesById.has(user.branchId)
                             ? branchesById.get(user.branchId).name
                             : '—'}
                         </td>
@@ -253,13 +265,23 @@ export function UserListPage() {
                             >
                               Sửa
                             </Link>
-                            <button
-                              className="btn btn-outline"
-                              style={{ padding: '4px 8px', fontSize: '13px', minHeight: 'auto', color: 'var(--danger-700)', borderColor: 'var(--ink-200)' }}
-                              onClick={() => setDeleteUserTarget(user)}
-                            >
-                              Xóa
-                            </button>
+                            {user.status === 'INACTIVE' ? (
+                              <button
+                                className="btn btn-outline"
+                                style={{ padding: '4px 8px', fontSize: '13px', minHeight: 'auto', color: 'var(--success-700)', borderColor: 'var(--ink-200)' }}
+                                onClick={() => setUnlockUserTarget(user)}
+                              >
+                                Kích hoạt
+                              </button>
+                            ) : (
+                              <button
+                                className="btn btn-outline"
+                                style={{ padding: '4px 8px', fontSize: '13px', minHeight: 'auto', color: 'var(--danger-700)', borderColor: 'var(--ink-200)' }}
+                                onClick={() => setDeleteUserTarget(user)}
+                              >
+                                Xóa
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -282,7 +304,7 @@ export function UserListPage() {
                   >
                     &lt; Trước
                   </button>
-                  
+
                   <button
                     className="btn btn-outline"
                     type="button"
