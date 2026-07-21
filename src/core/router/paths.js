@@ -46,6 +46,19 @@ export const ROUTES = {
   MEDICINE_DETAIL: (id) => `/medicines/${id}`,
   MEDICINE_EDIT: (id) => `/medicines/${id}/edit`,
 
+  // ── Customer Management ─────────────────────────────────
+  CUSTOMERS: '/customers',
+  CUSTOMER_DETAIL: (id) => `/customers/${id}`,
+
+  // ── Order Management ────────────────────────────────────
+  ORDERS: '/orders',
+  ORDER_NEW: '/orders/new',
+  ADMIN_ORDER_DETAIL: (id) => `/orders/${id}`,
+
+  // ── Payment Management ───────────────────────────────────
+  PAYMENTS: '/payments',
+  PAYMENT_DETAIL: (id) => `/payments/${id}`,
+
   // ── Inventory ───────────────────────────────────────────
   INVENTORY: '/inventory',
   INVENTORY_STOCKS: '/inventory/stocks',
@@ -56,4 +69,21 @@ export const ROUTES = {
   INVENTORY_ALERTS: '/inventory/alerts',
   INVENTORY_HISTORY: '/inventory/history',
   INVENTORY_BATCH: (id) => `/inventory/batches/${id}`,
+
+  // ── Notifications ───────────────────────────────────────
+  NOTIFICATIONS: '/notifications',
+  NOTIFICATION_ADMIN: '/dashboard/notifications',
+  NOTIFICATIONS_COMPOSE: '/dashboard/notifications/compose',
+
+  // ── Analytics ───────────────────────────────────────────
+  ANALYTICS: '/analytics',
+
+  // ── Reports ─────────────────────────────────────────────
+  REPORTS: '/dashboard/reports',
+
+  // ── Supplier Management ─────────────────────────────────
+  SUPPLIERS: '/dashboard/suppliers',
+
+  // ── Prescription ────────────────────────────────────────
+  PRESCRIPTIONS: '/dashboard/prescriptions',
 }

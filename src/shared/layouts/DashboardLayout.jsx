@@ -1,11 +1,15 @@
+
 import { useEffect, useState } from 'react'
 import {
+  BarChart2,
   BarChart3,
   Bell,
   Building2,
   ChevronDown,
   ChevronRight,
   CircleUserRound,
+  CreditCard,
+  FileText,
   LayoutDashboard,
   List,
   LogOut,
@@ -14,9 +18,13 @@ import {
   Plus,
   Settings,
   ShoppingCart,
+  Truck,
+  User,
+  Users,
   UsersRound,
 } from 'lucide-react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+
 import { logout } from '../../modules/user-service/api/authApi'
 
 export function DashboardLayout({ children }) {
@@ -130,6 +138,11 @@ export function DashboardLayout({ children }) {
             ) : null}
           </div>
 
+          <NavLink className="app-nav-link" to="/customers">
+            <Users size={16} aria-hidden="true" />
+            Khách hàng
+          </NavLink>
+
           <div className="app-nav-group">
             <button
               className={`app-nav-link app-nav-disclosure ${isMedicineSection ? 'is-active' : ''}`}
@@ -212,26 +225,30 @@ export function DashboardLayout({ children }) {
               </div>
             ) : null}
           </div>
-          <span className="app-nav-link" aria-disabled="true">
+          <NavLink className="app-nav-link" to="/orders">
             <ShoppingCart size={16} aria-hidden="true" />
-            Quản lý đơn hàng
-            <ChevronRight className="app-nav-chevron" size={15} aria-hidden="true" />
-          </span>
-          <span className="app-nav-link" aria-disabled="true">
-            <CircleUserRound size={16} aria-hidden="true" />
-            Quản lý khách hàng
-            <ChevronRight className="app-nav-chevron" size={15} aria-hidden="true" />
-          </span>
-          <span className="app-nav-link" aria-disabled="true">
-            <BarChart3 size={16} aria-hidden="true" />
+            Đơn hàng
+          </NavLink>
+          <NavLink className="app-nav-link" to="/payments">
+            <CreditCard size={16} aria-hidden="true" />
+            Giao dịch
+          </NavLink>
+          <NavLink className="app-nav-link" to="/dashboard/suppliers">
+            <Truck size={16} aria-hidden="true" />
+            Nhà cung cấp
+          </NavLink>
+          <NavLink className="app-nav-link" to="/dashboard/prescriptions">
+            <FileText size={16} aria-hidden="true" />
+            Đơn thuốc
+          </NavLink>
+          <NavLink className="app-nav-link" to="/dashboard/notifications">
+            <Bell size={16} aria-hidden="true" />
+            Thông báo
+          </NavLink>
+          <NavLink className="app-nav-link" to="/dashboard/reports">
+            <BarChart2 size={16} aria-hidden="true" />
             Báo cáo
-            <ChevronRight className="app-nav-chevron" size={15} aria-hidden="true" />
-          </span>
-          <span className="app-nav-link" aria-disabled="true">
-            <Settings size={16} aria-hidden="true" />
-            Cài đặt
-            <ChevronRight className="app-nav-chevron" size={15} aria-hidden="true" />
-          </span>
+          </NavLink>
         </nav>
 
         {isAdmin && (
@@ -241,6 +258,38 @@ export function DashboardLayout({ children }) {
               Nhật ký hệ thống
             </NavLink>
           </nav>
+        )}
+        {user && (
+          <div style={{ padding: '16px 20px', borderTop: '1px solid var(--ink-200)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <NavLink
+                to={`/users/${user.id}`}
+                style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: 'var(--ink-900)',
+                  textDecoration: 'none',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {user.fullName}
+              </NavLink>
+              <div style={{ fontSize: '13px', color: 'var(--ink-500)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {user.role}
+              </div>
+            </div>
+            <button
+              className="btn btn-ghost btn-icon"
+              onClick={handleLogout}
+              title="Đăng xuất"
+              style={{ color: 'var(--ink-500)', flexShrink: 0 }}
+            >
+              <LogOut size={18} aria-hidden="true" />
+            </button>
+          </div>
         )}
       </aside>
 
