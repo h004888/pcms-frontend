@@ -103,7 +103,7 @@ export function InventoryBatchDetailPage() {
       <div className="page-stack">
         <header className="page-header">
           <div>
-            <h1 className="page-title">{medicine?.name || batch.batchNo}</h1>
+            <h1 className="page-title">Chi tiết tồn kho</h1>
             <p className="page-description">
               Lô <span className="mono">{batch.batchNo}</span> tại{' '}
               {branch?.name || shortId(batch.branchId)}
@@ -111,9 +111,9 @@ export function InventoryBatchDetailPage() {
           </div>
 
           <div className="table-actions">
-            <Link className="btn btn-outline" to="/inventory">
+            <Link className="btn btn-outline" to="/inventory/stocks">
               <ArrowLeft size={16} aria-hidden="true" />
-              Danh sách
+              Quay lại danh sách
             </Link>
             <Link className="btn btn-primary" to="/inventory/export">
               <ArrowUpFromLine size={16} aria-hidden="true" />
@@ -122,31 +122,26 @@ export function InventoryBatchDetailPage() {
           </div>
         </header>
 
-        <div className="detail-grid">
-          <section className="card" aria-labelledby="batch-detail-title">
+        <div className="detail-grid inventory-detail-grid">
+          <section className="card inventory-detail-summary" aria-labelledby="batch-detail-title">
             <div className="card-header">
               <div>
                 <h2 className="card-title" id="batch-detail-title">
-                  Thông tin lô
+                  Thông tin tồn kho
                 </h2>
                 <p className="card-subtitle">
-                  Thông tin chi tiết về số lô, tồn hiện tại và hạn dùng.
+                  Tóm tắt thuốc, chi nhánh và tồn kho hiện tại.
                 </p>
               </div>
               <StockStatusBadge row={batch} />
             </div>
 
             <div className="card-body detail-list">
-              <DetailText label="ID lô" value={shortId(batch.id)} mono />
-              <DetailText label="Số lô" value={batch.batchNo} mono />
-              <DetailText label="Mã vạch" value={batch.barcode} mono />
-              <DetailText label="Thuốc" value={medicine?.name || shortId(batch.medicineId)} />
-              <DetailText label="SKU" value={medicine?.sku} mono />
+              <DetailText label="Tên thuốc" value={medicine?.name || shortId(batch.medicineId)} />
+              <DetailText label="Danh mục" value={medicine?.categoryName || shortId(medicine?.categoryId)} />
+              <DetailText label="Đơn vị" value={medicine?.unit || 'Đơn vị'} />
               <DetailText label="Chi nhánh" value={branch?.name || shortId(batch.branchId)} />
-              <DetailText label="Tồn hiện tại" value={String(getBatchQuantity(batch))} mono />
-              <DetailText label="Tồn tối thiểu" value={String(getMinimumStock(batch))} mono />
-              <DetailText label="Ngày hết hạn" value={formatDate(batch.expiryDate)} mono />
-              <DetailText label="Ngày nhận" value={formatDateTime(batch.receivedAt)} />
+              <DetailText label="Tổng tồn" value={String(getBatchQuantity(batch))} mono />
             </div>
 
             <div className="form-actions">
@@ -161,7 +156,7 @@ export function InventoryBatchDetailPage() {
             </div>
           </section>
 
-          <aside className="stat-grid" aria-label="Chỉ số lô">
+          <aside className="stat-grid inventory-detail-stats" aria-label="Chỉ số lô">
             <div className="stat-card">
               <div>
                 <p className="stat-title">Tồn hiện tại</p>
@@ -187,6 +182,37 @@ export function InventoryBatchDetailPage() {
             </div>
           </aside>
         </div>
+
+        <section className="card inventory-batch-stock-card" aria-labelledby="batch-stock-title">
+          <div className="card-header">
+            <div>
+              <h2 className="card-title" id="batch-stock-title">Chi tiết lô hàng</h2>
+              <p className="card-subtitle">Số lượng tồn khả dụng theo lô đang xem.</p>
+            </div>
+          </div>
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Số lô</th>
+                  <th>Hạn dùng</th>
+                  <th>Khả dụng</th>
+                  <th>Đã giữ</th>
+                  <th>Trạng thái lô</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="mono">{batch.batchNo}</td>
+                  <td className="mono">{formatDate(batch.expiryDate)}</td>
+                  <td className="mono">{getBatchQuantity(batch)}</td>
+                  <td className="mono">0</td>
+                  <td><StockStatusBadge row={batch} /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
         <section className="card" aria-labelledby="batch-transaction-title">
           <div className="card-header">

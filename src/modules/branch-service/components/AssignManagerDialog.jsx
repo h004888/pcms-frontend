@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Search, X } from 'lucide-react'
 import { getManagerName, normalizeSearch } from '../services/branchFormatters.js'
 
@@ -10,9 +10,7 @@ export function AssignManagerDialog({
   onConfirm,
 }) {
   const [search, setSearch] = useState('')
-  const [selectedManagerId, setSelectedManagerId] = useState(
-    branch?.managerId || '',
-  )
+  const [selectedManagerId, setSelectedManagerId] = useState('')
   const [error, setError] = useState('')
   const managersById = useMemo(
     () => new Map(managers.map((manager) => [manager.id, manager])),
@@ -21,9 +19,7 @@ export function AssignManagerDialog({
   const filteredManagers = useMemo(() => {
     const keyword = normalizeSearch(search)
 
-    if (!keyword) {
-      return managers
-    }
+    if (!keyword) return managers
 
     return managers.filter((manager) =>
       [manager.fullName, manager.email, manager.phone]
@@ -32,15 +28,19 @@ export function AssignManagerDialog({
     )
   }, [managers, search])
 
-  if (!branch) {
-    return null
-  }
+  useEffect(() => {
+    setSearch('')
+    setError('')
+    setSelectedManagerId(branch?.managerId || '')
+  }, [branch?.id, branch?.managerId])
+
+  if (!branch) return null
 
   function handleSubmit(event) {
     event.preventDefault()
 
     if (!selectedManagerId) {
-      setError('Vui lòng chọn quản lý chi nhánh.')
+      setError('Vui lòng chọn quản lý.')
       return
     }
 
@@ -50,21 +50,16 @@ export function AssignManagerDialog({
   return (
     <div className="modal-backdrop" role="presentation">
       <section
-        className="modal"
+        className="modal assign-manager-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="assign-manager-title"
       >
         <form onSubmit={handleSubmit}>
           <header className="modal-header">
-            <div>
-              <h2 className="modal-title" id="assign-manager-title">
-                Gán quản lý chi nhánh
-              </h2>
-              <p className="card-subtitle">
-                Hiện tại: {getManagerName(branch, managersById)}
-              </p>
-            </div>
+            <h2 className="modal-title" id="assign-manager-title">
+              Gán quản lý
+            </h2>
             <button
               className="btn btn-ghost btn-icon"
               type="button"
@@ -75,65 +70,88 @@ export function AssignManagerDialog({
             </button>
           </header>
 
-          <div className="modal-body">
-            <label className="field">
+          <div className="modal-body assign-manager-body">
+            <dl className="assign-manager-context">
+              <div>
+                <dt>Chi nhánh</dt>
+                <dd>{branch.name} ({branch.code})</dd>
+              </div>
+              <div>
+                <dt>Quản lý hiện tại</dt>
+                <dd>{getManagerName(branch, managersById)}</dd>
+              </div>
+            </dl>
+
+            <label className="field assign-manager-search">
               <span className="field-label">Tìm nhân sự</span>
-              <span style={{ position: 'relative' }}>
-                <Search
-                  size={16}
-                  aria-hidden="true"
-                  style={{
-                    position: 'absolute',
-                    left: 12,
-                    top: 12,
-                    color: 'var(--ink-400)',
-                  }}
-                />
+              <span className="input-with-icon">
+                <Search size={16} aria-hidden="true" />
                 <input
                   className="input"
-                  style={{ paddingLeft: 36 }}
                   value={search}
-                  placeholder="Tên, email hoặc số điện thoại"
+                  placeholder="Tìm theo tên, email hoặc số điện thoại..."
                   onChange={(event) => setSearch(event.target.value)}
                 />
               </span>
             </label>
 
-            <div className="radio-list">
-              {filteredManagers.map((manager) => (
-                <label className="radio-row" key={manager.id}>
-                  <input
-                    type="radio"
-                    name="managerId"
-                    value={manager.id}
-                    checked={selectedManagerId === manager.id}
-                    onChange={(event) => {
-                      setSelectedManagerId(event.target.value)
-                      setError('')
-                    }}
-                  />
-                  <span>
-                    <strong>{manager.fullName || manager.email}</strong>
-                    <span className="card-subtitle">
-                      {manager.email} · {manager.phone || 'Chưa có số điện thoại'}
-                    </span>
-                  </span>
-                </label>
-              ))}
-            </div>
+            <section aria-labelledby="select-manager-title">
+              <h3 className="assign-manager-table-title" id="select-manager-title">
+                Chọn quản lý
+              </h3>
+              <div className="assign-manager-table-wrap">
+                <table className="assign-manager-table">
+                  <thead>
+                    <tr>
+                      <th scope="col" aria-label="Chọn quản lý" />
+                      <th scope="col">Tên nhân sự</th>
+                      <th scope="col">Email</th>
+                      <th scope="col">Số điện thoại</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredManagers.map((manager) => (
+                      <tr
+                        className={
+                          selectedManagerId === manager.id ? 'is-selected' : undefined
+                        }
+                        key={manager.id}
+                      >
+                        <td>
+                          <input
+                            aria-label={`Chọn ${manager.fullName || manager.email}`}
+                            type="radio"
+                            name="managerId"
+                            value={manager.id}
+                            checked={selectedManagerId === manager.id}
+                            onChange={(event) => {
+                              setSelectedManagerId(event.target.value)
+                              setError('')
+                            }}
+                          />
+                        </td>
+                        <td>{manager.fullName || '--'}</td>
+                        <td>{manager.email || '--'}</td>
+                        <td className="mono">{manager.phone || '--'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {filteredManagers.length === 0 ? (
+                <div className="empty-state">Không tìm thấy nhân sự phù hợp.</div>
+              ) : null}
+            </section>
 
-            {filteredManagers.length === 0 ? (
-              <div className="empty-state">Không tìm thấy quản lý phù hợp.</div>
-            ) : null}
             {error ? <p className="field-error">{error}</p> : null}
           </div>
 
-          <footer className="modal-footer">
+          <footer className="modal-footer assign-manager-footer">
+            <button className="btn btn-outline" type="submit" disabled={isPending}>
+              {isPending ? 'Đang lưu...' : 'Lưu'}
+            </button>
             <button className="btn btn-outline" type="button" onClick={onClose}>
               Hủy
-            </button>
-            <button className="btn btn-primary" type="submit" disabled={isPending}>
-              {isPending ? 'Đang lưu...' : 'Lưu phân công'}
             </button>
           </footer>
         </form>

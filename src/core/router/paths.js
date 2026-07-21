@@ -48,23 +48,12 @@ export const ROUTES = {
 
   // ── Inventory ───────────────────────────────────────────
   INVENTORY: '/inventory',
+  INVENTORY_STOCKS: '/inventory/stocks',
   INVENTORY_IMPORT: '/inventory/import',
   INVENTORY_EXPORT: '/inventory/export',
   INVENTORY_TRANSFER: '/inventory/transfer',
+  INVENTORY_TRANSFER_APPROVAL: '/inventory/transfer-approval',
   INVENTORY_ALERTS: '/inventory/alerts',
   INVENTORY_HISTORY: '/inventory/history',
   INVENTORY_BATCH: (id) => `/inventory/batches/${id}`,
-
-  // ── Reports ─────────────────────────────────────────────────────────────
-  REPORTS: '/dashboard/reports',
-
-  // ── Supplier Management ─────────────────────────────────────────────────
-  SUPPLIERS: '/dashboard/suppliers',
-
-  // ── Prescription ────────────────────────────────────────────────────────
-  PRESCRIPTIONS: '/dashboard/prescriptions',
-
-  // ── Notifications ───────────────────────────────────────────────────────
-  NOTIFICATIONS: '/dashboard/notifications',
-  NOTIFICATIONS_COMPOSE: '/dashboard/notifications/compose',
 }

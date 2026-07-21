@@ -27,6 +27,8 @@ const EMPTY_FORM = {
   usage: '',
   ingredients: '',
   status: 'ACTIVE',
+  stockQuantity: '',
+  expiryDate: '',
 }
 
 function optionalText(value) {
@@ -156,6 +158,8 @@ export function MedicineFormPage({ mode }) {
         usage: medicineQuery.data.usage || '',
         ingredients: medicineQuery.data.ingredients || '',
         status: medicineQuery.data.status || 'ACTIVE',
+        stockQuantity: '',
+        expiryDate: '',
       })
     }
   }, [medicineQuery.data])
@@ -214,7 +218,7 @@ export function MedicineFormPage({ mode }) {
     }
 
     if (price === null) {
-      nextErrors.price = 'Gi\u00e1 b\u00e1n l\u00e0 b\u1eaft bu\u1ed9c.'
+      nextErrors.price = 'Giá bán là bắt buộc.'
     } else if (!Number.isFinite(price) || price < 0.01) {
       nextErrors.price = 'Giá bán phải lớn hơn 0.'
     }
@@ -293,7 +297,7 @@ export function MedicineFormPage({ mode }) {
           </div>
         ) : null}
 
-        <form className="card" onSubmit={handleSubmit}>
+        <form className="card medicine-form-card" onSubmit={handleSubmit}>
           <div className="card-header">
             <div>
               <h2 className="card-title">Thông tin thuốc</h2>
@@ -306,7 +310,7 @@ export function MedicineFormPage({ mode }) {
           </div>
 
           <div className="card-body form-grid">
-            <label className="field">
+            <label className="field medicine-hidden-field">
               <span className="field-label">SKU</span>
               <input
                 className="input mono"
@@ -322,7 +326,7 @@ export function MedicineFormPage({ mode }) {
               {errors.sku ? <span className="field-error">{errors.sku}</span> : null}
             </label>
 
-            <label className="field">
+            <label className="field medicine-hidden-field">
               <span className="field-label">Trạng thái</span>
               <select
                 className="select"
@@ -335,7 +339,7 @@ export function MedicineFormPage({ mode }) {
             </label>
 
             <label className="field form-grid-full">
-              <span className="field-label">Tên thuốc</span>
+              <span className="field-label">Tên thuốc *</span>
               <input
                 className="input"
                 value={form.name}
@@ -347,7 +351,7 @@ export function MedicineFormPage({ mode }) {
             </label>
 
             <label className="field">
-              <span className="field-label">Danh mục</span>
+              <span className="field-label">Danh mục *</span>
               <select
                 className="select"
                 value={form.categoryId}
@@ -382,7 +386,7 @@ export function MedicineFormPage({ mode }) {
             </label>
 
             <label className="field">
-              <span className="field-label">Giá bán</span>
+              <span className="field-label">Giá (VND) *</span>
               <input
                 className="input mono"
                 inputMode="decimal"
@@ -392,7 +396,7 @@ export function MedicineFormPage({ mode }) {
                 onBlur={() => setField('price', formatPriceInput(form.price))}
               />
               <p className="field-hint">
-                Nh\u1eadp 25000 ho\u1eb7c 25.000 \u0111\u1ec1u h\u1ee3p l\u1ec7.
+                Nhập 25000 hoặc 25.000 đều hợp lệ.
               </p>
               {errors.price ? (
                 <span className="field-error">{errors.price}</span>
@@ -400,7 +404,7 @@ export function MedicineFormPage({ mode }) {
             </label>
 
             <label className="field">
-              <span className="field-label">Đơn vị tính</span>
+              <span className="field-label">Đơn vị</span>
               <input
                 className="input"
                 value={form.unit}
@@ -411,7 +415,7 @@ export function MedicineFormPage({ mode }) {
               {errors.unit ? <span className="field-error">{errors.unit}</span> : null}
             </label>
 
-            <label className="field">
+            <label className="field medicine-hidden-field">
               <span className="field-label">Yêu cầu đơn thuốc</span>
               <select
                 className="select"
@@ -426,19 +430,21 @@ export function MedicineFormPage({ mode }) {
             </label>
 
             <label className="field">
-              <span className="field-label">URL ảnh</span>
-              <div className="input-with-icon">
-                <ImagePlus size={16} aria-hidden="true" />
-                <input
-                  className="input"
-                  value={form.imageUrl}
-                  placeholder="https://..."
-                  onChange={(event) => setField('imageUrl', event.target.value)}
-                />
-              </div>
+              <span className="field-label">Số lượng tồn *</span>
+              <input className="input mono" inputMode="numeric" value={form.stockQuantity} placeholder="Nhập số lượng tồn" onChange={(event) => setField('stockQuantity', event.target.value)} />
             </label>
 
-            <label className="field form-grid-full">
+            <label className="field">
+              <span className="field-label">Ngày hết hạn</span>
+              <input className="input mono" type="date" value={form.expiryDate} onChange={(event) => setField('expiryDate', event.target.value)} />
+            </label>
+
+            <label className="field form-grid-full medicine-image-upload">
+              <span className="field-label">Ảnh thuốc</span>
+              <span className="medicine-upload-box"><ImagePlus size={28} aria-hidden="true" />Nhấn để tải ảnh lên<br />hoặc kéo thả ảnh<input type="file" accept="image/*" aria-label="Tải ảnh thuốc" /></span>
+            </label>
+
+            <label className="field form-grid-full medicine-hidden-field">
               <span className="field-label">Mô tả</span>
               <textarea
                 className="textarea"
@@ -448,7 +454,7 @@ export function MedicineFormPage({ mode }) {
               />
             </label>
 
-            <label className="field form-grid-full">
+            <label className="field form-grid-full medicine-hidden-field">
               <span className="field-label">Cách dùng</span>
               <textarea
                 className="textarea"
@@ -458,7 +464,7 @@ export function MedicineFormPage({ mode }) {
               />
             </label>
 
-            <label className="field form-grid-full">
+            <label className="field form-grid-full medicine-hidden-field">
               <span className="field-label">Thành phần</span>
               <textarea
                 className="textarea"
@@ -467,6 +473,12 @@ export function MedicineFormPage({ mode }) {
                 onChange={(event) => setField('ingredients', event.target.value)}
               />
             </label>
+          </div>
+
+          <div className="medicine-status-radios">
+            <span className="field-label">Trạng thái *</span>
+            <label><input type="radio" name="medicine-status" value="ACTIVE" checked={form.status === 'ACTIVE'} onChange={(event) => setField('status', event.target.value)} /> Đang hoạt động</label>
+            <label><input type="radio" name="medicine-status" value="INACTIVE" checked={form.status === 'INACTIVE'} onChange={(event) => setField('status', event.target.value)} /> Ngừng hoạt động</label>
           </div>
 
           <div className="form-actions">

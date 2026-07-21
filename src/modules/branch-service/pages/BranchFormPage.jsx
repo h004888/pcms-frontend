@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { DashboardLayout } from '@shared/layouts/DashboardLayout.jsx'
@@ -8,9 +8,9 @@ import { getApiErrorMessage } from '@core/http/apiClient.js'
 import {
   createBranch,
   getBranch,
+  getUser,
   updateBranch,
 } from '../api/branchApi.js'
-import { shortId } from '../services/branchFormatters.js'
 
 const EMPTY_FORM = {
   code: '',
@@ -20,18 +20,33 @@ const EMPTY_FORM = {
   status: 'ACTIVE',
 }
 
+function createBranchCode() {
+  const suffix = Math.random().toString(36).slice(2, 7).toUpperCase().padEnd(5, '0')
+
+  return `BR${suffix}`
+}
+
 export function BranchFormPage({ mode }) {
   const isEdit = mode === 'edit'
   const { branchId } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [form, setForm] = useState(EMPTY_FORM)
+  const [form, setForm] = useState(() => ({
+    ...EMPTY_FORM,
+    code: isEdit ? '' : createBranchCode(),
+  }))
   const [errors, setErrors] = useState({})
+  const [selectedImageName, setSelectedImageName] = useState('')
 
   const branchQuery = useQuery({
     queryKey: ['branches', branchId],
     queryFn: () => getBranch(branchId),
     enabled: isEdit && Boolean(branchId),
+  })
+  const managerQuery = useQuery({
+    queryKey: ['users', branchQuery.data?.managerId],
+    queryFn: () => getUser(branchQuery.data.managerId),
+    enabled: isEdit && Boolean(branchQuery.data?.managerId),
   })
 
   useEffect(() => {
@@ -88,14 +103,6 @@ export function BranchFormPage({ mode }) {
   function validate() {
     const nextErrors = {}
 
-    if (!isEdit && !form.code.trim()) {
-      nextErrors.code = 'Mã chi nhánh là bắt buộc.'
-    }
-
-    if (form.code.trim().length > 10) {
-      nextErrors.code = 'Mã chi nhánh tối đa 10 ký tự.'
-    }
-
     if (!form.name.trim()) {
       nextErrors.name = 'Tên chi nhánh là bắt buộc.'
     }
@@ -132,6 +139,10 @@ export function BranchFormPage({ mode }) {
     })
   }
 
+  function handleImageSelect(event) {
+    setSelectedImageName(event.target.files?.[0]?.name || '')
+  }
+
   if (branchQuery.isLoading) {
     return (
       <DashboardLayout>
@@ -158,11 +169,6 @@ export function BranchFormPage({ mode }) {
             <h1 className="page-title">
               {isEdit ? 'Chỉnh sửa chi nhánh' : 'Thêm chi nhánh'}
             </h1>
-            <p className="page-description">
-              {isEdit
-                ? 'Cập nhật thông tin vận hành và trạng thái chi nhánh.'
-                : 'Tạo chi nhánh mới với đầy đủ thông tin vận hành cần thiết.'}
-            </p>
           </div>
 
           <Link className="btn btn-outline" to="/branches">
@@ -172,52 +178,14 @@ export function BranchFormPage({ mode }) {
         </header>
 
         <form className="card" onSubmit={handleSubmit}>
-          <div className="card-header">
-            <div>
-              <h2 className="card-title">Thông tin chi nhánh</h2>
-              <p className="card-subtitle">
-                {isEdit
-                  ? `ID: ${shortId(branchId)}`
-                  : 'Mã chi nhánh phải là duy nhất trong hệ thống.'}
-              </p>
-            </div>
-          </div>
-
           <div className="card-body form-grid">
-            <label className="field">
-              <span className="field-label">Mã chi nhánh</span>
-              <input
-                className="input mono"
-                value={form.code}
-                maxLength={10}
-                disabled={isEdit}
-                placeholder="CN001"
-                onChange={(event) => setField('code', event.target.value)}
-              />
-              {errors.code ? (
-                <span className="field-error">{errors.code}</span>
-              ) : null}
-            </label>
-
-            <label className="field">
-              <span className="field-label">Trạng thái</span>
-              <select
-                className="select"
-                value={form.status}
-                onChange={(event) => setField('status', event.target.value)}
-              >
-                <option value="ACTIVE">Đang hoạt động</option>
-                <option value="INACTIVE">Ngưng hoạt động</option>
-              </select>
-            </label>
-
             <label className="field form-grid-full">
-              <span className="field-label">Tên chi nhánh</span>
+              <span className="field-label">Tên chi nhánh *</span>
               <input
                 className="input"
                 value={form.name}
                 maxLength={100}
-                placeholder="Nhà thuốc PCMS Quận 1"
+                placeholder="Nhập tên chi nhánh"
                 onChange={(event) => setField('name', event.target.value)}
               />
               {errors.name ? (
@@ -226,12 +194,12 @@ export function BranchFormPage({ mode }) {
             </label>
 
             <label className="field form-grid-full">
-              <span className="field-label">Địa chỉ</span>
+              <span className="field-label">Địa chỉ *</span>
               <textarea
                 className="textarea"
                 value={form.address}
                 maxLength={255}
-                placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"
+                placeholder="Nhập địa chỉ chi nhánh"
                 onChange={(event) => setField('address', event.target.value)}
               />
               {errors.address ? (
@@ -245,7 +213,7 @@ export function BranchFormPage({ mode }) {
                 className="input mono"
                 value={form.phone}
                 maxLength={20}
-                placeholder="0901234567"
+                placeholder="Nhập số điện thoại"
                 onChange={(event) => setField('phone', event.target.value)}
               />
               {errors.phone ? (
@@ -256,31 +224,80 @@ export function BranchFormPage({ mode }) {
             {isEdit ? (
               <div className="field">
                 <span className="field-label">Quản lý hiện tại</span>
-                <span className="detail-value">
-                  {branchQuery.data?.managerId
-                    ? shortId(branchQuery.data.managerId)
-                    : 'Chưa gán'}
-                </span>
+                <input
+                  className="input"
+                  value={
+                    managerQuery.data?.fullName ||
+                    branchQuery.data?.managerName ||
+                    branchQuery.data?.manager?.fullName ||
+                    'Chưa gán'
+                  }
+                  disabled
+                />
               </div>
             ) : null}
+
+            <div className="field">
+              <span className="field-label">Hình ảnh chi nhánh</span>
+              <label className="branch-image-picker" htmlFor="branch-image">
+                <input
+                  id="branch-image"
+                  className="sr-only"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                />
+                <span className="btn btn-outline branch-image-button">
+                  {isEdit ? 'Thay đổi ảnh' : 'Chọn tệp'}
+                </span>
+                {!isEdit ? (
+                  <span className="branch-image-file-name">
+                    {selectedImageName || 'Chưa chọn tệp'}
+                  </span>
+                ) : null}
+              </label>
+            </div>
+
+            <fieldset className="field form-grid-full branch-status-field">
+              <legend className="field-label">Trạng thái</legend>
+              <label className="branch-status-option">
+                <input
+                  type="radio"
+                  name="branch-status"
+                  value="ACTIVE"
+                  checked={form.status === 'ACTIVE'}
+                  onChange={(event) => setField('status', event.target.value)}
+                />
+                <span>Đang hoạt động</span>
+              </label>
+              <label className="branch-status-option">
+                <input
+                  type="radio"
+                  name="branch-status"
+                  value="INACTIVE"
+                  checked={form.status === 'INACTIVE'}
+                  onChange={(event) => setField('status', event.target.value)}
+                />
+                <span>Ngưng hoạt động</span>
+              </label>
+            </fieldset>
           </div>
 
           <div className="form-actions">
-            <Link className="btn btn-outline" to="/branches">
-              Hủy
-            </Link>
             <button
-              className="btn btn-primary"
+              className="btn btn-outline"
               type="submit"
               disabled={saveMutation.isPending}
             >
-              <Save size={16} aria-hidden="true" />
               {saveMutation.isPending
                 ? 'Đang lưu...'
                 : isEdit
                   ? 'Cập nhật'
-                  : 'Lưu chi nhánh'}
+                  : 'Lưu'}
             </button>
+            <Link className="btn btn-outline" to="/branches">
+              Hủy
+            </Link>
           </div>
         </form>
       </div>

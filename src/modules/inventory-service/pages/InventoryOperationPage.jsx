@@ -67,10 +67,38 @@ const EMPTY_FORM = {
   minStockLevel: "",
   supplierId: "",
   reason: "",
+  selectedBatchId: "",
+  referenceNo: "",
+  unitCost: "",
+  notes: "",
 };
+
+function createInitialForm(mode) {
+  if (mode !== "import") {
+    return { ...EMPTY_FORM };
+  }
+
+  const now = new Date();
+  const datePart = now.toISOString().slice(0, 10).replaceAll("-", "");
+
+  return {
+    ...EMPTY_FORM,
+    qty: "100",
+    batchNo: `LOT-${now.getFullYear()}-${datePart.slice(-3)}`,
+    minStockLevel: "10",
+    referenceNo: `PN-${datePart}`,
+  };
+}
 
 function todayDateString() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function createDefaultBarcode() {
+  const timestamp = Date.now().toString().slice(-10);
+  const randomPart = Math.floor(Math.random() * 900000 + 100000);
+
+  return `PCMS${timestamp}${randomPart}`;
 }
 
 export function InventoryOperationPage({ mode }) {
@@ -78,7 +106,7 @@ export function InventoryOperationPage({ mode }) {
   const Icon = config.icon;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm] = useState(() => createInitialForm(mode));
   const [errors, setErrors] = useState({});
 
   const branchesQuery = useQuery({
@@ -130,6 +158,10 @@ export function InventoryOperationPage({ mode }) {
       0,
     );
   }, [availabilityQuery.data]);
+  const availableBatches = useMemo(
+    () => unwrapList(availabilityQuery.data),
+    [availabilityQuery.data],
+  );
 
   const saveMutation = useMutation({
     mutationFn: () => {
@@ -138,11 +170,11 @@ export function InventoryOperationPage({ mode }) {
           medicineId: form.medicineId,
           branchId: form.branchId,
           batchNo: form.batchNo.trim(),
-          barcode: form.barcode.trim() || undefined,
+          barcode: form.barcode.trim() || createDefaultBarcode(),
           qty: toPositiveInteger(form.qty),
           expiryDate: form.expiryDate,
           supplierId: form.supplierId || undefined,
-          minStockLevel: toOptionalPositiveInteger(form.minStockLevel),
+          minStockLevel: toOptionalPositiveInteger(form.minStockLevel) || 10,
         });
       }
 
@@ -284,18 +316,19 @@ export function InventoryOperationPage({ mode }) {
           </div>
         ) : null}
 
-        <form className="card" onSubmit={handleSubmit}>
-          <div className="card-header">
+        <form
+          className={`card inventory-operation-card${mode === "import" ? " inventory-import-card" : ""}`}
+          onSubmit={handleSubmit}
+        >
+          <div className="card-header inventory-operation-header">
             <div>
-              <h2 className="card-title">Thông tin thao tác</h2>
-              <p className="card-subtitle">
-                Kiểm tra kỹ thông tin trước khi lưu thao tác kho.
-              </p>
+              <h2 className="card-title">{config.title}</h2>
+              <p className="card-subtitle">Kiểm tra kỹ thông tin trước khi xác nhận thao tác kho.</p>
             </div>
             <Icon color="var(--accent-700)" size={22} aria-hidden="true" />
           </div>
 
-          <div className="card-body form-grid">
+          <div className="card-body form-grid inventory-operation-fields">
             <MedicineSelect
               medicines={medicines}
               value={form.medicineId}
@@ -373,19 +406,6 @@ export function InventoryOperationPage({ mode }) {
                 </label>
 
                 <label className="field">
-                  <span className="field-label">Mã vạch</span>
-                  <input
-                    className="input mono"
-                    value={form.barcode}
-                    maxLength={120}
-                    placeholder="Tự sinh nếu bỏ trống"
-                    onChange={(event) =>
-                      setField("barcode", event.target.value)
-                    }
-                  />
-                </label>
-
-                <label className="field">
                   <span className="field-label">Ngày hết hạn</span>
                   <input
                     className="input mono"
@@ -400,51 +420,67 @@ export function InventoryOperationPage({ mode }) {
                   ) : null}
                 </label>
 
-                <label className="field">
-                  <span className="field-label">Mức tồn tối thiểu</span>
-                  <input
-                    className="input mono"
-                    inputMode="numeric"
-                    value={form.minStockLevel}
-                    placeholder="10"
-                    onChange={(event) =>
-                      setField("minStockLevel", event.target.value)
-                    }
-                  />
-                  <p className="field-hint">Bỏ trống để dùng mức mặc định.</p>
-                  {errors.minStockLevel ? (
-                    <span className="field-error">{errors.minStockLevel}</span>
-                  ) : null}
-                </label>
-
                 <SupplierSelect
                   suppliers={suppliers}
                   value={form.supplierId}
                   onChange={(value) => setField("supplierId", value)}
                 />
+
+                <label className="field">
+                  <span className="field-label">Mã tham chiếu</span>
+                  <input className="input mono" value={form.referenceNo} maxLength={80} placeholder="Số phiếu nhập" onChange={(event) => setField("referenceNo", event.target.value)} />
+                </label>
+
+                <label className="field">
+                  <span className="field-label">Đơn giá</span>
+                  <input className="input mono" inputMode="decimal" value={form.unitCost} placeholder="Đơn giá nhập" onChange={(event) => setField("unitCost", event.target.value)} />
+                </label>
+
+                <label className="field form-grid-full">
+                  <span className="field-label">Ghi chú</span>
+                  <textarea className="textarea" value={form.notes} maxLength={255} placeholder="Ghi chú thêm (nếu có)..." onChange={(event) => setField("notes", event.target.value)} />
+                </label>
               </>
             ) : (
-              <label className="field form-grid-full">
-                <span className="field-label">
-                  {mode === "transfer"
-                    ? "Lý do chuyển kho"
-                    : "Lý do xuất kho"}
-                </span>
-                <textarea
-                  className="textarea"
-                  value={form.reason}
-                  maxLength={255}
-                  placeholder={
-                    mode === "transfer"
-                      ? "Điều chuyển bổ sung tồn cho chi nhánh đích"
-                      : "Xuất hủy, xuất kiểm kê, xuất điều chỉnh..."
-                  }
-                  onChange={(event) => setField("reason", event.target.value)}
-                />
-                {errors.reason ? (
-                  <span className="field-error">{errors.reason}</span>
+              <>
+                <label className="field">
+                  <span className="field-label">Số lô</span>
+                  <select className="select" value={form.selectedBatchId} onChange={(event) => setField("selectedBatchId", event.target.value)}>
+                    <option value="">Chọn lô hàng</option>
+                    {availableBatches.map((batch) => <option key={batch.id} value={batch.id}>{batch.batchNo} — {getBatchQuantity(batch)} đơn vị</option>)}
+                  </select>
+                </label>
+
+                <label className="field">
+                  <span className="field-label">Tồn khả dụng</span>
+                  <input className="input mono" value={availabilityQuery.isLoading ? "Đang tải..." : `${availableQuantity} đơn vị`} readOnly />
+                </label>
+
+                {mode === "export" ? <label className="field">
+                  <span className="field-label">Lý do xuất</span>
+                  <select className="select" value={form.reason} onChange={(event) => setField("reason", event.target.value)}>
+                    <option value="">Chọn lý do</option>
+                    <option value="Hàng hỏng">Hàng hỏng</option>
+                    <option value="Hàng hết hạn">Hàng hết hạn</option>
+                    <option value="Trả nhà cung cấp">Trả nhà cung cấp</option>
+                    <option value="Điều chỉnh kho">Điều chỉnh kho</option>
+                  </select>
+                  {errors.reason ? <span className="field-error">{errors.reason}</span> : null}
+                </label> : null}
+
+                {mode !== "transfer" ? (
+                  <label className="field">
+                    <span className="field-label">Mã tham chiếu</span>
+                    <input className="input mono" value={form.referenceNo} placeholder="Số phiếu tham chiếu" onChange={(event) => setField("referenceNo", event.target.value)} />
+                  </label>
                 ) : null}
-              </label>
+
+                <label className="field form-grid-full">
+                  <span className="field-label">{mode === "transfer" ? "Lý do chuyển kho" : "Ghi chú"}</span>
+                  <textarea className="textarea" value={mode === "transfer" ? form.reason : form.notes} maxLength={255} placeholder={mode === "transfer" ? "Nhập lý do điều chuyển..." : "Ghi chú thêm (nếu có)..."} onChange={(event) => setField(mode === "transfer" ? "reason" : "notes", event.target.value)} />
+                  {mode === "transfer" && errors.reason ? <span className="field-error">{errors.reason}</span> : null}
+                </label>
+              </>
             )}
           </div>
 
