@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Search, Package } from 'lucide-react'
-import { findOrdersByPhone } from '../services/orderStorage'
+import { getOrderByNumber } from '../api/shopApi'
 import { OrderTimeline } from '../components/OrderTimeline'
 import { formatPrice } from '../utils/formatPrice'
 
@@ -12,18 +12,14 @@ export function OrderTrackingPage() {
   const [results, setResults] = useState(null)
   const [searched, setSearched] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    const cleanedPhone = phone.replace(/\s/g, '')
-    const orders = findOrdersByPhone(cleanedPhone)
-
-    if (orderNumber.trim()) {
-      const filtered = orders.filter(o =>
-        o.orderNumber.toLowerCase().includes(orderNumber.trim().toLowerCase())
-      )
-      setResults(filtered)
-    } else {
-      setResults(orders)
+    if (!orderNumber.trim()) return
+    try {
+      const data = await getOrderByNumber(orderNumber.trim())
+      setResults([data])
+    } catch {
+      setResults([])
     }
     setSearched(true)
   }
@@ -105,8 +101,8 @@ export function OrderTrackingPage() {
 
               {order.items.map((item, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--ink-600)', marginBottom: 4 }}>
-                  <span>{item.name} x{item.qty}</span>
-                  <span>{formatPrice(item.price * item.qty)}</span>
+                  <span>{item.medicineName} x{item.quantity}</span>
+                  <span>{formatPrice(item.unitPrice * item.quantity)}</span>
                 </div>
               ))}
 
@@ -116,10 +112,12 @@ export function OrderTrackingPage() {
                 <span>Tạm tính</span>
                 <span>{formatPrice(order.subtotal)}</span>
               </div>
-              <div className="cart-summary-row">
-                <span>Phí vận chuyển</span>
-                <span>{order.shippingFee === 0 ? 'Miễn phí' : formatPrice(order.shippingFee)}</span>
-              </div>
+              {order.discount > 0 && (
+                <div className="cart-summary-row">
+                  <span>Giảm giá</span>
+                  <span>-{formatPrice(order.discount)}</span>
+                </div>
+              )}
               <div className="cart-summary-total">
                 <span>Tổng cộng</span>
                 <span>{formatPrice(order.total)}</span>
@@ -127,12 +125,11 @@ export function OrderTrackingPage() {
 
               <hr style={{ border: 'none', borderTop: '1px solid var(--ink-100)', margin: '12px 0' }} />
 
-              <div style={{ fontSize: 13, color: 'var(--ink-500)' }}>
-                <div>👤 {order.customerName} - {order.phone}</div>
-                <div>📍 {order.address}</div>
-                <div>💳 {order.paymentMethod}</div>
-                <div>🚚 {order.shippingMethod}</div>
-              </div>
+              {order.couponCode && (
+                <div style={{ fontSize: 13, color: 'var(--ink-500)', marginTop: 8 }}>
+                  <div>Mã giảm giá: {order.couponCode}</div>
+                </div>
+              )}
             </div>
           ))}
         </div>

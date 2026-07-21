@@ -6,12 +6,23 @@ import {
   Pill, Stethoscope, Syringe, FileText, MapPin, Search, Shield,
   HeartPulse, Activity,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { ROUTES } from '@core/router/paths.js'
 import { getShopHome } from '../api/shopApi'
 import { HeroBanner } from '../components/HeroBanner'
 import { ProductCard } from '../components/ProductCard'
 
 const ITEMS_PER_PAGE = 8
+
+const VALID_ROUTES = ['/search', '/product/', '/cart', '/checkout',
+  '/order-success/', '/payment/', '/order-tracking',
+  '/stores', '/my-account', '/my-orders']
+
+function isValidQuickLinkHref(href) {
+  if (!href) return false
+  if (href === '/') return true
+  return VALID_ROUTES.some(route => href.startsWith(route))
+}
 
 const ICON_MAP = {
   pill: Pill,
@@ -253,6 +264,12 @@ export function ShopHomePage() {
                 <a
                   key={link.id}
                   href={link.href || '#'}
+                  onClick={(e) => {
+                    if (!isValidQuickLinkHref(link.href)) {
+                      e.preventDefault()
+                      toast('Tính năng đang phát triển')
+                    }
+                  }}
                   className="flex flex-col items-center gap-1.5 p-3 bg-white rounded-xl border border-gray-200 hover:shadow-md hover:border-[var(--shop-primary)] hover:-translate-y-1 transition-all duration-200"
                 >
                   <Icon size={20} className="text-blue-600" />

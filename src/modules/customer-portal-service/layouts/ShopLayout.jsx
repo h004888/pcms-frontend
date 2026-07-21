@@ -9,6 +9,8 @@ import { ROUTES } from '@core/router/paths.js'
 import { useCart } from '../hooks/useCart'
 import { useAuth } from '../hooks/useAuth'
 import { searchProducts, getCategories } from '../api/shopApi'
+import { AuthPromptProvider } from '../context/AuthPromptContext'
+import { LoginModal } from '../components/LoginModal'
 
 /* ── inline Pharmacy Cross SVG ── */
 function PharmacyCross({ size = 28, className = '' }) {
@@ -137,6 +139,7 @@ export function ShopLayout({ children }) {
   }
 
   return (
+    <AuthPromptProvider>
     <div className="flex flex-col min-h-screen bg-white">
       {/* sentinel for sticky detection */}
       <div ref={sentinelRef} className="absolute top-0 h-px" aria-hidden="true" />
@@ -378,6 +381,8 @@ export function ShopLayout({ children }) {
           <p className="mt-1">GPKD số 0301... do Sở KH&ĐT TP.HCM cấp. Điều khoản · Bảo mật</p>
         </div>
       </footer>
+      <LoginModal />
     </div>
+    </AuthPromptProvider>
   )
 }
