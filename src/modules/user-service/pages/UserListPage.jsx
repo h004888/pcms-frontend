@@ -193,109 +193,16 @@ export function UserListPage() {
   return (
     <DashboardLayout>
       <div className="page-stack">
-        <header className="page-header">
-          <div>
-            <h1 className="page-title">Quản lý người dùng</h1>
-            <p className="page-description">
-              Quản lý tài khoản nhân viên và khách hàng, phân quyền, gắn chi nhánh
-              và theo dõi trạng thái hoạt động.
-            </p>
-          </div>
-
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0, color: 'var(--ink-900)' }}>
+            Bảng điều khiển quản lý người dùng
+          </h1>
           <Link className="btn btn-primary" to="/users/new">
-            <Plus size={16} aria-hidden="true" />
-            Tạo người dùng
+            Thêm người dùng
           </Link>
-        </header>
-
-        <section className="card" aria-labelledby="user-filter-title">
-          <div className="card-header">
-            <div>
-              <h2 className="card-title" id="user-filter-title">Bộ lọc</h2>
-              <p className="card-subtitle">Tìm kiếm theo tên, email, sđt và lọc theo trạng thái/vai trò.</p>
-            </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="btn btn-outline" type="button" onClick={handleExport}>
-                <Download size={16} aria-hidden="true" />
-                Xuất CSV
-              </button>
-              <button className="btn btn-outline" type="button" onClick={handleReset}>
-                <RotateCcw size={16} aria-hidden="true" />
-                Đặt lại
-              </button>
-            </div>
-          </div>
-
-          <form className="card-body toolbar user-toolbar" onSubmit={handleSearch}>
-            <label className="field">
-              <span className="field-label">Tìm người dùng</span>
-              <input
-                className="input"
-                maxLength={100}
-                value={searchInput}
-                placeholder="Tên, email, số điện thoại..."
-                onChange={(e) => setSearchInput(e.target.value)}
-              />
-            </label>
-
-            <label className="field">
-              <span className="field-label">Vai trò</span>
-              <select
-                className="select"
-                value={roleFilter}
-                onChange={(e) => {
-                  setRoleFilter(e.target.value)
-                  setPage(1)
-                }}
-              >
-                <option value="ALL">Tất cả vai trò</option>
-                {ROLE_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </label>
-
-            <label className="field">
-              <span className="field-label">Trạng thái</span>
-              <select
-                className="select"
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value)
-                  setPage(1)
-                }}
-              >
-                <option value="ALL">Tất cả trạng thái</option>
-                {STATUS_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </label>
-
-            <button className="btn btn-primary" type="submit">
-              <Search size={16} aria-hidden="true" />
-              Tìm kiếm
-            </button>
-
-            <button
-              className="btn btn-outline"
-              type="button"
-              onClick={() => usersQuery.refetch()}
-            >
-              <RefreshCcw size={16} aria-hidden="true" />
-              Tải lại
-            </button>
-          </form>
-        </section>
+        </div>
 
         <section className="card" aria-labelledby="user-list-title">
-          <div className="card-header">
-            <div>
-              <h2 className="card-title" id="user-list-title">Danh sách người dùng</h2>
-              <p className="card-subtitle">{filteredUsers.length} tài khoản phù hợp.</p>
-            </div>
-          </div>
-
           {usersQuery.isLoading ? (
             <div className="empty-state">Đang tải danh sách người dùng...</div>
           ) : usersQuery.isError ? (
@@ -312,90 +219,46 @@ export function UserListPage() {
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Email / Họ tên</th>
-                      <th>Số điện thoại</th>
+                      <th>Họ và tên</th>
+                      <th>Email</th>
                       <th>Vai trò</th>
                       <th>Chi nhánh</th>
-                      <th>Trạng thái</th>
-                      <th>Đăng nhập cuối</th>
-                      <th aria-label="Thao tác" />
+                      <th style={{ width: '220px' }}>Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
                     {pageRows.map(user => (
                       <tr key={user.id}>
-                        <td>
-                          <div><strong>{user.fullName}</strong></div>
-                          <div style={{ color: 'var(--ink-500)', fontSize: '13px' }}>{user.email}</div>
-                        </td>
-                        <td className="mono">{user.phone || '—'}</td>
+                        <td>{user.fullName}</td>
+                        <td>{user.email}</td>
                         <td><RoleBadge role={user.role} /></td>
                         <td>
                           {user.branchId && branchesById.has(user.branchId) 
-                            ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                <Building2 size={14} color="var(--ink-400)" />
-                                {branchesById.get(user.branchId).name}
-                              </span>
-                            : <span style={{ color: 'var(--ink-400)' }}>— (Toàn hệ thống)</span>
-                          }
+                            ? branchesById.get(user.branchId).name
+                            : '—'}
                         </td>
-                        <td><UserStatusBadge status={user.status} /></td>
-                        <td>{formatDateTime(user.lastLoginAt)}</td>
                         <td>
-                          <div className="table-actions">
+                          <div className="table-actions" style={{ justifyContent: 'flex-start', gap: '8px' }}>
                             <Link
-                              className="btn btn-outline btn-icon"
+                              className="btn btn-outline"
+                              style={{ padding: '4px 8px', fontSize: '13px', minHeight: 'auto' }}
                               to={`/users/${user.id}`}
-                              title="Xem chi tiết"
                             >
-                              <Eye size={16} aria-hidden="true" />
+                              Xem
                             </Link>
                             <Link
-                              className="btn btn-outline btn-icon"
+                              className="btn btn-outline"
+                              style={{ padding: '4px 8px', fontSize: '13px', minHeight: 'auto' }}
                               to={`/users/${user.id}/edit`}
-                              title="Sửa thông tin cơ bản"
                             >
-                              <Pencil size={16} aria-hidden="true" />
+                              Sửa
                             </Link>
                             <button
-                              className="btn btn-outline btn-icon"
-                              title="Đổi vai trò"
-                              onClick={() => setRoleUser(user)}
-                            >
-                              <UserCog size={16} aria-hidden="true" />
-                            </button>
-                            <button
-                              className="btn btn-outline btn-icon"
-                              title="Gán chi nhánh"
-                              disabled={user.role === 'CUSTOMER'}
-                              onClick={() => setBranchUser(user)}
-                            >
-                              <Building2 size={16} aria-hidden="true" />
-                            </button>
-                            {user.status === 'LOCKED' ? (
-                              <button
-                                className="btn btn-outline btn-icon"
-                                title="Mở khóa tài khoản"
-                                onClick={() => setUnlockUserTarget(user)}
-                              >
-                                <Lock size={16} aria-hidden="true" />
-                              </button>
-                            ) : (
-                              <button
-                                className="btn btn-outline btn-icon"
-                                title="Đổi trạng thái"
-                                onClick={() => setStatusUser(user)}
-                              >
-                                <ShieldAlert size={16} aria-hidden="true" />
-                              </button>
-                            )}
-                            <button
-                              className="btn btn-outline btn-icon"
-                              style={{ color: 'var(--danger-700)', borderColor: 'var(--ink-200)' }}
-                              title="Xóa người dùng"
+                              className="btn btn-outline"
+                              style={{ padding: '4px 8px', fontSize: '13px', minHeight: 'auto', color: 'var(--danger-700)', borderColor: 'var(--ink-200)' }}
                               onClick={() => setDeleteUserTarget(user)}
                             >
-                              <Trash2 size={16} aria-hidden="true" />
+                              Xóa
                             </button>
                           </div>
                         </td>
@@ -405,49 +268,37 @@ export function UserListPage() {
                 </table>
               </div>
 
-              <div className="pagination">
-                <span className="card-subtitle">
-                  Trang {safePage}/{totalPages}
+              <div className="pagination" style={{ padding: '16px 20px', borderTop: '1px solid var(--ink-200)' }}>
+                <span style={{ fontSize: '14px', color: 'var(--ink-500)' }}>
+                  Hiển thị từ {filteredUsers.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1} đến {Math.min(safePage * PAGE_SIZE, filteredUsers.length)} của {filteredUsers.length} bản ghi
                 </span>
-                <div className="pagination-actions" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                <div className="pagination-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <button
-                    className="btn btn-outline"
+                    className="btn btn-ghost"
                     type="button"
+                    style={{ fontSize: '14px', padding: '4px 8px' }}
                     disabled={safePage === 1}
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                   >
-                    Trước
+                    &lt; Trước
                   </button>
                   
-                  {Array.from({ length: totalPages }, (_, i) => i + 1)
-                    .filter(p => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
-                    .reduce((acc, p, i, arr) => {
-                      if (i > 0 && p - arr[i - 1] > 1) acc.push('...')
-                      acc.push(p)
-                      return acc
-                    }, [])
-                    .map((p, i) => p === '...' ? (
-                      <span key={`dots-${i}`} style={{ padding: '0 8px', color: 'var(--ink-500)' }}>...</span>
-                    ) : (
-                      <button
-                        key={p}
-                        className={p === safePage ? "btn btn-primary" : "btn btn-outline"}
-                        style={p === safePage ? {} : { borderColor: 'var(--ink-200)', color: 'var(--ink-700)' }}
-                        type="button"
-                        onClick={() => setPage(p)}
-                      >
-                        {p}
-                      </button>
-                    ))
-                  }
-
                   <button
                     className="btn btn-outline"
                     type="button"
+                    style={{ pointerEvents: 'none', minWidth: '40px', padding: '4px 0', fontSize: '14px', minHeight: 'auto' }}
+                  >
+                    {safePage}
+                  </button>
+
+                  <button
+                    className="btn btn-ghost"
+                    type="button"
+                    style={{ fontSize: '14px', padding: '4px 8px' }}
                     disabled={safePage === totalPages}
                     onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   >
-                    Sau
+                    Sau &gt;
                   </button>
                 </div>
               </div>

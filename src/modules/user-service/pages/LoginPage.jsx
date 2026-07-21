@@ -64,43 +64,42 @@ export function LoginPage() {
   }
 
   return (
-    <div className="auth-shell">
-      {/* Brand panel */}
-      <div className="auth-brand">
-        <div className="auth-brand-mark" aria-hidden="true">P</div>
-        <h1 className="auth-brand-title">
-          PCMS
-        </h1>
-        <p className="auth-brand-subtitle">
-          <span className="auth-brand-accent">Pharmacy Chain Management System</span> — Hệ thống quản lý
-          chuỗi nhà thuốc hiện đại. Quản lý đơn hàng, tồn kho, đơn thuốc và khách hàng
-          trong một giao diện duy nhất.
-        </p>
-      </div>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--ink-900)', padding: '20px' }}>
+      <div className="card" style={{ width: '100%', maxWidth: '600px', padding: '48px 40px', background: 'var(--surface)', borderRadius: '12px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)' }}>
+        
+        {/* Brand logo & title */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '40px' }}>
+          <div style={{ 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', 
+            width: '64px', height: '64px', borderRadius: '16px', 
+            background: 'var(--ink-900)', color: '#ffffff', 
+            fontSize: '28px', fontWeight: '700' 
+          }}>
+            P
+          </div>
+          <h1 style={{ margin: '16px 0 0', fontSize: '28px', fontWeight: '700', color: 'var(--ink-900)' }}>
+            PCMS
+          </h1>
+        </div>
 
-      {/* Form panel */}
-      <div className="auth-form-panel">
-        <div className="auth-form-container">
-          <h2 className="auth-form-title">Đăng nhập</h2>
-          <p className="auth-form-subtitle">
-            Nhập email và mật khẩu để truy cập hệ thống.
-          </p>
+        {errors.form && (
+          <div className="alert alert-danger" role="alert" style={{ marginBottom: '24px' }}>
+            <AlertCircle size={18} className="alert-icon" aria-hidden="true" />
+            <div className="alert-body">{errors.form}</div>
+          </div>
+        )}
 
-          {errors.form && (
-            <div className="alert alert-danger" role="alert">
-              <AlertCircle size={18} className="alert-icon" aria-hidden="true" />
-              <div className="alert-body">{errors.form}</div>
-            </div>
-          )}
-
-          <form className="auth-form" onSubmit={handleSubmit} noValidate>
-            <label className="field">
-              <span className="field-label">Email</span>
+        {/* Form fields in horizontal layout */}
+        <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
+            <label htmlFor="login-email" className="field-label" style={{ margin: 0, fontSize: '15px' }}>Email</label>
+            <div>
               <input
                 id="login-email"
                 className="input"
                 type="email"
-                placeholder="ban@pcms.vn"
+                placeholder="Nhập email của bạn"
                 autoComplete="email"
                 value={email}
                 onChange={(e) => {
@@ -111,12 +110,14 @@ export function LoginPage() {
                 aria-describedby={errors.email ? 'login-email-error' : undefined}
               />
               {errors.email && (
-                <p className="field-error" id="login-email-error">{errors.email}</p>
+                <p className="field-error" id="login-email-error" style={{ marginTop: '6px' }}>{errors.email}</p>
               )}
-            </label>
+            </div>
+          </div>
 
-            <label className="field">
-              <span className="field-label">Mật khẩu</span>
+          <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
+            <label htmlFor="login-password" className="field-label" style={{ margin: 0, fontSize: '15px' }}>Mật khẩu</label>
+            <div>
               <div className="input-with-icon" style={{ position: 'relative' }}>
                 <input
                   id="login-password"
@@ -136,55 +137,46 @@ export function LoginPage() {
                 <button
                   type="button"
                   className="btn btn-ghost btn-icon"
-                  style={{
-                    position: 'absolute',
-                    right: 0,
-                    top: 0,
-                    height: '100%',
-                    border: 'none',
-                    minHeight: 'auto',
-                  }}
+                  style={{ position: 'absolute', right: 0, top: 0, height: '100%', border: 'none' }}
                   onClick={() => setShowPassword((prev) => !prev)}
                   aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 >
-                  {showPassword ? (
-                    <EyeOff size={16} aria-hidden="true" />
-                  ) : (
-                    <Eye size={16} aria-hidden="true" />
-                  )}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {errors.password && (
-                <p className="field-error" id="login-password-error">{errors.password}</p>
+                <p className="field-error" id="login-password-error" style={{ marginTop: '6px' }}>{errors.password}</p>
               )}
-            </label>
-
-            <button
-              className="btn btn-primary"
-              type="submit"
-              disabled={loginMutation.isPending}
-              style={{ width: '100%', marginTop: '4px' }}
-            >
-              {loginMutation.isPending ? (
-                'Đang đăng nhập...'
-              ) : (
-                <>
-                  <LogIn size={16} aria-hidden="true" />
-                  Đăng nhập
-                </>
-              )}
-            </button>
-
-            <div className="auth-form-footer">
-              <Link className="auth-link" to="/forgot-password">
-                Quên mật khẩu?
-              </Link>
-              <Link className="auth-link" to={`/register${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}>
-                Đăng ký tài khoản
-              </Link>
             </div>
-          </form>
-        </div>
+          </div>
+
+          {/* Action buttons matching the layout */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '14px' }}>
+              <Link className="auth-link" to="/forgot-password">Quên mật khẩu?</Link>
+              <Link className="auth-link" to={`/register${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}>Đăng ký</Link>
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                className="btn btn-primary"
+                type="submit"
+                disabled={loginMutation.isPending}
+                style={{ minWidth: '120px' }}
+              >
+                {loginMutation.isPending ? 'Đang tải...' : 'Đăng nhập'}
+              </button>
+              <button
+                className="btn btn-outline"
+                type="button"
+                onClick={() => navigate('/')}
+                style={{ minWidth: '100px' }}
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+
+        </form>
       </div>
     </div>
   )

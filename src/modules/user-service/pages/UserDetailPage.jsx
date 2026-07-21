@@ -125,132 +125,48 @@ export function UserDetailPage() {
 
   return (
     <DashboardLayout>
-      <div className="page-stack">
-        <header className="page-header">
-          <div>
-            <p className="page-kicker">
-              <Link to="/users" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <ArrowLeft size={14} /> Danh sách người dùng
-              </Link>
-            </p>
-            <h1 className="page-title">{user.fullName}</h1>
-            <p className="page-description">
-              Chi tiết người dùng. Bạn có thể thay đổi vai trò, phân công chi nhánh hoặc cập nhật trạng thái hoạt động tại đây.
-            </p>
-          </div>
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 20px' }}>
+        <div className="card" style={{ width: '100%', maxWidth: '600px', margin: '0 auto', border: '1px solid var(--ink-200)', borderRadius: '8px', overflow: 'hidden' }}>
           
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <Link className="btn btn-primary" to={`/users/${userId}/edit`}>
-              <Edit size={16} aria-hidden="true" />
-              Chỉnh sửa thông tin
-            </Link>
+          <div style={{ padding: '24px', borderBottom: '1px solid var(--ink-200)', textAlign: 'center', background: 'var(--surface)' }}>
+            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--ink-900)' }}>
+              CHI TIẾT NGƯỜI DÙNG
+            </h2>
           </div>
-        </header>
 
-        <section className="card">
-          <div className="card-header">
-            <h2 className="card-title">Hồ sơ người dùng</h2>
-          </div>
-          <div className="card-body detail-grid">
+          <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
             
-            {/* Left Col: Info List */}
-            <div className="detail-list">
-              <div className="detail-item">
-                <span className="detail-label">MÃ NGƯỜI DÙNG (ID)</span>
-                <span className="detail-value mono">{user.id}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-label">TRẠNG THÁI</span>
-                <div className="detail-value"><UserStatusBadge status={user.status} /></div>
-              </div>
-
-              <div className="detail-item">
-                <span className="detail-label">HỌ VÀ TÊN</span>
-                <span className="detail-value">{user.fullName}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-label">VAI TRÒ</span>
-                <div className="detail-value"><RoleBadge role={user.role} /></div>
-              </div>
-
-              <div className="detail-item">
-                <span className="detail-label">EMAIL ĐĂNG NHẬP</span>
-                <span className="detail-value">{user.email}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-label">CHI NHÁNH PHÂN CÔNG</span>
-                <span className="detail-value" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <Building2 size={16} color="var(--ink-400)" />
-                  {branchName}
-                </span>
-              </div>
-
-              <div className="detail-item">
-                <span className="detail-label">SỐ ĐIỆN THOẠI</span>
-                <span className="detail-value mono">{user.phone || '—'}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-label">ĐĂNG NHẬP CUỐI</span>
-                <span className="detail-value">{formatDateTime(user.lastLoginAt)}</span>
-              </div>
-              
-              <div className="detail-item">
-                <span className="detail-label">NGÀY TẠO</span>
-                <span className="detail-value">{formatDateTime(user.createdAt)}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-label">CẬP NHẬT LẦN CUỐI</span>
-                <span className="detail-value">{formatDateTime(user.updatedAt)}</span>
-              </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
+              <span className="field-label" style={{ margin: 0, color: 'var(--ink-500)', fontSize: '14px' }}>Họ và tên</span>
+              <span style={{ fontSize: '16px', fontWeight: '500', color: 'var(--ink-900)' }}>{user.fullName}</span>
             </div>
 
-            {/* Right Col: Quick Actions */}
-            <div className="user-action-grid" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
-              <button 
-                className="quick-action" 
-                onClick={() => setRoleUser(user)}
-              >
-                <UserCog size={24} color="var(--ink-600)" />
-                Đổi vai trò
-              </button>
-              <button 
-                className="quick-action" 
-                disabled={user.role === 'CUSTOMER'}
-                onClick={() => setBranchUser(user)}
-              >
-                <Building2 size={24} color={user.role === 'CUSTOMER' ? "var(--ink-300)" : "var(--ink-600)"} />
-                Gán chi nhánh
-              </button>
-              
-              {user.status === 'LOCKED' ? (
-                <button 
-                  className="quick-action" 
-                  onClick={() => setUnlockUserTarget(user)}
-                >
-                  <Lock size={24} color="var(--ink-600)" />
-                  Mở khóa
-                </button>
-              ) : (
-                <button 
-                  className="quick-action" 
-                  onClick={() => setStatusUser(user)}
-                >
-                  <ShieldAlert size={24} color="var(--ink-600)" />
-                  Đổi trạng thái
-                </button>
-              )}
-              
-              <button 
-                className="quick-action" 
-                style={{ color: 'var(--danger-700)', borderColor: 'var(--danger-100)' }}
-                onClick={() => setDeleteUserTarget(user)}
-              >
-                <Trash2 size={24} color="var(--danger-700)" />
-                Xóa người dùng
-              </button>
+            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
+              <span className="field-label" style={{ margin: 0, color: 'var(--ink-500)', fontSize: '14px' }}>Email</span>
+              <span style={{ fontSize: '16px', color: 'var(--ink-900)' }}>{user.email}</span>
             </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
+              <span className="field-label" style={{ margin: 0, color: 'var(--ink-500)', fontSize: '14px' }}>Vai trò</span>
+              <div><RoleBadge role={user.role} /></div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
+              <span className="field-label" style={{ margin: 0, color: 'var(--ink-500)', fontSize: '14px' }}>Chi nhánh</span>
+              <span style={{ fontSize: '16px', color: 'var(--ink-900)' }}>{branchName}</span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '24px' }}>
+              <Link className="btn btn-outline" to="/users" style={{ width: '120px' }}>
+                Đóng
+              </Link>
+              <Link className="btn btn-primary" to={`/users/${userId}/edit`} style={{ width: '150px' }}>
+                Sửa người dùng
+              </Link>
+            </div>
+
           </div>
-        </section>
+        </div>
       </div>
 
       <ChangeRoleDialog
