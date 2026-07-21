@@ -411,15 +411,12 @@ export function PrescriptionListPage() {
         <header className="page-header">
           <div>
             <p className="page-kicker">Đơn thuốc</p>
-            <h1 className="page-title">Prescriptions</h1>
+            <h1 className="page-title">Theo dõi đơn thuốc</h1>
             <p className="page-description">
               Quản lý đơn thuốc. Mã đơn tự sinh dạng <strong className="mono">RX-2026xxxx</strong>. 
               State machine: <strong>DRAFT → SIGNED → CANCELLED</strong>.
             </p>
           </div>
-          <button id="new-prescription-btn" className="btn btn-primary" type="button" onClick={() => setShowForm(true)}>
-            <Plus size={16} /> Tạo đơn thuốc
-          </button>
         </header>
 
         {/* Stats */}
