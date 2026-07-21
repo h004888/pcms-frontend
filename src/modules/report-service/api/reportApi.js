@@ -19,23 +19,23 @@ export async function getRevenueReport({ from, to, groupBy }) {
   return response.data
 }
 
-export async function getInventoryReport({ from, to }) {
+export async function getInventoryReport({ from, to } = {}) {
   const response = await apiClient.get('/reports/inventory', {
     params: { from, to },
   })
   return response.data
 }
 
-export async function getStaffReport({ from, to }) {
+export async function getStaffReport({ fromDate, toDate }) {
   const response = await apiClient.get('/reports/staff', {
-    params: { from, to },
+    params: { fromDate, toDate },
   })
   return response.data
 }
 
 export async function exportReport({ type, format, from, to }) {
-  const response = await apiClient.get(`/reports/export/${type}`, {
-    params: { format, from, to },
+  const response = await apiClient.get('/reports/export', {
+    params: { type, format, from, to },
     responseType: 'blob',
   })
   return response.data

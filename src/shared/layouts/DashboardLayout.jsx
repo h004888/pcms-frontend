@@ -1,5 +1,6 @@
-
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { listNotifications, markNotificationRead } from '../../modules/notification-service/api/notificationApi'
 import {
   BarChart2,
   BarChart3,
@@ -38,6 +39,28 @@ export function DashboardLayout({ children }) {
   const [medicineMenuOpen, setMedicineMenuOpen] = useState(isMedicineSection)
   const [inventoryMenuOpen, setInventoryMenuOpen] = useState(isInventorySection)
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'CEO'
+  const [notifOpen, setNotifOpen] = useState(false)
+  const notifRef = useRef(null)
+
+  const unreadQuery = useQuery({
+    queryKey: ['notifications', 'unread', user?.id],
+    queryFn: () => listNotifications({ recipientId: user?.id, status: 'unread', size: 5 }),
+    enabled: !!user?.id,
+    refetchInterval: 15000,
+  })
+  
+  const unreadData = Array.isArray(unreadQuery.data?.content) ? unreadQuery.data.content : (Array.isArray(unreadQuery.data?.data) ? unreadQuery.data.data : [])
+  const hasUnread = unreadQuery.data?.totalElements > 0 || unreadData.length > 0
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setNotifOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [notifRef])
 
   useEffect(() => {
     const userStr = localStorage.getItem('pcms_user')
@@ -296,10 +319,64 @@ export function DashboardLayout({ children }) {
       <div className="app-content">
         <header className="app-topbar">
           <div className="app-topbar-spacer" />
-          <button className="app-topbar-icon" type="button" aria-label="Thông báo">
-            <Bell size={19} aria-hidden="true" />
-            <span className="app-notification-dot" aria-hidden="true" />
-          </button>
+          
+          {/* Notification Bell & Dropdown */}
+          <div style={{ position: 'relative' }} ref={notifRef}>
+            <button className="app-topbar-icon" type="button" aria-label="Thông báo" onClick={() => setNotifOpen(!notifOpen)}>
+              <Bell size={19} aria-hidden="true" />
+              {hasUnread && <span className="app-notification-dot" aria-hidden="true" />}
+            </button>
+            
+            {notifOpen && (
+              <div style={{
+                position: 'absolute', top: '100%', right: 0, width: 340, marginTop: 8,
+                background: '#fff', border: '1px solid var(--ink-200)', borderRadius: 'var(--radius-md)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)', zIndex: 100,
+                display: 'flex', flexDirection: 'column'
+              }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--ink-200)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--ink-900)' }}>Thông báo mới</h3>
+                </div>
+                
+                <div style={{ maxHeight: 320, overflowY: 'auto' }}>
+                  {!hasUnread ? (
+                    <div style={{ padding: 24, textAlign: 'center', color: 'var(--ink-500)', fontSize: 13 }}>
+                      Không có thông báo mới
+                    </div>
+                  ) : (
+                    unreadData.map(notif => (
+                      <div key={notif.id} onClick={async () => {
+                        try {
+                          await markNotificationRead(notif.id);
+                          unreadQuery.refetch();
+                          navigate('/dashboard/notifications');
+                          setNotifOpen(false);
+                        } catch(e) {}
+                      }} style={{
+                        padding: '12px 16px', borderBottom: '1px solid var(--ink-100)', cursor: 'pointer',
+                        transition: 'background 0.2s', background: 'var(--accent-50)'
+                      }} onMouseOver={e => e.currentTarget.style.background = 'var(--accent-100)'}
+                         onMouseOut={e => e.currentTarget.style.background = 'var(--accent-50)'}>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--ink-900)', marginBottom: 4 }}>{notif.title}</div>
+                        <div style={{ fontSize: 12, color: 'var(--ink-600)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{notif.body}</div>
+                        <div style={{ fontSize: 11, color: 'var(--ink-400)', marginTop: 4 }}>
+                          {notif.createdAt ? new Date(notif.createdAt).toLocaleString('vi-VN') : ''}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+                
+                <div style={{ padding: 8, borderTop: '1px solid var(--ink-200)', textAlign: 'center' }}>
+                  <button type="button" className="btn btn-ghost" style={{ width: '100%', fontSize: 13, color: 'var(--accent-700)' }} 
+                    onClick={() => { setNotifOpen(false); navigate('/dashboard/notifications'); }}>
+                    Xem tất cả thông báo
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {user ? (
             <NavLink className="app-user-menu" to={`/users/${user.id}`}>
               <CircleUserRound size={27} aria-hidden="true" />

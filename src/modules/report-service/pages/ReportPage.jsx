@@ -25,6 +25,7 @@ import {
   listReportSchedules,
   cancelReportSchedule,
 } from '../api/reportApi.js'
+import { listUsers } from '../../user-service/api/userApi.js'
 
 const TAB_REVENUE = 'revenue'
 const TAB_INVENTORY = 'inventory'
@@ -347,7 +348,21 @@ function StaffTab() {
     enabled: !!from && !!to,
   })
 
+  const usersQuery = useQuery({
+    queryKey: ['users-list-for-report'],
+    queryFn: () => listUsers({ size: 1000 }),
+  })
+
   const rows = query.data?.data || []
+  const userMap = useMemo(() => {
+    const map = {}
+    if (usersQuery.data?.data) {
+      usersQuery.data.data.forEach(u => {
+        map[u.id] = u.fullName || u.username
+      })
+    }
+    return map
+  }, [usersQuery.data])
 
   async function handleExport(format) {
     try {
@@ -407,7 +422,7 @@ function StaffTab() {
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Nhân viên ID</th>
+                  <th>Nhân viên</th>
                   <th style={{ textAlign: 'right' }}>Số đơn</th>
                   <th style={{ textAlign: 'right' }}>Doanh thu</th>
                 </tr>
@@ -416,7 +431,10 @@ function StaffTab() {
                 {rows.map((row, i) => (
                   <tr key={row.staffId || i}>
                     <td className="mono">{i + 1}</td>
-                    <td className="mono">{row.staffId}</td>
+                    <td>
+                      <div style={{ fontWeight: 600 }}>{userMap[row.staffId] || 'Không xác định'}</div>
+                      <div className="mono text-muted" style={{ fontSize: 12 }}>{row.staffId}</div>
+                    </td>
                     <td className="mono" style={{ textAlign: 'right' }}>{Number(row.orders || 0).toLocaleString('vi-VN')}</td>
                     <td className="mono" style={{ textAlign: 'right', color: 'var(--accent-700)', fontWeight: 600 }}>
                       {formatCurrency(row.revenue)}
@@ -545,7 +563,9 @@ function ScheduleTab() {
                   <th>Định dạng</th>
                   <th>Cron</th>
                   <th>Email nhận</th>
-                  <th>Trạng thái</th>
+                  <th>Trạng thái lịch</th>
+                  <th>Lần chạy cuối</th>
+                  <th>Kết quả</th>
                   <th aria-label="Thao tác" />
                 </tr>
               </thead>
@@ -560,6 +580,19 @@ function ScheduleTab() {
                       <span className={`badge ${s.active !== false ? 'badge-success' : 'badge-muted'}`}>
                         {s.active !== false ? 'Đang chạy' : 'Đã hủy'}
                       </span>
+                    </td>
+                    <td className="mono" style={{ fontSize: 13 }}>
+                      {s.lastRunAt ? new Date(s.lastRunAt).toLocaleString('vi-VN') : 'Chưa chạy'}
+                    </td>
+                    <td>
+                      {s.lastStatus && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          <span className={`badge ${s.lastStatus === 'SUCCESS' ? 'badge-success' : s.lastStatus === 'FAILED' ? 'badge-danger' : 'badge-info'}`} style={{ width: 'fit-content' }}>
+                            {s.lastStatus}
+                          </span>
+                          {s.lastMessage && <span className="text-muted" style={{ fontSize: 12, maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={s.lastMessage}>{s.lastMessage}</span>}
+                        </div>
+                      )}
                     </td>
                     <td>
                       {s.active !== false && (
@@ -604,7 +637,7 @@ export function ReportPage() {
         <header className="page-header">
           <div>
             <p className="page-kicker">Báo cáo</p>
-            <h1 className="page-title">Reports</h1>
+            <h1 className="page-title">Báo cáo</h1>
             <p className="page-description">
               Xem và xuất báo cáo doanh thu, tồn kho, nhân sự. Hỗ trợ export Excel & PDF và lập lịch tự động.
             </p>
