@@ -147,11 +147,11 @@ export function OrderDetailPage() {
               </div>
               <div>
                 <p style={{ fontSize: 12, color: 'var(--ink-400)', marginBottom: 4 }}>Chi nhánh</p>
-                <p>{order?.branchId || '--'}</p>
+                <p>{order?.branchName || order?.branchId || '--'}</p>
               </div>
               <div>
                 <p style={{ fontSize: 12, color: 'var(--ink-400)', marginBottom: 4 }}>Nhân viên</p>
-                <p>{order?.staffId || order?.createdBy || '--'}</p>
+                <p>{order?.staffName || order?.staffId || order?.createdBy || '--'}</p>
               </div>
               {order?.customerId && (
                 <div>

@@ -246,6 +246,25 @@ export function PaymentDetailPage() {
                 </div>
               )}
             </label>
+
+            {/* Bằng chứng chuyển khoản */}
+            {isPending && (
+              <div className="field" style={{ gridColumn: '1 / -1' }}>
+                <span className="field-label">Bằng chứng chuyển khoản</span>
+                <div style={{ marginTop: 8 }}>
+                  <img
+                    src="/images/payments/chuyenkhoan.jpg"
+                    alt="Bằng chứng chuyển khoản"
+                    style={{
+                      maxWidth: 400,
+                      maxHeight: 300,
+                      borderRadius: 8,
+                      border: '1px solid var(--ink-200)',
+                    }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Actions */}
