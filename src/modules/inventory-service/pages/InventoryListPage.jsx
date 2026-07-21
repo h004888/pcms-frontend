@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom'
 import { getApiErrorMessage } from '@core/http/apiClient.js'
 import { listBranches } from '@modules/branch-service/api/branchApi.js'
 import {
+  getMedicine,
   listCategories,
   listMedicines,
 } from '@modules/catalog-service/api/medicineApi.js'
@@ -106,11 +107,30 @@ export function InventoryListPage({ variant = 'dashboard' }) {
     () => unwrapList(inventoryQuery.data),
     [inventoryQuery.data],
   )
+  const missingMedicineIds = useMemo(() => [...new Set(
+    rows
+      .filter((row) => !row.medicineName && row.medicineId && !medicinesById.has(row.medicineId))
+      .map((row) => row.medicineId),
+  )], [medicinesById, rows])
+  const missingMedicinesQuery = useQuery({
+    queryKey: ['inventory-medicine-names', missingMedicineIds],
+    queryFn: async () => {
+      const results = await Promise.all(
+        missingMedicineIds.map((medicineId) => getMedicine(medicineId).catch(() => null)),
+      )
+      return results.filter(Boolean)
+    },
+    enabled: missingMedicineIds.length > 0,
+  })
+  const allMedicinesById = useMemo(() => new Map([
+    ...medicinesById,
+    ...unwrapList(missingMedicinesQuery.data).map((medicine) => [medicine.id, medicine]),
+  ]), [medicinesById, missingMedicinesQuery.data])
   const filteredRows = useMemo(() => {
     const keyword = normalizeSearch(appliedSearch)
 
     return rows.filter((row) => {
-      const medicine = medicinesById.get(row.medicineId)
+      const medicine = allMedicinesById.get(row.medicineId)
       const matchesSearch =
         !keyword ||
         [
@@ -119,7 +139,7 @@ export function InventoryListPage({ variant = 'dashboard' }) {
           getBatchId(row),
           row.medicineId,
           row.branchId,
-          getMedicineName(row, medicinesById),
+          getMedicineName(row, allMedicinesById),
           getBranchName(row, branchesById),
         ]
           .filter(Boolean)
@@ -138,7 +158,7 @@ export function InventoryListPage({ variant = 'dashboard' }) {
 
       return matchesSearch && matchesCategory && matchesStatus && matchesExpiry
     })
-  }, [appliedSearch, branchesById, categoryId, expiryFilter, medicinesById, rows, statusFilter])
+  }, [allMedicinesById, appliedSearch, branchesById, categoryId, expiryFilter, rows, statusFilter])
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE))
   const safePage = Math.min(page, totalPages)
   const pageRows = filteredRows.slice(
@@ -148,7 +168,7 @@ export function InventoryListPage({ variant = 'dashboard' }) {
   const stats = useMemo(() => {
     const totalQuantity = rows.reduce((sum, row) => sum + getBatchQuantity(row), 0)
     const estimatedValue = rows.reduce((sum, row) => {
-      const price = Number(medicinesById.get(row.medicineId)?.price || 0)
+      const price = Number(allMedicinesById.get(row.medicineId)?.price || 0)
 
       return sum + getBatchQuantity(row) * price
     }, 0)
@@ -165,7 +185,7 @@ export function InventoryListPage({ variant = 'dashboard' }) {
         [STOCK_STATUS.EXPIRING, STOCK_STATUS.EXPIRED].includes(getStockStatus(row)),
       ).length,
     }
-  }, [medicinesById, rows])
+  }, [allMedicinesById, rows])
 
   function handleSearch(event) {
     event.preventDefault()
@@ -369,7 +389,7 @@ export function InventoryListPage({ variant = 'dashboard' }) {
                     {pageRows.map((row) => (
                       <tr key={getBatchId(row)}>
                         <td>
-                          <strong>{getMedicineName(row, medicinesById)}</strong>
+                          <strong>{getMedicineName(row, allMedicinesById)}</strong>
                           <div className="card-subtitle mono">{row.batchNo || shortId(row.medicineId)}</div>
                         </td>
                         <td>{getBranchName(row, branchesById)}</td>
@@ -390,6 +410,14 @@ export function InventoryListPage({ variant = 'dashboard' }) {
                             >
                               <Eye size={16} aria-hidden="true" />
                               Xem
+                            </Link>
+                            <Link
+                              className="btn btn-outline btn-compact"
+                              to={`/inventory/history?batchId=${getBatchId(row)}`}
+                              title="Xem lịch sử giao dịch của lô"
+                            >
+                              <History size={16} aria-hidden="true" />
+                              Lịch sử
                             </Link>
                             {!isStockList ? <Link className="btn btn-outline btn-compact" to="/inventory/import">Nhập</Link> : null}
                             <Link className="btn btn-outline btn-compact" to="/inventory/export">Xuất</Link>

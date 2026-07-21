@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Download, Search } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { getApiErrorMessage } from '@core/http/apiClient.js'
 import { listBranches } from '@modules/branch-service/api/branchApi.js'
 import { DashboardLayout } from '@shared/layouts/DashboardLayout.jsx'
@@ -37,12 +37,14 @@ function csvValue(value) {
 }
 
 export function InventoryHistoryPage() {
+  const [searchParams] = useSearchParams()
+  const batchId = searchParams.get('batchId') || ''
   const [filters, setFilters] = useState(INITIAL_FILTERS)
   const [appliedFilters, setAppliedFilters] = useState(INITIAL_FILTERS)
   const [page, setPage] = useState(1)
 
   const historyQuery = useQuery({
-    queryKey: ['inventory-history', appliedFilters],
+    queryKey: ['inventory-history', appliedFilters, batchId],
     queryFn: () =>
       listMovementReport({
         branchId:
@@ -77,12 +79,13 @@ export function InventoryHistoryPage() {
         ]
           .filter(Boolean)
           .some((value) => String(value).toLowerCase().includes(keyword))
+      const matchesBatch = !batchId || row.batchId === batchId
       const matchesStatus =
         appliedFilters.status === 'ALL' || appliedFilters.status === 'COMPLETED'
 
-      return matchesKeyword && matchesStatus
+      return matchesKeyword && matchesBatch && matchesStatus
     })
-  }, [appliedFilters.keyword, appliedFilters.status, historyQuery.data])
+  }, [appliedFilters.keyword, appliedFilters.status, batchId, historyQuery.data])
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
   const safePage = Math.min(page, totalPages)
   const pageRows = rows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
@@ -143,7 +146,7 @@ export function InventoryHistoryPage() {
     <DashboardLayout>
       <div className="page-stack inventory-history-page">
         <header className="page-header inventory-history-heading">
-          <h1 className="page-title">Lịch sử giao dịch</h1>
+          <h1 className="page-title">{batchId ? 'Lịch sử giao dịch của lô' : 'Lịch sử giao dịch'}</h1>
           <button className="btn btn-outline" type="button" onClick={handleExport} disabled={rows.length === 0}>
             <Download size={16} aria-hidden="true" />
             Xuất báo cáo

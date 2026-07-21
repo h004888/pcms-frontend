@@ -343,7 +343,7 @@ export function UserListPage() {
       />
       <AssignBranchDialog
         user={branchUser}
-        branches={branches}
+        branches={branches.filter((branch) => branch.status === 'ACTIVE')}
         isPending={assignBranchMutation.isPending}
         onClose={() => setBranchUser(null)}
         onConfirm={(branchId) => assignBranchMutation.mutate(branchId)}

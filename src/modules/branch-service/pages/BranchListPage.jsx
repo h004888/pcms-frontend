@@ -239,14 +239,26 @@ export function BranchListPage() {
                             >
                               <Eye size={16} aria-hidden="true" />
                             </Link>
-                            <Link
-                              className="btn btn-outline btn-icon"
-                              to={`/branches/${branch.id}/edit`}
-                              title="Chỉnh sửa"
-                              aria-label={`Chỉnh sửa ${branch.name}`}
-                            >
-                              <Pencil size={16} aria-hidden="true" />
-                            </Link>
+                            {branch.status === 'ACTIVE' ? (
+                              <Link
+                                className="btn btn-outline btn-icon"
+                                to={`/branches/${branch.id}/edit`}
+                                title="Chỉnh sửa"
+                                aria-label={`Chỉnh sửa ${branch.name}`}
+                              >
+                                <Pencil size={16} aria-hidden="true" />
+                              </Link>
+                            ) : (
+                              <button
+                                className="btn btn-outline btn-icon"
+                                type="button"
+                                title="Kích hoạt chi nhánh trước khi chỉnh sửa"
+                                aria-label={`Không thể chỉnh sửa ${branch.name} khi chi nhánh ngừng hoạt động`}
+                                disabled
+                              >
+                                <Pencil size={16} aria-hidden="true" />
+                              </button>
+                            )}
                             <button
                               className="btn btn-outline btn-icon"
                               type="button"
