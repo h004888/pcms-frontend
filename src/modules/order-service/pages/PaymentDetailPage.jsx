@@ -5,7 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { DashboardLayout } from '@shared/layouts/DashboardLayout.jsx'
 import { getApiErrorMessage } from '@core/http/apiClient.js'
-import { createPayment, getOrderForPayment, getPayment } from '../api/paymentApi.js'
+import { confirmPayment, getOrderForPayment, getPayment } from '../api/paymentApi.js'
 
 function formatVND(amount) {
   if (amount == null || isNaN(Number(amount))) return '--'
@@ -65,7 +65,7 @@ export function PaymentDetailPage() {
   const change = method === 'CASH' && tenderedNum >= total ? tenderedNum - total : 0
 
   const confirmMutation = useMutation({
-    mutationFn: createPayment,
+    mutationFn: ({ paymentId, data }) => confirmPayment(paymentId, data),
     onSuccess: () => {
       toast.success('Xác nhận thanh toán thành công!')
       navigate('/payments')
@@ -81,12 +81,14 @@ export function PaymentDetailPage() {
     let currentUser = {}
     try { currentUser = JSON.parse(localStorage.getItem('pcms_user') || '{}') } catch { /* ignore */ }
     confirmMutation.mutate({
-      orderId: payment.orderId,
-      paymentMethod: method,
-      amount: total,
-      tenderedAmount: method === 'CASH' ? tenderedNum : undefined,
-      staffId: currentUser.id || undefined,
-      transactionRef: method !== 'CASH' ? (reference || undefined) : undefined,
+      paymentId: payment.id,
+      data: {
+        paymentMethod: method,
+        amount: total,
+        tenderedAmount: method === 'CASH' ? tenderedNum : undefined,
+        staffId: currentUser.id || undefined,
+        transactionRef: method !== 'CASH' ? (reference || undefined) : undefined,
+      }
     })
   }
 

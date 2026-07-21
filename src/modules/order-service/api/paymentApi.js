@@ -22,6 +22,11 @@ export async function createPayment(payload) {
   return response.data
 }
 
+export async function confirmPayment(paymentId, payload) {
+  const response = await apiClient.post(`/payments/${paymentId}/confirm`, payload)
+  return response.data
+}
+
 export async function getOrderForPayment(orderId) {
   const response = await apiClient.get(`/orders/${orderId}`)
   return response.data
