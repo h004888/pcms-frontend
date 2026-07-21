@@ -203,6 +203,22 @@ export function UserFormPage({ mode = 'create' }) {
               </div>
             </div>
 
+            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
+              <label className="field-label" style={{ margin: 0 }}>Số điện thoại</label>
+              <div>
+                <input
+                  name="phone"
+                  className="input"
+                  type="tel"
+                  placeholder="Số điện thoại"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  aria-invalid={!!errors.phone}
+                />
+                {errors.phone && <p className="field-error" style={{ marginTop: '6px' }}>{errors.phone}</p>}
+              </div>
+            </div>
+
             {mode === 'create' ? (
               <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '16px' }}>
                 <label className="field-label" style={{ margin: 0 }}>
