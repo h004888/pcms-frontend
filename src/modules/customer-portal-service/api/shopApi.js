@@ -181,3 +181,7 @@ export const getPaymentStatus = wrap(async (orderNumber) => {
   const { data } = await apiClient.get(`/cart/payment-status/${orderNumber}`)
   return data
 })
+
+export const cancelOrder = wrap(async (orderNumber) => {
+  await apiClient.post(`/orders/${orderNumber}/cancel`)
+})

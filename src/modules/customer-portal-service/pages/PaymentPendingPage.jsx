@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Loader2, CheckCircle2, RefreshCcw, XCircle } from 'lucide-react'
 import { ROUTES } from '@core/router/paths.js'
-import { getPaymentStatus } from '../api/shopApi'
+import { getPaymentStatus, cancelOrder } from '../api/shopApi'
 import { useCart } from '../hooks/useCart'
 import { formatPrice } from '../utils/formatPrice'
 import './PaymentPendingPage.css'
@@ -116,7 +116,15 @@ export function PaymentPendingPage() {
         <button
           type="button"
           className="payment-pending-btn payment-pending-btn--ghost"
-          onClick={() => navigate(ROUTES.HOME, { replace: true })}
+          onClick={async () => {
+            try {
+              await cancelOrder(orderNumber)
+              toast.info('Đã hủy thanh toán')
+            } catch {
+              toast.error('Không thể hủy thanh toán')
+            }
+            navigate(ROUTES.HOME, { replace: true })
+          }}
         >
           <XCircle size={16} />
           Hủy thanh toán
